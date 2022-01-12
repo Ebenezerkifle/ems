@@ -1,3 +1,4 @@
+import 'package:ems/Screens/Home_Screen.dart';
 import 'package:ems/Screens/Login_Screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -17,6 +18,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       home: Login(),
+      //home: Home(),
     );
   }
 }
