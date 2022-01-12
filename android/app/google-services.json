@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "991857645454",
+    "project_id": "ems-final-project",
+    "storage_bucket": "ems-final-project.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:991857645454:android:eaba559843e4f8b63ef6df",
+        "android_client_info": {
+          "package_name": "com.employee_managment_system.ems.final_project"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "991857645454-d90oqrp0ls5msgrb71e1ukbg7te3tgp2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAq5Owyu29rHQt7L6ayMt_QADNsizVD9J4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "991857645454-d90oqrp0ls5msgrb71e1ukbg7te3tgp2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
