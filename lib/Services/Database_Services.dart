@@ -6,11 +6,7 @@ class DatabaseServices {
       FirebaseFirestore.instance.collection("Users");
   late final String uid;
 
-  void setUid(String uid) {
-    this.uid;
-  }
-
-  Future updateUsersData(Employee employee) async {
+  Future updateUsersData(Employee employee, String uid) async {
     return await employeesInfo.doc(uid).set({
       'firstName': employee.firstName,
       'lastName': employee.lastName,
@@ -22,13 +18,13 @@ class DatabaseServices {
 
   Future getUsersInfo() async {
     List itemsList = [];
-
     try {
       await employeesInfo.get().then((QuerySnapshot) {
         QuerySnapshot.docs.forEach((element) {
           itemsList.add(element.data());
         });
       });
+      return itemsList;
     } catch (e) {
       print(e.toString());
       return null;

@@ -122,14 +122,16 @@ class _RegisterState extends State<Register> {
                                       setState(() => error =
                                           "couldn't signin with this credential!");
                                       Fluttertoast.showToast(msg: error);
-                                    } else {
-                                      setState(() =>
-                                          error = "successfully signed in!");
-                                      Fluttertoast.showToast(msg: error);
+                                    } else if (result ==
+                                        "The user is successfully registered!") {
                                       Navigator.of(context).pushReplacement(
                                           MaterialPageRoute(
                                               builder: (context) =>
                                                   const Login()));
+                                      Fluttertoast.showToast(msg: error);
+                                    } else {
+                                      setState(() => error = result);
+                                      Fluttertoast.showToast(msg: error);
                                     }
                                   }
                                 },

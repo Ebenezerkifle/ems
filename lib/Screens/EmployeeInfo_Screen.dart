@@ -1,15 +1,14 @@
 import 'package:ems/Services/Database_Services.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
-class Tasks extends StatefulWidget {
-  const Tasks({Key? key}) : super(key: key);
+class EmployeeInfo extends StatefulWidget {
+  const EmployeeInfo({Key? key}) : super(key: key);
 
   @override
-  _TasksState createState() => _TasksState();
+  _EmployeeInfoState createState() => _EmployeeInfoState();
 }
 
-class _TasksState extends State<Tasks> {
+class _EmployeeInfoState extends State<EmployeeInfo> {
   List taskList = [];
 
   @override
