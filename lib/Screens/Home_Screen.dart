@@ -1,3 +1,4 @@
+import 'package:ems/Screens/Chat_Screen.dart';
 import 'package:ems/Screens/EmployeeInfo_Screen.dart';
 import 'package:ems/Screens/Tasks_Screen.dart';
 import 'package:flutter/material.dart';
@@ -104,7 +105,10 @@ class _HomeState extends State<Home> {
                       padding: EdgeInsets.symmetric(
                           horizontal: 10.0, vertical: 5.0)),
                   ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => const Chat()));
+                      },
                       style: ElevatedButton.styleFrom(
                         primary: Colors.lightBlueAccent,
                         textStyle: const TextStyle(fontSize: 14.0),

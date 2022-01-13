@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Models/Employee.dart';
 
@@ -28,6 +29,15 @@ class DatabaseServices {
     } catch (e) {
       print(e.toString());
       return null;
+    }
+  }
+
+  Future sendMessage(String email, String message) async {
+    try {
+      FirebaseMessaging messaging = FirebaseMessaging.instance;
+      messaging.getToken().then((value) => message);
+    } catch (e) {
+      print(e.toString());
     }
   }
 }

@@ -3,6 +3,7 @@ import 'package:ems/Screens/Registration_Screen.dart';
 import 'package:ems/Services/Authentication_Services.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -72,6 +73,9 @@ class _LoginState extends State<Login> {
                                 setState(
                                     () => error = "successfully signed in!");
                                 Fluttertoast.showToast(msg: error);
+                                SharedPreferences preferences =
+                                    await SharedPreferences.getInstance();
+                                preferences.setString("email", email);
                                 Navigator.of(context).pushReplacement(
                                     MaterialPageRoute(
                                         builder: (context) => const Home()));

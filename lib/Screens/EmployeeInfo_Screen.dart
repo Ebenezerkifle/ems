@@ -32,7 +32,7 @@ class _EmployeeInfoState extends State<EmployeeInfo> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Tasks"),
+          title: const Text("Employees Info"),
         ),
         body: ListView.builder(
             itemCount: taskList.length,
