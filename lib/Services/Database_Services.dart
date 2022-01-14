@@ -1,4 +1,3 @@
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Models/Employee.dart';
 
@@ -17,10 +16,10 @@ class DatabaseServices {
     });
   }
 
-  Future getUsersInfo() async {
+  Future getUsersInfo(CollectionReference myCollection) async {
     List itemsList = [];
     try {
-      await employeesInfo.get().then((QuerySnapshot) {
+      await myCollection.get().then((QuerySnapshot) {
         QuerySnapshot.docs.forEach((element) {
           itemsList.add(element.data());
         });
@@ -29,15 +28,6 @@ class DatabaseServices {
     } catch (e) {
       print(e.toString());
       return null;
-    }
-  }
-
-  Future sendMessage(String email, String message) async {
-    try {
-      FirebaseMessaging messaging = FirebaseMessaging.instance;
-      messaging.getToken().then((value) => message);
-    } catch (e) {
-      print(e.toString());
     }
   }
 }

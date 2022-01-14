@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Services/Database_Services.dart';
 import 'package:flutter/material.dart';
 
@@ -18,7 +19,9 @@ class _EmployeeInfoState extends State<EmployeeInfo> {
   }
 
   fetchDatabaseLists() async {
-    dynamic result = await DatabaseServices().getUsersInfo();
+    final CollectionReference employeesInfo =
+        FirebaseFirestore.instance.collection("Users");
+    dynamic result = await DatabaseServices().getUsersInfo(employeesInfo);
     if (result == null) {
       print("unable to fetch the data!");
     } else {
