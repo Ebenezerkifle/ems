@@ -39,6 +39,7 @@ dependencies:
   cloud_firestore: ^3.1.5
   provider: ^6.0.2
   fluttertoast: ^8.0.8
+  flutter_svg: ^1.0.1
 
 dev_dependencies:
   flutter_test:
@@ -62,6 +63,20 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  assets:
+    - assets/images/mobile_1.png
+    - assets/images/aau.png
+    - assets/images/graduate.svg
+    - assets/images/chat.svg
+    - assets/images/location.svg
+    - assets/images/calendar.svg
+    - assets/images/tasks.svg
+    - assets/images/progress.svg
+    - assets/images/todo.svg
+    - assets/images/finance.svg
+    - assets/images/info.svg
+    - assets/images/emp-progress.svg
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
@@ -72,6 +87,15 @@ flutter:
 
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/assets-and-images/#from-packages
+
+  fonts:
+    - family: Montserrat Regular 
+      fonts:
+        - asset: assets/fonts/Montserrat-Regular.ttf
+
+    - family: Montserrat Medium 
+      fonts:
+        - asset: assets/fonts/Montserrat-Medium.ttf
 
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a
