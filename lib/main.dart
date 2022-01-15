@@ -9,12 +9,12 @@ Future<void> main() async {
   await Firebase.initializeApp();
 
   SharedPreferences preferences = await SharedPreferences.getInstance();
-  var email = preferences.getString('email');
+  var email = preferences.get('email');
   // entry point of an application.
   // inflates the widget and show it on app screen.
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
-    home: email == null ? const Login() : const Home(),
+    home: email == null ? Login(preferences) : Home(preferences),
     //home: Home(),
   ));
 }

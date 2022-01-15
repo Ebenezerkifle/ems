@@ -1,22 +1,37 @@
 import 'package:ems/Screens/Chat_Screen.dart';
 import 'package:ems/Screens/EmployeeInfo_Screen.dart';
+import 'package:ems/Screens/Login_Screen.dart';
 import 'package:ems/Screens/Tasks_Screen.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+// ignore: must_be_immutable
 class Home extends StatefulWidget {
-  const Home({Key? key}) : super(key: key);
+  SharedPreferences preferences;
+  Home(this.preferences, {Key? key}) : super(key: key);
 
   @override
-  _HomeState createState() => _HomeState();
+  // ignore: no_logic_in_create_state
+  _HomeState createState() => _HomeState(preferences);
 }
 
 class _HomeState extends State<Home> {
+  SharedPreferences preferences;
+  _HomeState(this.preferences);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Home'),
-        ),
+        appBar: AppBar(title: const Text('Home'), actions: [
+          // ignore: void_checks
+          IconButton(
+              onPressed: () async {
+                preferences.remove('email');
+                Navigator.of(context).pushReplacement(MaterialPageRoute(
+                    builder: (context) => Login(preferences)));
+              },
+              icon: const Icon(Icons.logout)),
+        ]),
         body: SafeArea(
           child: Center(
               child: Column(

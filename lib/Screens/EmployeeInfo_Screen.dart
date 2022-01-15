@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Services/Database_Services.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class EmployeeInfo extends StatefulWidget {
   const EmployeeInfo({Key? key}) : super(key: key);
@@ -23,7 +24,7 @@ class _EmployeeInfoState extends State<EmployeeInfo> {
         FirebaseFirestore.instance.collection("Users");
     dynamic result = await DatabaseServices().getUsersInfo(employeesInfo);
     if (result == null) {
-      print("unable to fetch the data!");
+      Fluttertoast.showToast(msg: "unable to fetch the data!");
     } else {
       setState(() {
         taskList = result;

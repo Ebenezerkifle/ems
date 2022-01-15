@@ -19,7 +19,24 @@ class DatabaseServices {
   Future getUsersInfo(CollectionReference myCollection) async {
     List itemsList = [];
     try {
+      //await myCollection.snapshots();
       await myCollection.get().then((QuerySnapshot) {
+        QuerySnapshot.docs.forEach((element) {
+          itemsList.add(element.data());
+        });
+      });
+      return itemsList;
+    } catch (e) {
+      print(e.toString());
+      return null;
+    }
+  }
+
+  Future fetchMessage(CollectionReference myCollection) async {
+    List itemsList = [];
+    try {
+      //await myCollection.snapshots();
+      await myCollection.orderBy("timeStamp").get().then((QuerySnapshot) {
         QuerySnapshot.docs.forEach((element) {
           itemsList.add(element.data());
         });

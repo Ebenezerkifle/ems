@@ -4,8 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
-var loginUser = FirebaseAuth.instance.currentUser;
-
 class Chat extends StatefulWidget {
   const Chat({Key? key}) : super(key: key);
 
@@ -14,6 +12,7 @@ class Chat extends StatefulWidget {
 }
 
 class _ChatState extends State<Chat> {
+  var loginUser = FirebaseAuth.instance.currentUser;
   TextEditingController messageController = TextEditingController();
   FirebaseFirestore sendMessage = FirebaseFirestore.instance;
 
@@ -26,9 +25,10 @@ class _ChatState extends State<Chat> {
   }
 
   fetchMessages() async {
-    final CollectionReference employeesInfo =
+    final CollectionReference message =
         FirebaseFirestore.instance.collection("Messages");
-    dynamic result = await DatabaseServices().getUsersInfo(employeesInfo);
+    dynamic result = await DatabaseServices().fetchMessage(message);
+
     if (result == null) {
       Fluttertoast.showToast(msg: "unable to fetch the data");
     } else {
@@ -59,9 +59,8 @@ class _ChatState extends State<Chat> {
                   sendMessage.collection("Messages").doc().set({
                     "msg": messageController.text.trim(),
                     "user": loginUser!.email?.trim(),
-                    "timeStamp": Timestamp.now().toString().trim(),
+                    "timeStamp": DateTime.now(),
                   });
-
                   messageController.clear();
                 }
               },
@@ -74,17 +73,30 @@ class _ChatState extends State<Chat> {
         children: [
           Flexible(
             child: ListView.builder(
-                reverse: true,
+                reverse: false,
                 itemCount: messageList.length,
                 shrinkWrap: true,
                 primary: true,
                 itemBuilder: (BuildContext context, int index) {
+                  // DateTime dateTime = messageList[index]["timeStamp"].toDate();
                   return ListTile(
-                    leading: const Icon(Icons.list),
-                    //trailing: Text(messageList[index]['timeStamp']),
+                    title: Column(
+                        crossAxisAlignment:
+                            loginUser!.email == messageList[index]['user']
+                                ? CrossAxisAlignment.end
+                                : CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                              width: 250,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 10),
+                              color: Colors.blue.withOpacity(0.5),
+                              child: Text(messageList[index]['msg']))
+                        ]),
+                    // leading: const Icon(Icons.list),
+                    //trailing: Text(dateTime.toString()),
                     onTap: () {},
-                    title: Text(messageList[index]['msg']),
-                    subtitle: Text(messageList[index]['user']),
+                    //subtitle: Text(messageList[index]['user']),
                   );
                 }),
           )
