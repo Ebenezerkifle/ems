@@ -66,6 +66,7 @@ flutter:
   assets:
     - assets/images/mobile_1.png
     - assets/images/aau.png
+    - assets/images/an.jpg
     - assets/images/graduate.svg
     - assets/images/chat.svg
     - assets/images/location.svg

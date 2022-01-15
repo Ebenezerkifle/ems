@@ -17,7 +17,7 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
     //style
     var cardTextStyle = TextStyle(
       fontFamily: 'Montserat Regular',
-      fontSize: 14,
+      fontSize: 16,
       color: Color.fromRGBO(63, 63, 63, 1),
     );
 
@@ -95,11 +95,14 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                             ), */
                             SvgPicture.asset(
                               'assets/images/finance.svg',
-                              height: 64,
+                              height: 80,
                             ),
-                            Text(
-                              'Finance',
-                              style: cardTextStyle,
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                'Finance',
+                                style: cardTextStyle,
+                              ),
                             ),
                           ],
                         ),
@@ -116,9 +119,12 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                               'assets/images/todo.svg',
                               height: 64,
                             ),
-                            Text(
-                              'Todo List Progress',
-                              style: cardTextStyle,
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                'Todo List Progress',
+                                style: cardTextStyle,
+                              ),
                             ),
                           ],
                         ),
@@ -135,9 +141,12 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                               'assets/images/emp-progress.svg',
                               height: 64,
                             ),
-                            Text(
-                              'Employee Progress',
-                              style: cardTextStyle,
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                'Employee Progress',
+                                style: cardTextStyle,
+                              ),
                             ),
                           ],
                         ),
@@ -154,9 +163,12 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                               'assets/images/tasks.svg',
                               height: 64,
                             ),
-                            Text(
-                              'Tasks',
-                              style: cardTextStyle,
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                'Tasks',
+                                style: cardTextStyle,
+                              ),
                             ),
                           ],
                         ),
@@ -173,9 +185,12 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                               'assets/images/calendar.svg',
                               height: 64,
                             ),
-                            Text(
-                              'My Attendance',
-                              style: cardTextStyle,
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                'My Attendance',
+                                style: cardTextStyle,
+                              ),
                             ),
                           ],
                         ),
@@ -192,9 +207,12 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                               'assets/images/location.svg',
                               height: 64,
                             ),
-                            Text(
-                              'Location',
-                              style: cardTextStyle,
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                'Location',
+                                style: cardTextStyle,
+                              ),
                             ),
                           ],
                         ),
@@ -211,9 +229,12 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                               'assets/images/chat.svg',
                               height: 64,
                             ),
-                            Text(
-                              'Chat',
-                              style: cardTextStyle,
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                'Chat',
+                                style: cardTextStyle,
+                              ),
                             ),
                           ],
                         ),
@@ -230,9 +251,12 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                               'assets/images/info.svg',
                               height: 64,
                             ),
-                            Text(
-                              'Employee Info',
-                              style: cardTextStyle,
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                'Employee Info',
+                                style: cardTextStyle,
+                              ),
                             ),
                           ],
                         ),
