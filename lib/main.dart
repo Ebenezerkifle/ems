@@ -1,9 +1,13 @@
+import 'dart:ui';
+
+import 'package:ems/Screens/ChatHomepage.dart';
 import 'package:ems/Screens/Home_Screen.dart';
 import 'package:ems/Screens/Home_Screen_AD.dart';
 import 'package:ems/Screens/Home_Screen_GM.dart';
 import 'package:ems/Screens/Home_Screen_SM.dart';
 import 'package:ems/Screens/Home_Screen_EM.dart';
 import 'package:ems/Screens/Login_Screen.dart';
+
 import 'package:flutter/material.dart';
 
 //import 'package:firebase_core/firebase_core.dart';
@@ -20,7 +24,7 @@ Future<void> main() async {
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
     //home: email == null ? Login() : Home(),
-    home: HomeScreenEM(),
+    home: ChatHomePage(),
     //home: Home(),
   ));
 }
