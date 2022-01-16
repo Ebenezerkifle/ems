@@ -13,7 +13,7 @@ class Authentication {
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
               email: employee.email, password: employee.password);
-      DatabaseServices(uid: userCredential.user!.uid).updateUsersData(employee);
+      DatabaseServices().updateUsersData(employee, userCredential.user!.uid);
 
       error = "The user is successfully registered!";
       return error;

@@ -3,15 +3,21 @@ import 'package:ems/Screens/Registration_Screen.dart';
 import 'package:ems/Services/Authentication_Services.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatefulWidget {
-  const Login({Key? key}) : super(key: key);
+  SharedPreferences preferences;
+  Login(this.preferences, {Key? key}) : super(key: key);
 
   @override
-  _LoginState createState() => _LoginState();
+  // ignore: no_logic_in_create_state
+  _LoginState createState() => _LoginState(preferences);
 }
 
 class _LoginState extends State<Login> {
+  SharedPreferences preferences;
+  _LoginState(this.preferences);
+
   final Authentication _auth = Authentication();
   final _formKey = GlobalKey<FormState>();
 
@@ -72,9 +78,12 @@ class _LoginState extends State<Login> {
                                 setState(
                                     () => error = "successfully signed in!");
                                 Fluttertoast.showToast(msg: error);
+                                preferences.setString("email", email);
+
                                 Navigator.of(context).pushReplacement(
                                     MaterialPageRoute(
-                                        builder: (context) => const Home()));
+                                        builder: (context) =>
+                                            Home(preferences)));
                               }
                             }
                           },
@@ -94,7 +103,7 @@ class _LoginState extends State<Login> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const Register()));
+                                builder: (context) => Register(preferences)));
                       },
                       child: const Text(
                         "Register",

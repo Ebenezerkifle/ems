@@ -40,6 +40,8 @@ dependencies:
   provider: ^6.0.2
   fluttertoast: ^8.0.8
   flutter_svg: ^1.0.1
+  shared_preferences: ^2.0.12
+  firebase_messaging: ^11.2.5
 
 dev_dependencies:
   flutter_test:
@@ -116,4 +118,4 @@ flutter:
   #         weight: 700
   #
   # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/custom-fonts/#from-packages
+  # see https://flutter.dev/custom-fonts/#from-packages 
