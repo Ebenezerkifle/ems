@@ -19,10 +19,10 @@ Future<void> main() async {
   //var email = preferences.getString('email');
   // entry point of an application.
   // inflates the widget and show it on app screen.
-  runApp(MaterialApp(
+  runApp(const MaterialApp(
     debugShowCheckedModeBanner: false,
     //home: email == null ? Login() : Home(),
-    home: ChatHomePage(),
+    home: HomeScreenGM(),
     //home: Home(),
   ));
 }

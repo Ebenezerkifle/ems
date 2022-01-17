@@ -1,8 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ems/Screens/ChatHomepage.dart';
 import 'package:ems/Screens/Chat_Screen.dart';
 import 'package:ems/Screens/EmployeeInfo_Screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 // ignore: unused_import
 import 'package:flutter_svg/flutter_svg.dart';
+
+import 'Login_Screen.dart';
 
 class HomeScreenGM extends StatefulWidget {
   const HomeScreenGM({Key? key}) : super(key: key);
@@ -12,6 +17,8 @@ class HomeScreenGM extends StatefulWidget {
 }
 
 class _HomeScreenGMState extends State<HomeScreenGM> {
+  //String name = FirebaseFirestore.instance.collection("Users");
+
   @override
   Widget build(BuildContext context) {
     // to get size
@@ -72,7 +79,15 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                                 fontFamily: 'Montserrat Regular'),
                           ),
                         ],
-                      )
+                      ),
+                      IconButton(
+                          onPressed: () async {
+                            //preferences.remove('email');
+                            Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                    builder: (context) => Login()));
+                          },
+                          icon: const Icon(Icons.logout)),
                     ],
                   ),
                 ),
@@ -259,7 +274,7 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => const Chat()));
+                              builder: (context) => ChatHomePage()));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(

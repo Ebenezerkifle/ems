@@ -11,8 +11,14 @@ class Chat extends StatefulWidget {
 }
 
 class _ChatState extends State<Chat> {
+  var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
+  // String firstName;
+  // String lastName;
   @override
   Widget build(BuildContext context) {
+    setState(() {
+      var user = FirebaseFirestore.instance;
+    });
     return Scaffold(
         appBar: AppBar(
           title: const Text("Chat Room"),
