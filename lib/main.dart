@@ -1,3 +1,4 @@
+import 'package:ems/Screens/ChatHomepage.dart';
 import 'package:ems/Screens/Home_Screen.dart';
 import 'package:ems/Screens/Home_Screen_AD.dart';
 import 'package:ems/Screens/Home_Screen_GM.dart';
@@ -21,7 +22,7 @@ Future<void> main() async {
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
     //home: email == null ? Login() : Home(),
-    home: HomeScreenGM(),
+    home: ChatHomePage(),
     //home: Home(),
   ));
 }
