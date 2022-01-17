@@ -32,11 +32,17 @@ class DatabaseServices {
     }
   }
 
-  Future fetchMessage(CollectionReference myCollection) async {
+  Future fetchMessage(
+      CollectionReference myCollection, String receiverEmail) async {
     List itemsList = [];
     try {
       //await myCollection.snapshots();
-      await myCollection.orderBy("timeStamp").get().then((QuerySnapshot) {
+
+      await myCollection
+          .where(receiverEmail, isEqualTo: 'user')
+          .orderBy("timeStamp")
+          .get()
+          .then((QuerySnapshot) {
         QuerySnapshot.docs.forEach((element) {
           itemsList.add(element.data());
         });
