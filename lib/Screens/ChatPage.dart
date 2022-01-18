@@ -1,11 +1,23 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class ChatPage extends StatefulWidget {
+  String receiverEmail;
+  String name;
+  ChatPage(this.receiverEmail, this.name);
+
   @override
-  _ChatPageState createState() => _ChatPageState();
+  _ChatPageState createState() => _ChatPageState(receiverEmail, name);
 }
 
 class _ChatPageState extends State<ChatPage> {
+  var loginUser = FirebaseAuth.instance.currentUser!.email;
+  String receiverEmail;
+  String name;
+  _ChatPageState(this.receiverEmail, this.name);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,7 +29,7 @@ class _ChatPageState extends State<ChatPage> {
               children: [
                 _topChat(),
                 _bodyChat(),
-                SizedBox(
+                const SizedBox(
                   height: 120,
                 )
               ],
@@ -29,9 +41,9 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-  _topChat() {
+  Widget _topChat() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 30, vertical: 25),
+      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 25),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -39,16 +51,16 @@ class _ChatPageState extends State<ChatPage> {
             children: [
               GestureDetector(
                 onTap: () => Navigator.of(context).pop(),
-                child: Icon(
+                child: const Icon(
                   Icons.arrow_back_ios,
                   size: 25,
                   color: Colors.white,
                 ),
               ),
               Text(
-                'Fiona',
-                style: TextStyle(
-                    fontSize: 28,
+                name,
+                style: const TextStyle(
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: Colors.white),
               ),
@@ -57,27 +69,27 @@ class _ChatPageState extends State<ChatPage> {
           Row(
             children: [
               Container(
-                padding: EdgeInsets.all(12),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(50),
                   color: Colors.black12,
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.call,
                   size: 25,
                   color: Colors.white,
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 width: 20,
               ),
               Container(
-                padding: EdgeInsets.all(12),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(50),
                   color: Colors.black12,
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.videocam,
                   size: 25,
                   color: Colors.white,
@@ -93,62 +105,54 @@ class _ChatPageState extends State<ChatPage> {
   Widget _bodyChat() {
     return Expanded(
       child: Container(
-        padding: EdgeInsets.only(left: 25, right: 25, top: 25),
-        width: double.infinity,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(45), topRight: Radius.circular(45)),
-          color: Colors.white,
-        ),
-        child: ListView(
-          physics: BouncingScrollPhysics(),
-          children: [
-            _itemChat(
-              avatar: 'assets/images/5.jpg',
-              chat: 1,
-              message:
-                  'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
-              time: '18.00',
-            ),
-            _itemChat(
-              chat: 0,
-              message: 'Okey 🐣',
-              time: '18.00',
-            ),
-            _itemChat(
-              avatar: 'assets/images/5.jpg',
-              chat: 1,
-              message: 'It has survived not only five centuries, 😀',
-              time: '18.00',
-            ),
-            _itemChat(
-              chat: 0,
-              message:
-                  'Contrary to popular belief, Lorem Ipsum is not simply random text. 😎',
-              time: '18.00',
-            ),
-            _itemChat(
-              avatar: 'assets/images/5.jpg',
-              chat: 1,
-              message:
-                  'The generated Lorem Ipsum is therefore always free from repetition, injected humour, or non-characteristic words etc.',
-              time: '18.00',
-            ),
-            _itemChat(
-              avatar: 'assets/images/5.jpg',
-              chat: 1,
-              message: '😅 😂 🤣',
-              time: '18.00',
-            ),
-          ],
-        ),
-      ),
+          padding: const EdgeInsets.only(left: 25, right: 25, top: 25),
+          width: double.infinity,
+          decoration: const BoxDecoration(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(45), topRight: Radius.circular(45)),
+            color: Colors.white,
+          ),
+          child: StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection("Messages")
+                .orderBy('timeStamp')
+                .snapshots(),
+            builder:
+                (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+              if (snapshot.hasError) {
+                Fluttertoast.showToast(msg: "Error occured");
+              }
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+              return ListView(
+                padding: const EdgeInsets.only(top: 35),
+                physics: const BouncingScrollPhysics(),
+                children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                  Map<String, dynamic> data =
+                      document.data()! as Map<String, dynamic>;
+                  int sender = 0; //by default we assume sender is current user.
+                  // if (data['user'].toString() == receiverEmail) {
+                  //   sender = 1;
+                  // }
+                  return _itemChat(
+                    avatar: 'assets/images/5.jpg',
+                    chat: sender,
+                    message: data['msg']!,
+                    time: '18.00',
+                  );
+                }).toList(),
+              );
+            },
+          )),
     );
   }
 
   // 0 = Send
   // 1 = Recieved
-  _itemChat({int? chat, String? avatar, message, time}) {
+  Widget _itemChat({int? chat, String? avatar, message, time}) {
     return Row(
       mainAxisAlignment:
           chat == 0 ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -165,17 +169,17 @@ class _ChatPageState extends State<ChatPage> {
               ),
         Flexible(
           child: Container(
-            margin: EdgeInsets.only(left: 10, right: 10, top: 20),
-            padding: EdgeInsets.all(20),
+            margin: const EdgeInsets.only(left: 10, right: 10, top: 20),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: chat == 0 ? Colors.indigo.shade100 : Colors.indigo.shade50,
               borderRadius: chat == 0
-                  ? BorderRadius.only(
+                  ? const BorderRadius.only(
                       topLeft: Radius.circular(30),
                       topRight: Radius.circular(30),
                       bottomLeft: Radius.circular(30),
                     )
-                  : BorderRadius.only(
+                  : const BorderRadius.only(
                       topLeft: Radius.circular(30),
                       topRight: Radius.circular(30),
                       bottomRight: Radius.circular(30),
@@ -189,48 +193,65 @@ class _ChatPageState extends State<ChatPage> {
                 '$time',
                 style: TextStyle(color: Colors.grey.shade400),
               )
-            : SizedBox(),
+            : const SizedBox(),
       ],
     );
   }
 
   Widget _formChat() {
+    TextEditingController messageController = TextEditingController();
+    FirebaseFirestore sendMessage = FirebaseFirestore.instance;
+    var loginUser = FirebaseAuth.instance.currentUser;
     return Positioned(
       child: Align(
         alignment: Alignment.bottomCenter,
         child: Container(
-          height: 120,
-          padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-          color: Colors.white,
-          child: TextField(
-            decoration: InputDecoration(
-              hintText: 'Type your message...',
-              suffixIcon: Container(
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(50),
-                    color: Colors.indigo),
-                padding: EdgeInsets.all(14),
-                child: Icon(
-                  Icons.send_rounded,
-                  color: Colors.white,
-                  size: 28,
+            height: 120,
+            padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+            color: Colors.white,
+            child: Row(
+              children: [
+                Flexible(
+                  child: TextField(
+                    controller: messageController,
+                    decoration: InputDecoration(
+                      hintText: 'Type your message...',
+                      filled: true,
+                      fillColor: Colors.blueGrey[50],
+                      labelStyle: const TextStyle(fontSize: 12),
+                      contentPadding: const EdgeInsets.all(20),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(color: Colors.blueGrey),
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(color: Colors.blueGrey),
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              filled: true,
-              fillColor: Colors.blueGrey[50],
-              labelStyle: TextStyle(fontSize: 12),
-              contentPadding: EdgeInsets.all(20),
-              enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.blueGrey),
-                borderRadius: BorderRadius.circular(25),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.blueGrey),
-                borderRadius: BorderRadius.circular(25),
-              ),
-            ),
-          ),
-        ),
+                IconButton(
+                  onPressed: () {
+                    if (messageController.text.isNotEmpty) {
+                      sendMessage.collection("Messages").doc().set({
+                        "msg": messageController.text.trim(),
+                        "user": loginUser?.email?.trim(),
+                        "receiver": receiverEmail.trim(),
+                        "timeStamp": DateTime.now(),
+                      });
+                      messageController.clear();
+                    }
+                  },
+                  color: Colors.blueAccent,
+                  icon: const Icon(
+                    Icons.send_rounded,
+                    color: Colors.blue,
+                    size: 28,
+                  ),
+                )
+              ],
+            )),
       ),
     );
   }
@@ -248,9 +269,9 @@ class Avatar extends StatelessWidget {
       child: Container(
         width: size,
         height: size,
-        decoration: new BoxDecoration(
+        decoration: BoxDecoration(
           shape: BoxShape.circle,
-          image: new DecorationImage(
+          image: DecorationImage(
             image: AssetImage(image),
           ),
         ),

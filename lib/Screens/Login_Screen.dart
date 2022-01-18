@@ -1,4 +1,5 @@
 import 'package:ems/Screens/Home_Screen.dart';
+import 'package:ems/Screens/Home_Screen_GM.dart';
 import 'package:ems/Screens/Registration_Screen.dart';
 import 'package:ems/Services/Authentication_Services.dart';
 import 'package:flutter/material.dart';
@@ -6,17 +7,17 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatefulWidget {
-  SharedPreferences preferences;
-  Login(this.preferences, {Key? key}) : super(key: key);
+  //SharedPreferences preferences;
+  Login({Key? key}) : super(key: key);
 
   @override
   // ignore: no_logic_in_create_state
-  _LoginState createState() => _LoginState(preferences);
+  _LoginState createState() => _LoginState();
 }
 
 class _LoginState extends State<Login> {
-  SharedPreferences preferences;
-  _LoginState(this.preferences);
+  //SharedPreferences preferences;
+  //_LoginState(this.preferences);
 
   final Authentication _auth = Authentication();
   final _formKey = GlobalKey<FormState>();
@@ -78,12 +79,12 @@ class _LoginState extends State<Login> {
                                 setState(
                                     () => error = "successfully signed in!");
                                 Fluttertoast.showToast(msg: error);
-                                preferences.setString("email", email);
+                                // preferences.setString("email", email);
 
                                 Navigator.of(context).pushReplacement(
                                     MaterialPageRoute(
                                         builder: (context) =>
-                                            Home(preferences)));
+                                            const HomeScreenGM()));
                               }
                             }
                           },
@@ -103,7 +104,7 @@ class _LoginState extends State<Login> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => Register(preferences)));
+                                builder: (context) => Register()));
                       },
                       child: const Text(
                         "Register",

@@ -27,8 +27,8 @@ class _HomeState extends State<Home> {
           IconButton(
               onPressed: () async {
                 preferences.remove('email');
-                Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (context) => Login(preferences)));
+                Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => Login()));
               },
               icon: const Icon(Icons.logout)),
         ]),

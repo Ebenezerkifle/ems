@@ -6,16 +6,16 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Register extends StatefulWidget {
-  SharedPreferences preferences;
-  Register(this.preferences, {Key? key}) : super(key: key);
+  // SharedPreferences preferences;
+  Register({Key? key}) : super(key: key);
 
   @override
-  _RegisterState createState() => _RegisterState(preferences);
+  _RegisterState createState() => _RegisterState();
 }
 
 class _RegisterState extends State<Register> {
-  SharedPreferences preferences;
-  _RegisterState(this.preferences);
+  // SharedPreferences preferences;
+  // _RegisterState(this.preferences);
 
   final Authentication _auth = Authentication();
   final _formKey = GlobalKey<FormState>();
@@ -129,12 +129,11 @@ class _RegisterState extends State<Register> {
                                       Fluttertoast.showToast(msg: error);
                                     } else if (result ==
                                         "The user is successfully registered!") {
-                                      preferences.remove("email");
+                                      //preferences.remove("email");
                                       Fluttertoast.showToast(msg: error);
                                       Navigator.of(context).pushReplacement(
                                           MaterialPageRoute(
-                                              builder: (context) =>
-                                                  Login(preferences)));
+                                              builder: (context) => Login()));
                                     } else {
                                       setState(() => error = result);
                                       Fluttertoast.showToast(msg: error);
