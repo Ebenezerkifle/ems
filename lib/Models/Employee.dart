@@ -6,6 +6,21 @@ class Employee {
   late String password;
   late String phoneNumber;
 
+  Employee();
+
+  Employee.forJson(this.firstName, this.lastName, this.email, this.uid);
+
+  static Employee fromJson(Map<String, dynamic> json) => Employee.forJson(
+      json['firstname'], json['lastname'], json['email'], json['uid']);
+
+  Map<String, dynamic> toJson() => {
+        'firstname': firstName,
+        'lastname': lastName,
+        'email': email,
+        'password': password,
+        'phoneNumber': phoneNumber,
+      };
+
   set setFirstName(String firstName) {
     this.firstName;
   }

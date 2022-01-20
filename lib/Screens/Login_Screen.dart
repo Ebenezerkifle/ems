@@ -1,5 +1,8 @@
 import 'package:ems/Screens/Home_Screen.dart';
+import 'package:ems/Screens/Home_Screen_AD.dart';
+import 'package:ems/Screens/Home_Screen_EM.dart';
 import 'package:ems/Screens/Home_Screen_GM.dart';
+import 'package:ems/Screens/Home_Screen_SM.dart';
 import 'package:ems/Screens/Registration_Screen.dart';
 import 'package:ems/Services/Authentication_Services.dart';
 import 'package:flutter/material.dart';
@@ -79,6 +82,7 @@ class _LoginState extends State<Login> {
                                 setState(
                                     () => error = "successfully signed in!");
                                 Fluttertoast.showToast(msg: error);
+
                                 // preferences.setString("email", email);
 
                                 Navigator.of(context).pushReplacement(

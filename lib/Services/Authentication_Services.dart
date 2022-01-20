@@ -34,7 +34,8 @@ class Authentication {
   // login
   Future singin(String email, String password) async {
     try {
-      UserCredential userCredential = await FirebaseAuth.instance
+      //UserCredential userCredential
+      await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
       //DatabaseServices(uid: userCredential.user!.uid).updateUsersData(user);
       error = "The user is successfully registered!";

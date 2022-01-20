@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Screens/ChatHomepage.dart';
 import 'package:ems/Screens/Home_Screen.dart';
 import 'package:ems/Screens/Home_Screen_AD.dart';
@@ -5,6 +6,8 @@ import 'package:ems/Screens/Home_Screen_GM.dart';
 import 'package:ems/Screens/Home_Screen_SM.dart';
 import 'package:ems/Screens/Home_Screen_EM.dart';
 import 'package:ems/Screens/Login_Screen.dart';
+import 'package:ems/Screens/signin_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
@@ -19,10 +22,10 @@ Future<void> main() async {
   //var email = preferences.getString('email');
   // entry point of an application.
   // inflates the widget and show it on app screen.
-  runApp(const MaterialApp(
+  runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
     //home: email == null ? Login() : Home(),
-    home: HomeScreenGM(),
+    home: Login(),
     //home: Home(),
   ));
 }
