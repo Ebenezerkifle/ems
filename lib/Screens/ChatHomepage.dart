@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ems/Services/Database_Services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'ChatPage.dart';
@@ -10,6 +12,9 @@ class ChatHomePage extends StatefulWidget {
 }
 
 class _ChatHomePageState extends State<ChatHomePage> {
+  var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
+  CollectionReference chats = FirebaseFirestore.instance.collection("Chats");
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -109,15 +114,14 @@ class _ChatHomePageState extends State<ChatHomePage> {
                 children: snapshot.data!.docs.map((DocumentSnapshot document) {
                   Map<String, dynamic> data =
                       document.data()! as Map<String, dynamic>;
-                  // print("email:  " + data['receiver']);
+
                   return _itemChats(
                     avatar: 'assets/images/2.jpg',
                     name: data['firstName'] + ' ' + data['lastName'],
-                    chat:
-                        'Lorem Ipsum is simply dummy text of the printing and typesetting industry',
                     time: '08.10',
                     receiverEmail: data['email'],
                   );
+                  //return Container()
                 }).toList(),
               );
             },
@@ -125,67 +129,109 @@ class _ChatHomePageState extends State<ChatHomePage> {
     );
   }
 
-  Widget _itemChats(
-      {String avatar = '',
-      name = '',
-      chat = '',
-      time = '00.00',
-      receiverEmail = ''}) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => ChatPage(receiverEmail, name),
-          ),
-        );
-      },
-      child: Card(
-        margin: const EdgeInsets.symmetric(vertical: 20),
-        elevation: 0,
-        child: Row(
-          children: [
-            Avatar(
-              margin: const EdgeInsets.only(right: 20),
-              size: 60,
-              image: avatar,
-            ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _itemChats({
+    String avatar = '',
+    name = '',
+    time = '00.00',
+    receiverEmail = '',
+  }) {
+    var query = chats
+        .where("Users", isEqualTo: {loginUserEmail: null, receiverEmail: null})
+        .limit(1)
+        .snapshots();
+
+    var chatDocId;
+
+    return StreamBuilder<QuerySnapshot>(
+        stream: query,
+        builder: (context, snapshot) {
+          String lastMessage = '';
+          if (!snapshot.hasData) {
+            return const CircularProgressIndicator();
+          }
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const CircularProgressIndicator();
+          }
+          if (snapshot.hasData) {
+            chatDocId = snapshot.data!.docs.single.id;
+            try {
+              chats
+                  .doc(chatDocId)
+                  .collection("Messages")
+                  .orderBy('timeStamp', descending: true)
+                  .get()
+                  .then((value) {
+                lastMessage = value.docs.first.data()['msg'];
+              });
+            } catch (e) {
+              Fluttertoast.showToast(msg: e.toString());
+            }
+          } else {
+            chats.add({
+              'Users': {loginUserEmail: null, receiverEmail: null}
+            }).then((value) => {
+                  chatDocId = value as String,
+                  lastMessage = "say Hi........",
+                });
+          }
+          return GestureDetector(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) =>
+                      ChatPage(receiverEmail, name, chatDocId),
+                ),
+              );
+            },
+            child: Card(
+              margin: const EdgeInsets.symmetric(vertical: 20),
+              elevation: 0,
+              child: Row(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '$name',
-                        style: const TextStyle(
-                            fontSize: 17, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        '$time',
-                        style: const TextStyle(
-                            color: Colors.grey, fontWeight: FontWeight.bold),
-                      ),
-                    ],
+                  Avatar(
+                    margin: const EdgeInsets.only(right: 20),
+                    size: 60,
+                    image: avatar,
                   ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Text(
-                    '$chat',
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.black54,
-                      fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '$name',
+                              style: const TextStyle(
+                                  fontSize: 17, fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              '$time',
+                              style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Text(
+                          lastMessage,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.black54,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
+                  )
                 ],
               ),
-            )
-          ],
-        ),
-      ),
-    );
+            ),
+          );
+        });
   }
 }
 
@@ -211,44 +257,3 @@ class Avatar extends StatelessWidget {
     );
   }
 }
-
-
-//  prototypeItem: _itemChats(
-//                     avatar: 'assets/images/2.jpg',
-//                     name: 'Abenezer Kifle',
-//                     chat:
-//                         'Lorem Ipsum is simply dummy text of the printing and typesetting industry',
-//                     time: '08.10',
-//                   ),
-//                   _itemChats(
-//                     avatar: 'assets/images/4.jpg',
-//                     name: 'Genet Desu',
-//                     chat: 'Excepteur sint occaecat cupidatat non proident',
-//                     time: '03.19',
-//                   ),
-//                   _itemChats(
-//                     avatar: 'assets/images/5.jpg',
-//                     name: 'Fiona Bereket',
-//                     chat: 'Hii... 😎',
-//                     time: '02.53',
-//                   ),
-//                   _itemChats(
-//                     avatar: 'assets/images/6.jpg',
-//                     name: 'Eman Yusuf',
-//                     chat: 'Consectetur adipiscing elit',
-//                     time: '11.39',
-//                   ),
-//                   _itemChats(
-//                     avatar: 'assets/images/7.jpg',
-//                     name: 'Alemayehu Eshete',
-//                     chat:
-//                         'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur',
-//                     time: '00.09',
-//                   ),
-//                   _itemChats(
-//                     avatar: 'assets/images/8.jpg',
-//                     name: 'Ali Mohammed',
-//                     chat:
-//                         'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur',
-//                     time: '00.09',
-//                   ),

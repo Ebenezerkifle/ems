@@ -3,20 +3,51 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+// ignore: must_be_immutable
 class ChatPage extends StatefulWidget {
   String receiverEmail;
   String name;
-  ChatPage(this.receiverEmail, this.name);
+  var chatDocId;
+
+  // ignore: use_key_in_widget_constructors
+  ChatPage(this.receiverEmail, this.name, this.chatDocId);
 
   @override
-  _ChatPageState createState() => _ChatPageState(receiverEmail, name);
+  _ChatPageState createState() =>
+      // ignore: no_logic_in_create_state
+      _ChatPageState(receiverEmail, name, chatDocId);
 }
 
 class _ChatPageState extends State<ChatPage> {
   var loginUser = FirebaseAuth.instance.currentUser!.email;
+
+  CollectionReference chats = FirebaseFirestore.instance.collection("Chats");
+
   String receiverEmail;
   String name;
-  _ChatPageState(this.receiverEmail, this.name);
+  // ignore: prefer_typing_uninitialized_variables
+  var chatDocId;
+  _ChatPageState(this.receiverEmail, this.name, this.chatDocId);
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   chats
+  //       .where("Users", isEqualTo: {loginUser: null, receiverEmail: null})
+  //       .limit(1)
+  //       .get()
+  //       .then((QuerySnapshot querySnapshot) {
+  //         if (querySnapshot.docs.isNotEmpty) {
+  //           chatDocId = querySnapshot.docs.single.id;
+  //         } else {
+  //           chats.add({
+  //             'Users': {loginUser: null, receiverEmail: null}
+  //           }).then((value) => {
+  //                 chatDocId = value,
+  //               });
+  //         }
+  //       });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -113,7 +144,8 @@ class _ChatPageState extends State<ChatPage> {
             color: Colors.white,
           ),
           child: StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance
+            stream: chats
+                .doc(chatDocId)
                 .collection("Messages")
                 .orderBy('timeStamp')
                 .snapshots(),
@@ -134,9 +166,9 @@ class _ChatPageState extends State<ChatPage> {
                   Map<String, dynamic> data =
                       document.data()! as Map<String, dynamic>;
                   int sender = 0; //by default we assume sender is current user.
-                  // if (data['user'].toString() == receiverEmail) {
-                  //   sender = 1;
-                  // }
+                  if (data['user'].toString() == receiverEmail) {
+                    sender = 1;
+                  }
                   return _itemChat(
                     avatar: 'assets/images/5.jpg',
                     chat: sender,
@@ -200,7 +232,7 @@ class _ChatPageState extends State<ChatPage> {
 
   Widget _formChat() {
     TextEditingController messageController = TextEditingController();
-    FirebaseFirestore sendMessage = FirebaseFirestore.instance;
+
     var loginUser = FirebaseAuth.instance.currentUser;
     return Positioned(
       child: Align(
@@ -234,7 +266,7 @@ class _ChatPageState extends State<ChatPage> {
                 IconButton(
                   onPressed: () {
                     if (messageController.text.isNotEmpty) {
-                      sendMessage.collection("Messages").doc().set({
+                      chats.doc(chatDocId).collection("Messages").add({
                         "msg": messageController.text.trim(),
                         "user": loginUser?.email?.trim(),
                         "receiver": receiverEmail.trim(),
