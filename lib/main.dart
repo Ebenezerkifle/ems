@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Screens/ChatHomepage.dart';
 import 'package:ems/Screens/Home_Screen.dart';
 import 'package:ems/Screens/Home_Screen_AD.dart';
@@ -5,8 +6,13 @@ import 'package:ems/Screens/Home_Screen_GM.dart';
 import 'package:ems/Screens/Home_Screen_SM.dart';
 import 'package:ems/Screens/Home_Screen_EM.dart';
 import 'package:ems/Screens/Login_Screen.dart';
+<<<<<<< HEAD
 import 'package:ems/Screens/Registration_Screen.dart';
 import 'package:ems/Screens/signup_screen.dart';
+=======
+import 'package:ems/Screens/signin_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+>>>>>>> fa357b10601ae081ea721d9eaf2a6bf2803f4e4f
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -65,8 +71,12 @@ Future<void> main() async {
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
     //home: email == null ? Login() : Home(),
+<<<<<<< HEAD
     //home: HomeScreenGM(),
     home: FormScreen(),
+=======
+    home: Login(),
+>>>>>>> fa357b10601ae081ea721d9eaf2a6bf2803f4e4f
     //home: Home(),
   ));
 }

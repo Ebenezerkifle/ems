@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Screens/ChatHomepage.dart';
 import 'package:ems/Screens/Chat_Screen.dart';
 import 'package:ems/Screens/EmployeeInfo_Screen.dart';
+import 'package:ems/Screens/TaskHomePage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 // ignore: unused_import
@@ -190,7 +191,7 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => const EmployeeInfo()));
+                              builder: (context) => TaskHomePage()));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(

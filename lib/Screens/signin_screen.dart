@@ -16,12 +16,12 @@ class _LoginScreenState extends State<LoginScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text(
+        const Text(
           'Email',
           style: TextStyle(
               color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
         ),
-        SizedBox(
+        const SizedBox(
           height: 10,
         ),
         Container(
@@ -29,12 +29,12 @@ class _LoginScreenState extends State<LoginScreen> {
           decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(10),
-              boxShadow: [
+              boxShadow: const [
                 BoxShadow(
                     color: Colors.black26, blurRadius: 6, offset: Offset(0, 2))
               ]),
           height: 60,
-          child: TextField(
+          child: const TextField(
             keyboardType: TextInputType.emailAddress,
             style: TextStyle(color: Colors.black87),
             decoration: InputDecoration(
@@ -53,12 +53,12 @@ class _LoginScreenState extends State<LoginScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text(
+        const Text(
           'Password',
           style: TextStyle(
               color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
         ),
-        SizedBox(
+        const SizedBox(
           height: 10,
         ),
         Container(
@@ -66,12 +66,12 @@ class _LoginScreenState extends State<LoginScreen> {
           decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(10),
-              boxShadow: [
+              boxShadow: const [
                 BoxShadow(
                     color: Colors.black26, blurRadius: 6, offset: Offset(0, 2))
               ]),
           height: 60,
-          child: TextField(
+          child: const TextField(
             obscureText: true,
             style: TextStyle(color: Colors.black87),
             decoration: InputDecoration(
@@ -91,8 +91,8 @@ class _LoginScreenState extends State<LoginScreen> {
       alignment: Alignment.centerRight,
       child: FlatButton(
         onPressed: () => print("Forgot Password pressed"),
-        padding: EdgeInsets.only(right: 0),
-        child: Text(
+        padding: const EdgeInsets.only(right: 0),
+        child: const Text(
           'Forgot Password?',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
@@ -118,7 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
               },
             ),
           ),
-          Text(
+          const Text(
             'Remember Me',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           )
@@ -129,15 +129,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget buildLoginButton() {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 25),
+      padding: const EdgeInsets.symmetric(vertical: 25),
       width: double.infinity,
       child: RaisedButton(
         elevation: 5,
         onPressed: () => print('Login Pressed'),
-        padding: EdgeInsets.all(15),
+        padding: const EdgeInsets.all(15),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         color: Colors.white,
-        child: Text(
+        child: const Text(
           'LOGIN',
           style: TextStyle(
               color: Color(0xff5ac18e),
@@ -159,7 +159,7 @@ class _LoginScreenState extends State<LoginScreen> {
       },
       //  => print("Sign Up Pressed"),
       child: RichText(
-        text: TextSpan(children: [
+        text: const TextSpan(children: [
           TextSpan(
               text: 'Don\'t have an Account? ',
               style: TextStyle(
@@ -188,7 +188,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Container(
                 height: double.infinity,
                 width: double.infinity,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                     gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,

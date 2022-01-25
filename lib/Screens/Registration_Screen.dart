@@ -125,7 +125,7 @@ class _RegisterState extends State<Register> {
                                     dynamic result = await _auth.register(user);
                                     if (result == null) {
                                       setState(() => error =
-                                          "couldn't signin with this credential!");
+                                          "couldn't register with this credential!");
                                       Fluttertoast.showToast(msg: error);
                                     } else if (result ==
                                         "The user is successfully registered!") {
