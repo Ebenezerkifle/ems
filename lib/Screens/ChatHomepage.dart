@@ -1,7 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ems/Services/Database_Services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'ChatPage.dart';
@@ -13,7 +11,7 @@ class ChatHomePage extends StatefulWidget {
 
 class _ChatHomePageState extends State<ChatHomePage> {
   var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
-  CollectionReference chats = FirebaseFirestore.instance.collection("Chats");
+  CollectionReference chats = FirebaseFirestore.instance.collection('Chats');
 
   @override
   Widget build(BuildContext context) {
@@ -84,154 +82,46 @@ class _ChatHomePageState extends State<ChatHomePage> {
 
   Widget _body() {
     return Expanded(
-      child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 30),
-          width: double.infinity,
-          decoration: const BoxDecoration(
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(45), topRight: Radius.circular(45)),
-            color: Colors.white,
-          ),
-          child: StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection("Users")
-                .where('email',
-                    isNotEqualTo: FirebaseAuth.instance.currentUser!.email)
-                .snapshots(),
-            builder:
-                (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-              if (snapshot.hasError) {
-                Fluttertoast.showToast(msg: "Error occured");
-              }
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-              return ListView(
-                padding: const EdgeInsets.only(top: 35),
-                physics: const BouncingScrollPhysics(),
-                children: snapshot.data!.docs.map((DocumentSnapshot document) {
-                  Map<String, dynamic> data =
-                      document.data()! as Map<String, dynamic>;
-
-                  return _itemChats(
-                    avatar: 'assets/images/2.jpg',
-                    name: data['firstName'] + ' ' + data['lastName'],
-                    time: '08.10',
-                    receiverEmail: data['email'],
-                  );
-                  //return Container()
-                }).toList(),
-              );
-            },
-          )),
-    );
-  }
-
-  Widget _itemChats({
-    String avatar = '',
-    name = '',
-    time = '00.00',
-    receiverEmail = '',
-  }) {
-    var query = chats
-        .where("Users", isEqualTo: {loginUserEmail: null, receiverEmail: null})
-        .limit(1)
-        .snapshots();
-
-    var chatDocId;
-
-    return StreamBuilder<QuerySnapshot>(
-        stream: query,
-        builder: (context, snapshot) {
-          String lastMessage = '';
-          if (!snapshot.hasData) {
-            return const CircularProgressIndicator();
-          }
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator();
-          }
-          if (snapshot.hasData) {
-            chatDocId = snapshot.data!.docs.single.id;
-            try {
-              chats
-                  .doc(chatDocId)
-                  .collection("Messages")
-                  .orderBy('timeStamp', descending: true)
-                  .get()
-                  .then((value) {
-                lastMessage = value.docs.first.data()['msg'];
-              });
-            } catch (e) {
-              Fluttertoast.showToast(msg: e.toString());
-            }
-          } else {
-            chats.add({
-              'Users': {loginUserEmail: null, receiverEmail: null}
-            }).then((value) => {
-                  chatDocId = value as String,
-                  lastMessage = "say Hi........",
-                });
-          }
-          return GestureDetector(
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) =>
-                      ChatPage(receiverEmail, name, chatDocId),
-                ),
-              );
-            },
-            child: Card(
-              margin: const EdgeInsets.symmetric(vertical: 20),
-              elevation: 0,
-              child: Row(
-                children: [
-                  Avatar(
-                    margin: const EdgeInsets.only(right: 20),
-                    size: 60,
-                    image: avatar,
-                  ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              '$name',
-                              style: const TextStyle(
-                                  fontSize: 17, fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              '$time',
-                              style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Text(
-                          lastMessage,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Colors.black54,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                ],
-              ),
+        child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(45), topRight: Radius.circular(45)),
+              color: Colors.white,
             ),
-          );
-        });
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection("Users")
+                  .where('email',
+                      isNotEqualTo: FirebaseAuth.instance.currentUser!.email)
+                  .snapshots(),
+              builder: (BuildContext context,
+                  AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (snapshot.hasError) {
+                  Fluttertoast.showToast(msg: "Error occured");
+                }
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+                return ListView(
+                  padding: const EdgeInsets.only(top: 35),
+                  physics: const BouncingScrollPhysics(),
+                  children:
+                      snapshot.data!.docs.map((DocumentSnapshot document) {
+                    Map<String, dynamic> data =
+                        document.data()! as Map<String, dynamic>;
+                    String avatar = 'assets/images/2.jpg';
+                    String name = data['firstName'] + ' ' + data['lastName'];
+                    String time = '08.10';
+                    String receiverEmail = data['email'];
+                    return ChatRoomBuilder(avatar, name, time, receiverEmail);
+                  }).toList(),
+                );
+              },
+            )));
   }
 }
 
@@ -255,5 +145,198 @@ class Avatar extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class ChatRoomBuilder extends StatefulWidget {
+  String avatar;
+  String name;
+  String time;
+  String receiverEmail;
+  ChatRoomBuilder(this.avatar, this.name, this.time, this.receiverEmail,
+      {Key? key})
+      : super(key: key);
+
+  @override
+  _ChatRoomBuilderState createState() =>
+      _ChatRoomBuilderState(avatar, name, time, receiverEmail);
+}
+
+class _ChatRoomBuilderState extends State<ChatRoomBuilder> {
+  String avatar;
+  String name;
+  String time;
+  String receiverEmail;
+
+  _ChatRoomBuilderState(this.avatar, this.name, this.time, this.receiverEmail);
+
+  var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
+  CollectionReference chats = FirebaseFirestore.instance.collection('Chats');
+  var chatDocId;
+
+  @override
+  void initState() {
+    _fetchChatDocId().then((value) {
+      setState(() {
+        chatDocId = value;
+      });
+    });
+    super.initState();
+  }
+
+  Future _fetchChatDocId() async {
+    var chatDocId;
+    await chats
+        .where("Users", isEqualTo: {loginUserEmail: null, receiverEmail: null})
+        .limit(1)
+        .get()
+        .then((QuerySnapshot querySnapshot) async {
+          if (querySnapshot.docs.isNotEmpty) {
+            chatDocId = querySnapshot.docs.single.id;
+          } else {
+            await chats.add({
+              'Users': {loginUserEmail: null, receiverEmail: null}
+            }).then((value) => {
+                  chatDocId = value.id,
+                });
+          }
+        });
+    return chatDocId;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    String lastMessage = '';
+    return GestureDetector(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => ChatPage(receiverEmail, name, chatDocId),
+            ),
+          );
+        },
+        child: Stack(children: [
+          Card(
+            margin: const EdgeInsets.symmetric(vertical: 20),
+            elevation: 0,
+            child: Row(
+              children: [
+                Avatar(
+                  margin: const EdgeInsets.only(right: 20),
+                  size: 60,
+                  image: avatar,
+                ),
+                Expanded(
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              name,
+                              style: const TextStyle(
+                                  fontSize: 17, fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              time,
+                              style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        (chatDocId != null)
+                            ? LastMessage(chatDocId: chatDocId)
+                            : Container(),
+                      ]),
+                ),
+                //   ],
+                // ),
+              ],
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: _fetchNotification(loginUserEmail.toString(), receiverEmail),
+          ),
+        ]));
+  }
+
+  Widget _fetchNotification(String loginUserEmail, String receiverEmail) {
+    int count = 0;
+    CollectionReference notifications =
+        FirebaseFirestore.instance.collection("Notifications");
+    var query = notifications
+        .doc(loginUserEmail)
+        .collection('Notification')
+        .where('seen', isEqualTo: false)
+        .where('sender', isEqualTo: receiverEmail)
+        .snapshots();
+
+    return StreamBuilder(
+        stream: query,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            count++;
+            return Container(
+                width: 20,
+                height: 20,
+                decoration: const BoxDecoration(
+                    shape: BoxShape.circle, color: Colors.blueAccent),
+                child: Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                      count.toString(),
+                      style: const TextStyle(color: Colors.white),
+                    )));
+          } else {
+            return Container();
+          }
+        });
+  }
+}
+
+class LastMessage extends StatefulWidget {
+  final String chatDocId;
+  const LastMessage({required this.chatDocId, Key? key}) : super(key: key);
+
+  @override
+  _LastMessageState createState() => _LastMessageState();
+}
+
+class _LastMessageState extends State<LastMessage> {
+  CollectionReference chats = FirebaseFirestore.instance.collection('Chats');
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+        stream: chats
+            .doc(widget.chatDocId.trim().toString())
+            .collection('Messages')
+            .orderBy('timeStamp')
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const CircularProgressIndicator();
+          }
+          if (snapshot.hasData) {
+            DocumentSnapshot? last = snapshot.data!.docs.length > 0
+                ? snapshot.data!.docs.last
+                : null;
+            return Text(
+              '${last?.get("msg") ?? ""}',
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.black54,
+                fontWeight: FontWeight.bold,
+              ),
+            );
+          }
+          return Container();
+        });
   }
 }

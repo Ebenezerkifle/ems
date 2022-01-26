@@ -1,24 +1,13 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Screens/ChatHomepage.dart';
-import 'package:ems/Screens/Chat_Screen.dart';
 import 'package:ems/Screens/EmployeeInfo_Screen.dart';
+import 'package:ems/Screens/Login_Screen.dart';
+import 'package:ems/Screens/MapScreen.dart';
 import 'package:ems/Screens/TaskHomePage.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-// ignore: unused_import
 import 'package:flutter_svg/flutter_svg.dart';
 
-import 'Login_Screen.dart';
-
-class HomeScreenGM extends StatefulWidget {
+class HomeScreenGM extends StatelessWidget {
   const HomeScreenGM({Key? key}) : super(key: key);
-
-  @override
-  _HomeScreenGMState createState() => _HomeScreenGMState();
-}
-
-class _HomeScreenGMState extends State<HomeScreenGM> {
-  //String name = FirebaseFirestore.instance.collection("Users");
 
   @override
   Widget build(BuildContext context) {
@@ -247,7 +236,7 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => const EmployeeInfo()));
+                              builder: (context) => const MyLocation()));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(

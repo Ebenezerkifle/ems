@@ -22,32 +22,25 @@ class _ChatPageState extends State<ChatPage> {
   var loginUser = FirebaseAuth.instance.currentUser!.email;
 
   CollectionReference chats = FirebaseFirestore.instance.collection("Chats");
+  CollectionReference notifications =
+      FirebaseFirestore.instance.collection("Notifications");
 
   String receiverEmail;
   String name;
   // ignore: prefer_typing_uninitialized_variables
   var chatDocId;
+
   _ChatPageState(this.receiverEmail, this.name, this.chatDocId);
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   chats
-  //       .where("Users", isEqualTo: {loginUser: null, receiverEmail: null})
-  //       .limit(1)
-  //       .get()
-  //       .then((QuerySnapshot querySnapshot) {
-  //         if (querySnapshot.docs.isNotEmpty) {
-  //           chatDocId = querySnapshot.docs.single.id;
-  //         } else {
-  //           chats.add({
-  //             'Users': {loginUser: null, receiverEmail: null}
-  //           }).then((value) => {
-  //                 chatDocId = value,
-  //               });
-  //         }
-  //       });
-  // }
+  @override
+  void initState() {
+    notifications
+        .doc(loginUser)
+        .collection('Notification')
+        .doc()
+        .update({'seen': true});
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -145,7 +138,7 @@ class _ChatPageState extends State<ChatPage> {
           ),
           child: StreamBuilder<QuerySnapshot>(
             stream: chats
-                .doc(chatDocId)
+                .doc(chatDocId.toString())
                 .collection("Messages")
                 .orderBy('timeStamp')
                 .snapshots(),
@@ -173,7 +166,7 @@ class _ChatPageState extends State<ChatPage> {
                     avatar: 'assets/images/5.jpg',
                     chat: sender,
                     message: data['msg']!,
-                    time: '18.00',
+                    time: '08.00',
                   );
                 }).toList(),
               );
@@ -266,11 +259,20 @@ class _ChatPageState extends State<ChatPage> {
                 IconButton(
                   onPressed: () {
                     if (messageController.text.isNotEmpty) {
-                      chats.doc(chatDocId).collection("Messages").add({
+                      chats.doc(chatDocId).collection('Messages').add({
                         "msg": messageController.text.trim(),
                         "user": loginUser?.email?.trim(),
                         "receiver": receiverEmail.trim(),
                         "timeStamp": DateTime.now(),
+                      });
+                      notifications
+                          .doc(receiverEmail.toString())
+                          .collection('Notification')
+                          .add({
+                        'title': 'message',
+                        'body': messageController.text.trim(),
+                        'seen': false,
+                        'sender': loginUser?.email?.trim(),
                       });
                       messageController.clear();
                     }
