@@ -1,3 +1,5 @@
+// ignore: import_of_legacy_library_into_null_safe
+//import 'package:dropdownfield/dropdownfield.dart';
 import 'package:flutter/material.dart';
 import 'package:ems/Screens/signin_screen.dart';
 
@@ -15,8 +17,19 @@ class FormScreenState extends State<FormScreen> {
   late String _url;
   late String _phoneNumber;
   late String _calories;
+  String dropdownvalue = 'Employee';
+  var positions = ['Employee', 'Sub-Manager', 'General Manager', 'Admin'];
+  String dropdownvalue2 = 'Department 1';
+  var departments = [
+    'Department 1',
+    'Department 2',
+    'Department 3',
+    'Department 4'
+  ];
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  get onChanged => null;
 
   Widget _buildFirstName() {
     return Container(
@@ -141,6 +154,44 @@ class FormScreenState extends State<FormScreen> {
   }
 
   Widget _buildPosition() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Icon(
+            Icons.work,
+            color: Colors.white,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            'Position',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+        DropdownButton(
+          items: positions.map((positionsname) {
+            return DropdownMenuItem(
+                value: positionsname,
+                child: Text(
+                  positionsname,
+                  style: TextStyle(color: Color(0xff5ac18e)),
+                ));
+          }).toList(),
+          onChanged: (String? newValue) {
+            setState(() {
+              dropdownvalue = newValue!;
+            });
+          },
+          value: dropdownvalue,
+        )
+      ],
+    );
+  }
+
+/*   Widget _buildPosition() {
     return TextFormField(
       decoration: InputDecoration(
           prefixIcon: Icon(Icons.work, color: Colors.white),
@@ -148,15 +199,43 @@ class FormScreenState extends State<FormScreen> {
           hintStyle: TextStyle(color: Colors.white)),
       //decoration: InputDecoration(labelText: 'Password'),
     );
-  }
+  } */
 
   Widget _buildDepartment() {
-    return TextFormField(
-      decoration: InputDecoration(
-          prefixIcon: Icon(Icons.work, color: Colors.white),
-          hintText: 'Department',
-          hintStyle: TextStyle(color: Colors.white)),
-      //decoration: InputDecoration(labelText: 'Password'),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Icon(
+            Icons.work,
+            color: Colors.white,
+          ),
+        ),
+        Text('Department',
+            style: TextStyle(
+              color: Colors.white,
+            )),
+        Padding(
+          padding: const EdgeInsets.only(left: 20.0),
+          child: DropdownButton(
+            items: departments.map((departmentsname) {
+              return DropdownMenuItem(
+                  value: departmentsname,
+                  child: Text(
+                    departmentsname,
+                    style: TextStyle(color: Color(0xff5ac18e)),
+                  ));
+            }).toList(),
+            onChanged: (String? newValue) {
+              setState(() {
+                dropdownvalue2 = newValue!;
+              });
+            },
+            value: dropdownvalue2,
+          ),
+        ),
+      ],
     );
   }
 
