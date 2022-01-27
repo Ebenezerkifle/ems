@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ems/Screens/ChatPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'ChatPage.dart';
 
 class ChatHomePage extends StatefulWidget {
   @override
@@ -321,7 +322,10 @@ class _LastMessageState extends State<LastMessage> {
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator();
+            return const SpinKitDoubleBounce(
+              color: Colors.blue,
+            );
+            ;
           }
           if (snapshot.hasData) {
             DocumentSnapshot? last = snapshot.data!.docs.length > 0
