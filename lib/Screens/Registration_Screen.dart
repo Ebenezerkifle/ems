@@ -122,7 +122,8 @@ class _RegisterState extends State<Register> {
                             ElevatedButton(
                                 onPressed: () async {
                                   if (_formKey.currentState!.validate()) {
-                                    dynamic result = await _auth.register(user);
+                                    dynamic result =
+                                        await _auth.authenticat(user);
                                     if (result == null) {
                                       setState(() => error =
                                           "couldn't register with this credential!");

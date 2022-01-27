@@ -1,7 +1,8 @@
-// ignore: import_of_legacy_library_into_null_safe
-//import 'package:dropdownfield/dropdownfield.dart';
+import 'package:ems/Models/Employee.dart';
+import 'package:ems/Services/Authentication_Services.dart';
 import 'package:flutter/material.dart';
 import 'package:ems/Screens/signin_screen.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class FormScreen extends StatefulWidget {
   @override
@@ -11,252 +12,391 @@ class FormScreen extends StatefulWidget {
 }
 
 class FormScreenState extends State<FormScreen> {
-  late String _name;
-  late String _email;
-  late String _password;
-  late String _url;
-  late String _phoneNumber;
-  late String _calories;
+  Employee employee = Employee();
+
+  final Authentication _auth = Authentication();
+
   String dropdownvalue = 'Employee';
-  var positions = ['Employee', 'Sub-Manager', 'General Manager', 'Admin'];
   String dropdownvalue2 = 'Department 1';
-  var departments = [
+  final List<String> positions = [
+    'Employee',
+    'Sub-Manager',
+    'General Manager',
+  ];
+  final List<String> departments = [
     'Department 1',
     'Department 2',
     'Department 3',
-    'Department 4'
   ];
+
+  late String _currentPosition = '';
+  late String _currentDepartment = '';
+
+  String error = '';
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  get onChanged => null;
+  // get onChanged => null;
 
+  // First Name widget!
   Widget _buildFirstName() {
-    return Container(
-      alignment: Alignment.centerLeft,
-      height: 60,
-      child: TextFormField(
-        decoration: InputDecoration(
-            prefixIcon: Icon(Icons.person, color: Colors.white),
-            hintText: 'First Name',
-            hintStyle: TextStyle(color: Colors.white)),
-        //labelText: 'Name'),
-        //maxLength: 10,
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Name is Required';
-          }
-
-          return null;
-        },
-        onSaved: (value) {
-          _name = value!;
-        },
-      ),
-    );
-  }
-
-  Widget _buildMiddleName() {
-    return Container(
-      alignment: Alignment.centerLeft,
-      height: 60,
-      child: TextFormField(
-        decoration: InputDecoration(
-            prefixIcon: Icon(Icons.person, color: Colors.white),
-            hintText: 'Middle Name',
-            hintStyle: TextStyle(color: Colors.white)),
-        //labelText: 'Name'),
-        //maxLength: 10,
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Name is Required';
-          }
-
-          return null;
-        },
-        onSaved: (value) {
-          _name = value!;
-        },
-      ),
-    );
-  }
-
-  Widget _buildLastName() {
-    return Container(
-      alignment: Alignment.centerLeft,
-      height: 60,
-      child: TextFormField(
-        decoration: InputDecoration(
-            prefixIcon: Icon(Icons.person, color: Colors.white),
-            hintText: 'Last Name',
-            hintStyle: TextStyle(color: Colors.white)),
-        //labelText: 'Name'),
-        //maxLength: 10,
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Name is Required';
-          }
-
-          return null;
-        },
-        onSaved: (value) {
-          _name = value!;
-        },
-      ),
-    );
-  }
-
-  Widget _buildPhoneNumber() {
-    return TextFormField(
-      decoration: InputDecoration(
-          prefixIcon: Icon(Icons.phone_android, color: Colors.white),
-          hintText: 'Phone Number',
-          hintStyle: TextStyle(color: Colors.white)),
-      //decoration: InputDecoration(labelText: 'Phone number'),
-      keyboardType: TextInputType.phone,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Phone number is Required';
-        }
-
-        return null;
-      },
-      onSaved: (value) {
-        _url = value!;
-      },
-    );
-  }
-
-  Widget _buildEmail() {
-    return TextFormField(
-      decoration: InputDecoration(
-          prefixIcon: Icon(Icons.email, color: Colors.white),
-          hintText: 'Email',
-          hintStyle: TextStyle(color: Colors.white)),
-      //decoration: InputDecoration(labelText: 'Email'),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Email is Required';
-        }
-
-        if (!RegExp(
-                r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
-            .hasMatch(value)) {
-          return 'Please enter a valid email Address';
-        }
-
-        return null;
-      },
-      onSaved: (value) {
-        _email = value!;
-      },
-    );
-  }
-
-  Widget _buildPosition() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Icon(
-            Icons.work,
-            color: Colors.white,
-          ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const Text(
+          'First Name',
+          style: TextStyle(
+              color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
         ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
-            'Position',
-            style: TextStyle(color: Colors.white),
-          ),
+        const SizedBox(
+          height: 8,
         ),
-        DropdownButton(
-          items: positions.map((positionsname) {
-            return DropdownMenuItem(
-                value: positionsname,
-                child: Text(
-                  positionsname,
-                  style: TextStyle(color: Color(0xff5ac18e)),
-                ));
-          }).toList(),
-          onChanged: (String? newValue) {
-            setState(() {
-              dropdownvalue = newValue!;
-            });
-          },
-          value: dropdownvalue,
-        )
+        Container(
+            alignment: Alignment.centerLeft,
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: const [
+                  BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 6,
+                      offset: Offset(0, 2))
+                ]),
+            height: 50,
+            child: TextFormField(
+              style: const TextStyle(color: Colors.indigo),
+              decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  prefixIcon: Icon(Icons.person, color: Colors.indigo),
+                  hintText: 'First Name',
+                  hintStyle: TextStyle(color: Colors.indigo)),
+              validator: (value) =>
+                  value!.isEmpty ? "First Name is required!" : null,
+              onChanged: (value) {
+                setState(() => employee.firstName = value);
+              },
+            ))
       ],
     );
   }
 
-/*   Widget _buildPosition() {
-    return TextFormField(
-      decoration: InputDecoration(
-          prefixIcon: Icon(Icons.work, color: Colors.white),
-          hintText: 'Position',
-          hintStyle: TextStyle(color: Colors.white)),
-      //decoration: InputDecoration(labelText: 'Password'),
+  Widget _buildMiddleName() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const Text(
+          'Middle Name',
+          style: TextStyle(
+              color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(
+          height: 8,
+        ),
+        Container(
+            alignment: Alignment.centerLeft,
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: const [
+                  BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 6,
+                      offset: Offset(0, 2))
+                ]),
+            height: 50,
+            child: TextFormField(
+              style: const TextStyle(color: Colors.indigo),
+              decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  prefixIcon: Icon(Icons.person, color: Colors.indigo),
+                  hintText: 'Middle Name',
+                  hintStyle: TextStyle(color: Colors.indigo)),
+              validator: (value) =>
+                  value!.isEmpty ? "Middle Name is required!" : null,
+              onChanged: (value) {
+                setState(() => employee.middleName = value);
+              },
+            ))
+      ],
     );
-  } */
+  }
+
+  Widget _buildLastName() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const Text(
+          'Last Name',
+          style: TextStyle(
+              color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(
+          height: 8,
+        ),
+        Container(
+            alignment: Alignment.centerLeft,
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: const [
+                  BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 6,
+                      offset: Offset(0, 2))
+                ]),
+            height: 50,
+            child: TextFormField(
+              style: const TextStyle(color: Colors.indigo),
+              decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  prefixIcon: Icon(Icons.person, color: Colors.indigo),
+                  hintText: 'Last Name',
+                  hintStyle: TextStyle(color: Colors.indigo)),
+              validator: (value) =>
+                  value!.isEmpty ? "Last Name is required!" : null,
+              onChanged: (value) {
+                setState(() => employee.firstName = value);
+              },
+            ))
+      ],
+    );
+  }
+
+  Widget _buildPhoneNumber() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const Text(
+          'Phone Number',
+          style: TextStyle(
+              color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(
+          height: 8,
+        ),
+        Container(
+            alignment: Alignment.centerLeft,
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: const [
+                  BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 6,
+                      offset: Offset(0, 2))
+                ]),
+            height: 50,
+            child: TextFormField(
+                style: const TextStyle(color: Colors.indigo),
+                decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    prefixIcon: Icon(Icons.person, color: Colors.indigo),
+                    hintText: 'Phone Number',
+                    hintStyle: TextStyle(color: Colors.indigo)),
+                validator: (value) =>
+                    value!.isEmpty ? "Phone Number is required!" : null,
+                onChanged: (value) {
+                  setState(() {
+                    employee.phoneNumber = value;
+                  });
+                }))
+      ],
+    );
+  }
+
+  Widget _buildEmail() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const Text(
+          'Email',
+          style: TextStyle(
+              color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(
+          height: 8,
+        ),
+        Container(
+            alignment: Alignment.centerLeft,
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: const [
+                  BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 6,
+                      offset: Offset(0, 2))
+                ]),
+            height: 50,
+            child: TextFormField(
+              //controller: _emailController,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Email is Required';
+                }
+                if (!RegExp(
+                        r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
+                    .hasMatch(value)) {
+                  return 'Please enter a valid email Address';
+                }
+                return null;
+              },
+              keyboardType: TextInputType.emailAddress,
+              style: const TextStyle(color: Colors.indigo),
+              onChanged: (value) {
+                setState(() {
+                  employee.email = value;
+                });
+              },
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.only(top: 14),
+                prefixIcon: Icon(Icons.email, color: Colors.indigo),
+                hintText: 'Email',
+                hintStyle: TextStyle(color: Colors.indigo),
+              ),
+            ))
+      ],
+    );
+  }
+
+  Widget _buildPosition() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const Text(
+          'Position',
+          style: TextStyle(
+              color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(
+          height: 8,
+        ),
+        Container(
+            alignment: Alignment.centerLeft,
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: const [
+                  BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 6,
+                      offset: Offset(0, 2))
+                ]),
+            height: 50,
+            child: DropdownButtonFormField(
+              decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  prefixIcon: Icon(Icons.work, color: Colors.indigo),
+                  hintText: 'Position',
+                  hintStyle: TextStyle(color: Colors.indigo)),
+              items: positions.map((position) {
+                return DropdownMenuItem(
+                    value: position,
+                    child: Text(
+                      position,
+                      style: const TextStyle(color: Colors.indigo),
+                    ));
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _currentDepartment = value.toString();
+                  employee.position = _currentPosition;
+                });
+              },
+            ))
+      ],
+    );
+  }
 
   Widget _buildDepartment() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Icon(
-            Icons.work,
-            color: Colors.white,
-          ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const Text(
+          'Department',
+          style: TextStyle(
+              color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
         ),
-        Text('Department',
-            style: TextStyle(
-              color: Colors.white,
-            )),
-        Padding(
-          padding: const EdgeInsets.only(left: 20.0),
-          child: DropdownButton(
-            items: departments.map((departmentsname) {
-              return DropdownMenuItem(
-                  value: departmentsname,
-                  child: Text(
-                    departmentsname,
-                    style: TextStyle(color: Color(0xff5ac18e)),
-                  ));
-            }).toList(),
-            onChanged: (String? newValue) {
-              setState(() {
-                dropdownvalue2 = newValue!;
-              });
-            },
-            value: dropdownvalue2,
-          ),
+        const SizedBox(
+          height: 8,
         ),
+        Container(
+            alignment: Alignment.centerLeft,
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: const [
+                  BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 6,
+                      offset: Offset(0, 2))
+                ]),
+            height: 50,
+            child: DropdownButtonFormField(
+              decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  prefixIcon: Icon(Icons.work, color: Colors.indigo),
+                  hintText: 'Department',
+                  hintStyle: TextStyle(color: Colors.indigo)),
+              items: departments.map((department) {
+                return DropdownMenuItem(
+                    value: department,
+                    child: Text(
+                      department,
+                      style: const TextStyle(color: Colors.indigo),
+                    ));
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _currentDepartment = value.toString();
+                  employee.firstName = _currentDepartment;
+                });
+              },
+            ))
       ],
     );
   }
 
   Widget _buildPassword() {
-    return TextFormField(
-      decoration: InputDecoration(
-          prefixIcon: Icon(Icons.password, color: Colors.white),
-          hintText: 'Password',
-          hintStyle: TextStyle(color: Colors.white)),
-      //decoration: InputDecoration(labelText: 'Password'),
-      keyboardType: TextInputType.visiblePassword,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Password is Required';
-        }
-
-        return null;
-      },
-      onSaved: (value) {
-        _password = value!;
-      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const Text(
+          'Password',
+          style: TextStyle(
+              color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(
+          height: 8,
+        ),
+        Container(
+            alignment: Alignment.centerLeft,
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: const [
+                  BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 6,
+                      offset: Offset(0, 2))
+                ]),
+            height: 50,
+            child: TextFormField(
+              obscureText: true,
+              style: const TextStyle(color: Colors.indigo),
+              decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  prefixIcon: Icon(Icons.lock, color: Colors.indigo),
+                  hintText: 'Password',
+                  hintStyle: TextStyle(color: Colors.indigo)),
+              validator: (value) =>
+                  value!.length < 6 ? "6+ characters required!" : null,
+              onChanged: (value) {
+                setState(() => employee.password = value);
+              },
+            ))
+      ],
     );
   }
 
@@ -265,19 +405,19 @@ class FormScreenState extends State<FormScreen> {
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => LoginScreen(),
+            builder: (context) => const LoginScreen(),
           ),
         );
       },
       //  => print("Sign Up Pressed"),
       child: RichText(
-        text: TextSpan(children: [
+        text: const TextSpan(children: [
           TextSpan(
-              text: 'Already have account?',
+              text: 'Already have account? ',
               style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
-                  fontWeight: FontWeight.w500)),
+                  fontWeight: FontWeight.w300)),
           TextSpan(
               text: ' Sign In ',
               style: TextStyle(
@@ -291,20 +431,34 @@ class FormScreenState extends State<FormScreen> {
 
   Widget _buildSubmitButton() {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 25),
+      padding: const EdgeInsets.symmetric(vertical: 25),
       width: double.infinity,
       child: RaisedButton(
         elevation: 5,
-        onPressed: () => print('Submit Pressed'),
-        padding: EdgeInsets.all(15),
+        onPressed: () async {
+          if (_formKey.currentState!.validate()) {
+            dynamic result = await _auth.authenticat(employee);
+            if (result == null) {
+              setState(() => error = "couldn't register with this credential!");
+              Fluttertoast.showToast(msg: error);
+            } else if (result == "The user is successfully registered!") {
+              //preferences.remove("email");
+              Fluttertoast.showToast(msg: error);
+              Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (context) => const LoginScreen()));
+            } else {
+              setState(() => error = result);
+              Fluttertoast.showToast(msg: error);
+            }
+          }
+        },
+        padding: const EdgeInsets.all(15),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         color: Colors.white,
-        child: Text(
+        child: const Text(
           'Submit',
           style: TextStyle(
-              color: Color(0xff5ac18e),
-              fontSize: 18,
-              fontWeight: FontWeight.bold),
+              color: Colors.indigo, fontSize: 23, fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -315,72 +469,50 @@ class FormScreenState extends State<FormScreen> {
     return Scaffold(
       //appBar: AppBar(title: Text("Form Demo")),
       body: Container(
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 15),
         height: double.infinity,
         width: double.infinity,
-        decoration: BoxDecoration(
-            gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-              Color(0x665ac18e),
-              Color(0x995ac18e),
-              Color(0xcc5ac18e),
-              Color(0xff5ac18e),
-            ])),
+        decoration: const BoxDecoration(color: Colors.indigo),
         child: SingleChildScrollView(
-          child: Container(
-            margin: EdgeInsets.all(24),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  const Text(
-                    'Sign Up',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 40,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 50),
-                  _buildFirstName(),
-                  _buildMiddleName(),
-                  _buildLastName(),
-                  _buildDepartment(),
-                  _buildPosition(),
-                  _buildPhoneNumber(),
-                  _buildEmail(),
-                  _buildPassword(),
-                  _buildLogInButton(),
-                  SizedBox(height: 100),
-                  _buildSubmitButton(),
-                  /*    RaisedButton(
-                    child: Text(
-                      'Submit',
-                      style: TextStyle(color: Colors.blue, fontSize: 16),
-                    ),
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        return;
-                      }
-
-                      _formKey.currentState?.save();
-
-                      print(_name);
-                      print(_email);
-                      print(_phoneNumber);
-                      print(_url);
-                      print(_password);
-                      print(_calories);
-
-                      //Send to API
-                    },
-                  )
-                */
-                ],
-              ),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                const SizedBox(height: 50),
+                const Text(
+                  'Sign Up',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 40,
+                      fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 50),
+                _buildFirstName(),
+                const SizedBox(height: 20),
+                _buildMiddleName(),
+                const SizedBox(height: 20),
+                _buildLastName(),
+                const SizedBox(height: 20),
+                _buildDepartment(),
+                // _build(),
+                const SizedBox(height: 20),
+                _buildPosition(),
+                const SizedBox(height: 20),
+                _buildPhoneNumber(),
+                const SizedBox(height: 20),
+                _buildEmail(),
+                const SizedBox(height: 20),
+                _buildPassword(),
+                const SizedBox(height: 20),
+                _buildLogInButton(),
+                const SizedBox(height: 20),
+                _buildSubmitButton(),
+              ],
             ),
           ),
+          // ),
         ),
       ),
     );
