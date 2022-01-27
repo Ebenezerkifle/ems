@@ -1,13 +1,43 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Screens/ChatHomepage.dart';
 import 'package:ems/Screens/EmployeeInfo_Screen.dart';
-import 'package:ems/Screens/Login_Screen.dart';
 import 'package:ems/Screens/MapScreen.dart';
 import 'package:ems/Screens/TaskHomePage.dart';
+import 'package:ems/Screens/signin_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class HomeScreenGM extends StatelessWidget {
+class HomeScreenGM extends StatefulWidget {
   const HomeScreenGM({Key? key}) : super(key: key);
+
+  @override
+  _HomeScreenGMState createState() => _HomeScreenGMState();
+}
+
+class _HomeScreenGMState extends State<HomeScreenGM> {
+  var currentUserEmail = FirebaseAuth.instance.currentUser!.email;
+  CollectionReference logedUser =
+      FirebaseFirestore.instance.collection('Users');
+  var currentUserName;
+
+  @override
+  void initState() {
+    _fetchLogedUser().then((value) => currentUserName = value);
+    super.initState();
+  }
+
+  Future _fetchLogedUser() async {
+    var name;
+    await logedUser
+        .where('email', isEqualTo: currentUserEmail)
+        .get()
+        .then((QuerySnapshot snapshot) {
+      var result = snapshot.docs.first;
+      name = result.get('firstName') + " " + result.get('middleName');
+    });
+    return name;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,13 +53,15 @@ class HomeScreenGM extends StatelessWidget {
     return Scaffold(
       body: Stack(children: <Widget>[
         Container(
-          height: size.height * .3,
-          decoration: const BoxDecoration(
-              image: DecorationImage(
-                  alignment: Alignment.topCenter,
-                  image: AssetImage('assets/images/mobile_1.png'),
-                  fit: BoxFit.fill)),
-        ),
+            height: size.height * .3,
+            decoration: const BoxDecoration(
+              color: Colors.indigo,
+            )
+            // image: DecorationImage(
+            //     alignment: Alignment.topCenter,
+            //     image: AssetImage('assets/images/mobile_1.png'),
+            //     fit: BoxFit.fill)),
+            ),
         SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -54,9 +86,9 @@ class HomeScreenGM extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         // ignore: prefer_const_literals_to_create_immutables
                         children: [
-                          const Text(
-                            'Anwar Kedir',
-                            style: TextStyle(
+                          Text(
+                            '${currentUserName ?? ''}',
+                            style: const TextStyle(
                                 fontFamily: 'Montserrat Medium',
                                 fontSize: 18,
                                 color: Colors.white),
@@ -75,7 +107,7 @@ class HomeScreenGM extends StatelessWidget {
                             //preferences.remove('email');
                             Navigator.of(context).pushReplacement(
                                 MaterialPageRoute(
-                                    builder: (context) => Login()));
+                                    builder: (context) => const LoginScreen()));
                           },
                           icon: const Icon(Icons.logout)),
                     ],
