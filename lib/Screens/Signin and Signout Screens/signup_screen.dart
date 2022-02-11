@@ -1,7 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Models/Employee.dart';
+import 'package:ems/Models/Notification.dart';
 import 'package:ems/Services/Authentication_Services.dart';
 import 'package:flutter/material.dart';
-import 'package:ems/Screens/signin_screen.dart';
+import 'package:ems/Screens/Signin%20and%20Signout%20Screens/signin_screen.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class FormScreen extends StatefulWidget {
@@ -13,16 +15,47 @@ class FormScreen extends StatefulWidget {
 
 class FormScreenState extends State<FormScreen> {
   Employee employee = Employee();
+  late String generalManagerEmail;
+
+  @override
+  void initState() {
+    _searchForGeneralManager().then((value) => positions = value);
+    // _searchForSubManager();
+    super.initState();
+  }
+
+  Future _searchForGeneralManager() async {
+    await FirebaseFirestore.instance
+        .collection('Users')
+        .where('position', isEqualTo: 'General-Manager')
+        .get()
+        .then((QuerySnapshot snapshot) {
+      var result = snapshot.docs.first;
+      if (result != null) {
+        generalManagerEmail = result.get('email');
+        positions.removeAt(2);
+      }
+    });
+    return positions;
+  }
+
+  Future _searchForSubManager() async {
+    await FirebaseFirestore.instance
+        .collection('Users')
+        .where('department', isEqualTo: 'General-Manager')
+        .get()
+        .then((QuerySnapshot snapshot) {
+      var result = snapshot.docs.first;
+      if (result != null) {
+        positions.removeAt(2);
+      }
+    });
+    return departments;
+  }
 
   final Authentication _auth = Authentication();
 
-  String dropdownvalue = 'Employee';
-  String dropdownvalue2 = 'Department 1';
-  final List<String> positions = [
-    'Employee',
-    'Sub-Manager',
-    'General Manager',
-  ];
+  List<String> positions = ['Employee', 'Sub-Manager', 'General-Manager'];
   final List<String> departments = [
     'Department 1',
     'Department 2',
@@ -155,7 +188,7 @@ class FormScreenState extends State<FormScreen> {
               validator: (value) =>
                   value!.isEmpty ? "Last Name is required!" : null,
               onChanged: (value) {
-                setState(() => employee.firstName = value);
+                setState(() => employee.lastName = value);
               },
             ))
       ],
@@ -300,7 +333,7 @@ class FormScreenState extends State<FormScreen> {
               }).toList(),
               onChanged: (value) {
                 setState(() {
-                  _currentDepartment = value.toString();
+                  _currentPosition = value.toString();
                   employee.position = _currentPosition;
                 });
               },
@@ -350,7 +383,7 @@ class FormScreenState extends State<FormScreen> {
               onChanged: (value) {
                 setState(() {
                   _currentDepartment = value.toString();
-                  employee.firstName = _currentDepartment;
+                  employee.departement = _currentDepartment;
                 });
               },
             ))
@@ -442,7 +475,7 @@ class FormScreenState extends State<FormScreen> {
               setState(() => error = "couldn't register with this credential!");
               Fluttertoast.showToast(msg: error);
             } else if (result == "The user is successfully registered!") {
-              //preferences.remove("email");
+              _requestForVerfication();
               Fluttertoast.showToast(msg: error);
               Navigator.of(context).pushReplacement(
                   MaterialPageRoute(builder: (context) => const LoginScreen()));
@@ -462,6 +495,18 @@ class FormScreenState extends State<FormScreen> {
         ),
       ),
     );
+  }
+
+  _requestForVerfication() {
+    NotificationModel _notificationModel = NotificationModel(
+        title: 'New Employee',
+        body: 'Request for approval of an employee on ' +
+            employee.position +
+            ' position',
+        senderEmail: employee.email,
+        receiverEmail: generalManagerEmail.toString(),
+        timeStamp: DateTime.now(),
+        seen: false);
   }
 
   @override

@@ -1,19 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Models/Employee.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class DatabaseServices {
   final CollectionReference employeesInfo =
       FirebaseFirestore.instance.collection("Users");
   late final String uid;
 
-  Future updateUsersData(Employee employee, String uid) async {
+  Future register(Employee employee, String uid) async {
     return await employeesInfo.doc(uid).set({
-      'firstName': employee.firstName,
-      'lastName': employee.lastName,
-      'phoneNumber': employee.phoneNumber,
-      'password': employee.password,
+      'firstname': employee.firstName,
+      'middlename': employee.middleName,
+      'lastname': employee.lastName,
+      'department': employee.departement,
+      'position': employee.position,
       'email': employee.email,
+      'password': employee.password, // can be ignored!
+      'phoneNumber': employee.phoneNumber,
     });
   }
 

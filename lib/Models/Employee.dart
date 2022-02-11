@@ -1,6 +1,9 @@
 class Employee {
   late String firstName;
+  late String middleName;
   late String lastName;
+  late String departement;
+  late String position;
   late String uid;
   late String email;
   late String password;
@@ -13,11 +16,14 @@ class Employee {
   static Employee fromJson(Map<String, dynamic> json) => Employee.forJson(
       json['firstname'], json['lastname'], json['email'], json['uid']);
 
-  Map<String, dynamic> toJson() => {
+  toJson() => {
         'firstname': firstName,
+        'middlename': middleName,
         'lastname': lastName,
+        'department': departement,
+        'position': position,
         'email': email,
-        'password': password,
+        'password': password, // can be ignored!
         'phoneNumber': phoneNumber,
       };
 

@@ -1,5 +1,4 @@
-import 'package:ems/Screens/Home_Screen_GM.dart';
-import 'package:ems/Screens/Registration_Screen.dart';
+import 'package:ems/Screens/GeneralManager%20Screens/Home_Screen_GM.dart';
 import 'package:ems/Services/Authentication_Services.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -77,10 +76,10 @@ class _LoginState extends State<Login> {
 
                               // preferences.setString("email", email);
 
-                              Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const HomeScreenGM()));
+                              // Navigator.of(context).pushReplacement(
+                              //     MaterialPageRoute(
+                              //         builder: (context) =>
+                              //             const HomeScreenGM()));
                             }
                           }
                         },
@@ -96,10 +95,10 @@ class _LoginState extends State<Login> {
                 Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                   const Text("Don't have an account "),
                   GestureDetector(
-                    onTap: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => Register()));
-                    },
+                    onTap: () {},
+                    //   Navigator.push(context,
+                    //       MaterialPageRoute(builder: (context) => Register()));
+                    // },
                     child: const Text(
                       "Register",
                       style: TextStyle(

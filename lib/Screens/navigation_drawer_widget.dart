@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 //import 'package:navigation_drawer_ui/pages/people_page.dart';
 import 'package:ems/Screens/user_page.dart';
-import 'package:ems/Screens/Home_Screen_GM.dart';
-import 'package:ems/Screens/EmployeeInfo_Screen.dart';
-import 'package:ems/Screens/ChatHomepage.dart';
+import 'package:ems/Screens/GeneralManager%20Screens/Home_Screen_GM.dart';
+import 'package:ems/Screens/GeneralManager%20Screens/EmployeeInfo_Screen.dart';
+import 'package:ems/Screens/SharedScreens/ChatHomepage.dart';
 //import 'package:navigation_drawer_ui/pages/favorite_page.dart';
 
 class NavigationDrawerWidget extends StatelessWidget {

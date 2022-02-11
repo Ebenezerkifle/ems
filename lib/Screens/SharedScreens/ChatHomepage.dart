@@ -1,5 +1,7 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ems/Screens/ChatPage.dart';
+import 'package:ems/Screens/SharedScreens/ChatPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -103,8 +105,8 @@ class _ChatHomePageState extends State<ChatHomePage> {
                   Fluttertoast.showToast(msg: "Error occured");
                 }
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
+                  return const SpinKitDoubleBounce(
+                    color: Colors.blue,
                   );
                 }
                 return ListView(
@@ -115,7 +117,7 @@ class _ChatHomePageState extends State<ChatHomePage> {
                     Map<String, dynamic> data =
                         document.data()! as Map<String, dynamic>;
                     String avatar = 'assets/images/2.jpg';
-                    String name = data['firstName'] + ' ' + data['lastName'];
+                    String name = data['firstname'] + " " + data['middlename'];
                     String time = '08.10';
                     String receiverEmail = data['email'];
                     return ChatRoomBuilder(avatar, name, time, receiverEmail);
@@ -207,7 +209,6 @@ class _ChatRoomBuilderState extends State<ChatRoomBuilder> {
 
   @override
   Widget build(BuildContext context) {
-    String lastMessage = '';
     return GestureDetector(
         onTap: () {
           Navigator.of(context).push(
@@ -272,10 +273,9 @@ class _ChatRoomBuilderState extends State<ChatRoomBuilder> {
     CollectionReference notifications =
         FirebaseFirestore.instance.collection("Notifications");
     var query = notifications
-        .doc(loginUserEmail)
-        .collection('Notification')
         .where('seen', isEqualTo: false)
-        .where('sender', isEqualTo: receiverEmail)
+        .where('receiver', isEqualTo: loginUserEmail)
+        .where('title', isEqualTo: 'Message')
         .snapshots();
 
     return StreamBuilder(
@@ -325,7 +325,6 @@ class _LastMessageState extends State<LastMessage> {
             return const SpinKitDoubleBounce(
               color: Colors.blue,
             );
-            ;
           }
           if (snapshot.hasData) {
             DocumentSnapshot? last = snapshot.data!.docs.length > 0

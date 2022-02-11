@@ -1,6 +1,6 @@
-import 'package:ems/Screens/Chat_Screen.dart';
-import 'package:ems/Screens/EmployeeInfo_Screen.dart';
-import 'package:ems/Screens/Login_Screen.dart';
+import 'package:ems/Screens/SharedScreens/Chat_Screen.dart';
+import 'package:ems/Screens/GeneralManager%20Screens/EmployeeInfo_Screen.dart';
+import 'package:ems/Screens/Signin%20and%20Signout%20Screens/Login_Screen.dart';
 import 'package:ems/Screens/Tasks_Screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';

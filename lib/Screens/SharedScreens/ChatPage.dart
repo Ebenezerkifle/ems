@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ems/Models/Notification.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -19,7 +20,10 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  var loginUser = FirebaseAuth.instance.currentUser!.email;
+  var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
+  TextEditingController messageController = TextEditingController();
+
+  var loginUser = FirebaseAuth.instance.currentUser;
 
   CollectionReference chats = FirebaseFirestore.instance.collection("Chats");
   CollectionReference notifications =
@@ -32,15 +36,15 @@ class _ChatPageState extends State<ChatPage> {
 
   _ChatPageState(this.receiverEmail, this.name, this.chatDocId);
 
-  @override
-  void initState() {
-    notifications
-        .doc(loginUser)
-        .collection('Notification')
-        .doc()
-        .update({'seen': true});
-    super.initState();
-  }
+  // @override
+  // void initState() {
+  //   notifications
+  //       .doc(loginUserEmail)
+  //       .collection('Notification').where('field',isEqualTo: '')
+  //       .doc()
+  //       .update({'seen': true});
+  //   super.initState();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -224,9 +228,6 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget _formChat() {
-    TextEditingController messageController = TextEditingController();
-
-    var loginUser = FirebaseAuth.instance.currentUser;
     return Positioned(
       child: Align(
         alignment: Alignment.bottomCenter,
@@ -258,24 +259,7 @@ class _ChatPageState extends State<ChatPage> {
                 ),
                 IconButton(
                   onPressed: () {
-                    if (messageController.text.isNotEmpty) {
-                      chats.doc(chatDocId).collection('Messages').add({
-                        "msg": messageController.text.trim(),
-                        "user": loginUser?.email?.trim(),
-                        "receiver": receiverEmail.trim(),
-                        "timeStamp": DateTime.now(),
-                      });
-                      notifications
-                          .doc(receiverEmail.toString())
-                          .collection('Notification')
-                          .add({
-                        'title': 'message',
-                        'body': messageController.text.trim(),
-                        'seen': false,
-                        'sender': loginUser?.email?.trim(),
-                      });
-                      messageController.clear();
-                    }
+                    _sendMessage();
                   },
                   color: Colors.blueAccent,
                   icon: const Icon(
@@ -288,6 +272,27 @@ class _ChatPageState extends State<ChatPage> {
             )),
       ),
     );
+  }
+
+  _sendMessage() {
+    if (messageController.text.isNotEmpty) {
+      chats.doc(chatDocId).collection('Messages').add({
+        "msg": messageController.text.trim(),
+        "user": loginUser?.email?.trim(),
+        "receiver": receiverEmail.trim(),
+        "timeStamp": DateTime.now(),
+      });
+
+      NotificationModel notificationModel = NotificationModel(
+          title: 'Message',
+          body: messageController.text.trim(),
+          senderEmail: loginUserEmail.toString(),
+          receiverEmail: receiverEmail,
+          timeStamp: DateTime.now(),
+          seen: false);
+      notificationModel.sendNotification();
+      messageController.clear();
+    }
   }
 }
 

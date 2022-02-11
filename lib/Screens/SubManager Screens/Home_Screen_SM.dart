@@ -1,44 +1,17 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ems/Screens/ChatHomepage.dart';
-import 'package:ems/Screens/EmployeeInfo_Screen.dart';
-import 'package:ems/Screens/MapScreen.dart';
-import 'package:ems/Screens/TaskHomePage.dart';
-import 'package:ems/Screens/signin_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:ems/Screens/SharedScreens/ChatHomepage.dart';
+import 'package:ems/Screens/GeneralManager%20Screens/EmployeeInfo_Screen.dart';
 import 'package:flutter/material.dart';
+// ignore: unused_import
 import 'package:flutter_svg/flutter_svg.dart';
 
-class HomeScreenGM extends StatefulWidget {
-  const HomeScreenGM({Key? key}) : super(key: key);
+class HomeScreenSM extends StatefulWidget {
+  const HomeScreenSM({Key? key}) : super(key: key);
 
   @override
-  _HomeScreenGMState createState() => _HomeScreenGMState();
+  _HomeScreenSMState createState() => _HomeScreenSMState();
 }
 
-class _HomeScreenGMState extends State<HomeScreenGM> {
-  var currentUserEmail = FirebaseAuth.instance.currentUser!.email;
-  CollectionReference logedUser =
-      FirebaseFirestore.instance.collection('Users');
-  var currentUserName;
-
-  @override
-  void initState() {
-    _fetchLogedUser().then((value) => currentUserName = value);
-    super.initState();
-  }
-
-  Future _fetchLogedUser() async {
-    var name;
-    await logedUser
-        .where('email', isEqualTo: currentUserEmail)
-        .get()
-        .then((QuerySnapshot snapshot) {
-      var result = snapshot.docs.first;
-      name = result.get('firstName') + " " + result.get('middleName');
-    });
-    return name;
-  }
-
+class _HomeScreenSMState extends State<HomeScreenSM> {
   @override
   Widget build(BuildContext context) {
     // to get size
@@ -53,15 +26,13 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
     return Scaffold(
       body: Stack(children: <Widget>[
         Container(
-            height: size.height * .3,
-            decoration: const BoxDecoration(
-              color: Colors.indigo,
-            )
-            // image: DecorationImage(
-            //     alignment: Alignment.topCenter,
-            //     image: AssetImage('assets/images/mobile_1.png'),
-            //     fit: BoxFit.fill)),
-            ),
+          height: size.height * .3,
+          decoration: const BoxDecoration(
+              image: DecorationImage(
+                  alignment: Alignment.topCenter,
+                  image: AssetImage('assets/images/mobile_1.png'),
+                  fit: BoxFit.fill)),
+        ),
         SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -86,9 +57,9 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         // ignore: prefer_const_literals_to_create_immutables
                         children: [
-                          Text(
-                            '${currentUserName ?? ''}',
-                            style: const TextStyle(
+                          const Text(
+                            'Anwar Kedir',
+                            style: TextStyle(
                                 fontFamily: 'Montserrat Medium',
                                 fontSize: 18,
                                 color: Colors.white),
@@ -101,15 +72,7 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                                 fontFamily: 'Montserrat Regular'),
                           ),
                         ],
-                      ),
-                      IconButton(
-                          onPressed: () async {
-                            //preferences.remove('email');
-                            Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(
-                                    builder: (context) => const LoginScreen()));
-                          },
-                          icon: const Icon(Icons.logout)),
+                      )
                     ],
                   ),
                 ),
@@ -120,39 +83,6 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                     primary: false,
                     crossAxisCount: 2,
                     children: <Widget>[
-                      //Card 1
-                      InkWell(
-                        onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => const EmployeeInfo()));
-                        },
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                          elevation: 4,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              /*  SvgPicture.network(
-                              'https://www.svgrepo.com/show/125846/graduate.svg',
-                              height: 128,
-                            ), */
-                              SvgPicture.asset(
-                                'assets/images/finance.svg',
-                                height: 80,
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  'Finance',
-                                  style: cardTextStyle,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        // Card 2
-                      ),
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
@@ -212,7 +142,7 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => TaskHomePage()));
+                              builder: (context) => const EmployeeInfo()));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -268,7 +198,7 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => const MyLocation()));
+                              builder: (context) => const EmployeeInfo()));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -320,34 +250,6 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                           ),
                         ),
                       ),
-                      // Card 8  Employee info
-                      InkWell(
-                        onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => const EmployeeInfo()));
-                        },
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                          elevation: 4,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              SvgPicture.asset(
-                                'assets/images/info.svg',
-                                height: 64,
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  'Employee Info',
-                                  style: cardTextStyle,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
                     ],
                   ),
                 )

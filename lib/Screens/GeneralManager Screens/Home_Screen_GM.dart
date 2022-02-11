@@ -1,17 +1,66 @@
-import 'package:ems/Screens/ChatHomepage.dart';
-import 'package:ems/Screens/EmployeeInfo_Screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ems/GeoFence/googleMap.dart';
+import 'package:ems/Screens/SharedScreens/ChatHomepage.dart';
+import 'package:ems/Screens/GeneralManager%20Screens/EmployeeInfo_Screen.dart';
+import 'package:ems/Screens/SharedScreens/TaskHomePage.dart';
+import 'package:ems/Screens/Signin%20and%20Signout%20Screens/signin_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-// ignore: unused_import
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 
-class HomeScreenSM extends StatefulWidget {
-  const HomeScreenSM({Key? key}) : super(key: key);
+class HomeScreenGM extends StatefulWidget {
+  final QueryDocumentSnapshot<Object?> userInfo;
+
+  HomeScreenGM({required this.userInfo, Key? key}) : super(key: key);
 
   @override
-  _HomeScreenSMState createState() => _HomeScreenSMState();
+  _HomeScreenGMState createState() => _HomeScreenGMState();
 }
 
-class _HomeScreenSMState extends State<HomeScreenSM> {
+class _HomeScreenGMState extends State<HomeScreenGM> {
+  FlutterLocalNotificationsPlugin localNotification =
+      FlutterLocalNotificationsPlugin();
+
+  @override
+  void initState() {
+    var androidInitialize =
+        const AndroidInitializationSettings('mipmap/ic_launcher');
+    var setting = InitializationSettings(android: androidInitialize);
+    localNotification.initialize(setting);
+    _fetchNotification();
+    super.initState();
+  }
+
+  Future _showNotification(QueryDocumentSnapshot<Object?> element) async {
+    var androidDetails = const AndroidNotificationDetails(
+        "channelId", "channelName",
+        channelDescription: "This is the description of the notification",
+        importance: Importance.high);
+    var generalNotificationDetail =
+        NotificationDetails(android: androidDetails);
+    await localNotification.show(0, element.get('title'), element.get('body'),
+        generalNotificationDetail);
+  }
+
+  _fetchNotification() {
+    CollectionReference notification =
+        FirebaseFirestore.instance.collection('Notification');
+    notification
+        .where('receiver', isEqualTo: widget.userInfo.get('email'))
+        .get()
+        .then(
+      (QuerySnapshot snapshot) {
+        //_showNotification();
+        snapshot.docs.forEach((element) {
+          _showNotification(element);
+        });
+        FlutterRingtonePlayer.playNotification();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // to get size
@@ -26,13 +75,10 @@ class _HomeScreenSMState extends State<HomeScreenSM> {
     return Scaffold(
       body: Stack(children: <Widget>[
         Container(
-          height: size.height * .3,
-          decoration: const BoxDecoration(
-              image: DecorationImage(
-                  alignment: Alignment.topCenter,
-                  image: AssetImage('assets/images/mobile_1.png'),
-                  fit: BoxFit.fill)),
-        ),
+            height: size.height * .3,
+            decoration: const BoxDecoration(
+              color: Colors.indigo,
+            )),
         SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -57,22 +103,37 @@ class _HomeScreenSMState extends State<HomeScreenSM> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         // ignore: prefer_const_literals_to_create_immutables
                         children: [
-                          const Text(
-                            'Anwar Kedir',
-                            style: TextStyle(
+                          Text(
+                            '${widget.userInfo.get('firstname') ?? ''}' +
+                                ' ' +
+                                '${widget.userInfo.get('middlename') ?? ''}',
+                            style: const TextStyle(
                                 fontFamily: 'Montserrat Medium',
                                 fontSize: 18,
                                 color: Colors.white),
                           ),
-                          const Text(
-                            '14806798',
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.white,
+                          Text(
+                            '${widget.userInfo.get('position') ?? ''}',
+                            style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.orange,
                                 fontFamily: 'Montserrat Regular'),
                           ),
                         ],
-                      )
+                      ),
+                      const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 40)),
+                      IconButton(
+                        alignment: Alignment.centerRight,
+                        onPressed: () async {
+                          Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                  builder: (context) => const LoginScreen()));
+                          FirebaseAuth.instance.signOut();
+                        },
+                        icon: const Icon(Icons.logout),
+                        color: Colors.white,
+                      ),
                     ],
                   ),
                 ),
@@ -83,6 +144,39 @@ class _HomeScreenSMState extends State<HomeScreenSM> {
                     primary: false,
                     crossAxisCount: 2,
                     children: <Widget>[
+                      //Card 1
+                      InkWell(
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => const EmployeeInfo()));
+                        },
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                          elevation: 4,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              /*  SvgPicture.network(
+                              'https://www.svgrepo.com/show/125846/graduate.svg',
+                              height: 128,
+                            ), */
+                              SvgPicture.asset(
+                                'assets/images/finance.svg',
+                                height: 80,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'Finance',
+                                  style: cardTextStyle,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Card 2
+                      ),
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
@@ -113,8 +207,9 @@ class _HomeScreenSMState extends State<HomeScreenSM> {
                       ),
                       InkWell(
                         onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => const EmployeeInfo()));
+                          // _showNotification();
+                          // Navigator.of(context).push(MaterialPageRoute(
+                          //     builder: (context) => const EmployeeInfo()));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -142,7 +237,7 @@ class _HomeScreenSMState extends State<HomeScreenSM> {
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => const EmployeeInfo()));
+                              builder: (context) => TaskHomePage()));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -198,7 +293,7 @@ class _HomeScreenSMState extends State<HomeScreenSM> {
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => const EmployeeInfo()));
+                              builder: (context) => const GoogleMap()));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -250,6 +345,34 @@ class _HomeScreenSMState extends State<HomeScreenSM> {
                           ),
                         ),
                       ),
+                      // Card 8  Employee info
+                      InkWell(
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => const EmployeeInfo()));
+                        },
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                          elevation: 4,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              SvgPicture.asset(
+                                'assets/images/info.svg',
+                                height: 64,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'Employee Info',
+                                  style: cardTextStyle,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
                     ],
                   ),
                 )
