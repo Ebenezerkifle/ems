@@ -135,7 +135,7 @@ class _HomeState extends State<Home> {
                   ElevatedButton(
                       onPressed: () {
                         Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => const EmployeeInfo()));
+                            builder: (context) => EmployeeInfo()));
                       },
                       style: ElevatedButton.styleFrom(
                         primary: Colors.lightBlueAccent,

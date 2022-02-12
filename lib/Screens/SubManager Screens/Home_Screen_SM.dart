@@ -86,7 +86,7 @@ class _HomeScreenSMState extends State<HomeScreenSM> {
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => const EmployeeInfo()));
+                              builder: (context) => EmployeeInfo()));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -114,7 +114,7 @@ class _HomeScreenSMState extends State<HomeScreenSM> {
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => const EmployeeInfo()));
+                              builder: (context) => EmployeeInfo()));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -142,7 +142,7 @@ class _HomeScreenSMState extends State<HomeScreenSM> {
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => const EmployeeInfo()));
+                              builder: (context) => EmployeeInfo()));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -170,7 +170,7 @@ class _HomeScreenSMState extends State<HomeScreenSM> {
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => const EmployeeInfo()));
+                              builder: (context) => EmployeeInfo()));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -198,7 +198,7 @@ class _HomeScreenSMState extends State<HomeScreenSM> {
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => const EmployeeInfo()));
+                              builder: (context) => EmployeeInfo()));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(

@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Screens/TaskPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'ChatPage.dart';
 
 class TaskHomePage extends StatefulWidget {
   @override
@@ -12,7 +12,7 @@ class TaskHomePage extends StatefulWidget {
 
 class _TaksHomePageState extends State<TaskHomePage> {
   var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
-  CollectionReference chats = FirebaseFirestore.instance.collection("Chats");
+  CollectionReference tasks = FirebaseFirestore.instance.collection("Tasks");
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +36,7 @@ class _TaksHomePageState extends State<TaskHomePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Assign tasks to \nyour subordinate',
+            'Assign Tasks to \nyour subordinate',
             style: TextStyle(
                 fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
           ),
@@ -83,113 +83,108 @@ class _TaksHomePageState extends State<TaskHomePage> {
 
   Widget _body() {
     return Expanded(
-      child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 30),
-          width: double.infinity,
-          decoration: const BoxDecoration(
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(45), topRight: Radius.circular(45)),
-            color: Colors.white,
-          ),
-          child: StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection("Users")
-                .where('email',
-                    isNotEqualTo: FirebaseAuth.instance.currentUser!.email)
-                .snapshots(),
-            builder:
-                (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-              if (snapshot.hasError) {
-                Fluttertoast.showToast(msg: "Error occured");
-              }
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-              return ListView(
-                padding: const EdgeInsets.only(top: 35),
-                physics: const BouncingScrollPhysics(),
-                children: snapshot.data!.docs.map((DocumentSnapshot document) {
-                  Map<String, dynamic> data =
-                      document.data()! as Map<String, dynamic>;
-
-                  return _itemChats(
-                    avatar: 'assets/images/2.jpg',
-                    name: data['firstName'] + ' ' + data['lastName'],
-                    time: '08.10',
-                    receiverEmail: data['email'],
-                  );
-                  //return Container()
-                }).toList(),
-              );
-            },
-          )),
-    );
-  }
-
-  Widget _itemChats({
-    String avatar = '',
-    name = '',
-    time = '00.00',
-    receiverEmail = '',
-  }) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => TaskPage(receiverEmail, name),
-          ),
-        );
-      },
-      child: Card(
-        margin: const EdgeInsets.symmetric(vertical: 20),
-        elevation: 0,
-        child: Row(
-          children: [
-            Avatar(
-              margin: const EdgeInsets.only(right: 20),
-              size: 60,
-              image: avatar,
+        child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(45), topRight: Radius.circular(45)),
+              color: Colors.white,
             ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '$name',
-                        style: const TextStyle(
-                            fontSize: 17, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        '$time',
-                        style: const TextStyle(
-                            color: Colors.grey, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  // Text(
-                  //   lastMessage,
-                  //   overflow: TextOverflow.ellipsis,
-                  //   style: const TextStyle(
-                  //     color: Colors.black54,
-                  //     fontWeight: FontWeight.bold,
-                  //   ),
-                  // ),
-                ],
-              ),
-            )
-          ],
-        ),
-      ),
-    );
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection("Users")
+                  .where('email',
+                      isNotEqualTo: FirebaseAuth.instance.currentUser!.email)
+                  .snapshots(),
+              builder: (BuildContext context,
+                  AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (snapshot.hasError) {
+                  Fluttertoast.showToast(msg: "Error occured");
+                }
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const SpinKitDoubleBounce(
+                    color: Colors.blue,
+                  );
+                }
+                return ListView(
+                  padding: const EdgeInsets.only(top: 35),
+                  physics: const BouncingScrollPhysics(),
+                  children:
+                      snapshot.data!.docs.map((DocumentSnapshot document) {
+                    Map<String, dynamic> data =
+                        document.data()! as Map<String, dynamic>;
+                    String avatar = 'assets/images/1.jpg';
+                    String name = data['firstname'] + " " + data['middlename'];
+                    String time = '08.10';
+                    String receiverEmail = data['email'];
+                    String position = data['position'];
+                    return _itemChats(
+                        avatar, name, time, receiverEmail, position, context);
+                  }).toList(),
+                );
+              },
+            )));
   }
+}
+
+Widget _itemChats(String avatar, String name, String time, String receiverEmail,
+    String position, BuildContext context) {
+  return GestureDetector(
+    onTap: () {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => TaskPage(receiverEmail, name),
+        ),
+      );
+    },
+    child: Card(
+      margin: const EdgeInsets.symmetric(vertical: 20),
+      elevation: 0,
+      child: Row(
+        children: [
+          Avatar(
+            margin: const EdgeInsets.only(right: 20),
+            size: 60,
+            image: avatar,
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '$name',
+                      style: const TextStyle(
+                          fontSize: 17, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      '$time',
+                      style: const TextStyle(
+                          color: Colors.grey, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Text(
+                  '$position',
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.black54,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
+    ),
+  );
 }
 
 class Avatar extends StatelessWidget {

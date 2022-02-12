@@ -144,11 +144,11 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                     primary: false,
                     crossAxisCount: 2,
                     children: <Widget>[
-                      //Card 1
+                      //fiance
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => const EmployeeInfo()));
+                              builder: (context) => EmployeeInfo()));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -177,10 +177,11 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                         ),
                         // Card 2
                       ),
+                      // TO DO list progress
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => const EmployeeInfo()));
+                              builder: (context) => EmployeeInfo()));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -205,6 +206,7 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                         ),
                         // Card 3
                       ),
+
                       InkWell(
                         onTap: () {
                           // _showNotification();
@@ -234,6 +236,7 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                         ),
                         // Card 4
                       ),
+                      // Tasks
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
@@ -262,10 +265,11 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                         ),
                         // Card 5
                       ),
+                      //my attendance
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => const EmployeeInfo()));
+                              builder: (context) => EmployeeInfo()));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -290,6 +294,7 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                         ),
                         // Card 6
                       ),
+                      //Location
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
@@ -349,7 +354,7 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => const EmployeeInfo()));
+                              builder: (context) => EmployeeInfo()));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(

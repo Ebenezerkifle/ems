@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 //import 'package:navigation_drawer_ui/pages/people_page.dart';
 import 'package:ems/Screens/user_page.dart';
-import 'package:ems/Screens/GeneralManager%20Screens/Home_Screen_GM.dart';
 import 'package:ems/Screens/GeneralManager%20Screens/EmployeeInfo_Screen.dart';
-import 'package:ems/Screens/SharedScreens/ChatHomepage.dart';
 //import 'package:navigation_drawer_ui/pages/favorite_page.dart';
 
 class NavigationDrawerWidget extends StatelessWidget {
@@ -16,7 +14,7 @@ class NavigationDrawerWidget extends StatelessWidget {
 
     return Drawer(
       child: Material(
-        color: Color.fromRGBO(50, 75, 205, 1),
+        color: const Color.fromRGBO(50, 75, 205, 1),
         child: ListView(
           children: <Widget>[
             buildHeader(
@@ -61,7 +59,7 @@ class NavigationDrawerWidget extends StatelessWidget {
                     onClicked: () => selectedItem(context, 3),
                   ),
                   const SizedBox(height: 24),
-                  Divider(color: Colors.white70),
+                  const Divider(color: Colors.white70),
                   const SizedBox(height: 24),
                   buildMenuItem(
                     text: 'Plugins',
@@ -92,27 +90,27 @@ class NavigationDrawerWidget extends StatelessWidget {
       InkWell(
         onTap: onClicked,
         child: Container(
-          padding: padding.add(EdgeInsets.symmetric(vertical: 40)),
+          padding: padding.add(const EdgeInsets.symmetric(vertical: 40)),
           child: Row(
             children: [
               CircleAvatar(radius: 30, backgroundImage: AssetImage(urlImage)),
-              SizedBox(width: 20),
+              const SizedBox(width: 20),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     name,
-                    style: TextStyle(fontSize: 20, color: Colors.white),
+                    style: const TextStyle(fontSize: 20, color: Colors.white),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     email,
-                    style: TextStyle(fontSize: 14, color: Colors.white),
+                    style: const TextStyle(fontSize: 14, color: Colors.white),
                   ),
                 ],
               ),
-              Spacer(),
-              CircleAvatar(
+              const Spacer(),
+              const CircleAvatar(
                 radius: 24,
                 backgroundColor: Color.fromRGBO(30, 60, 168, 1),
                 child: Icon(Icons.add_comment_outlined, color: Colors.white),
@@ -128,7 +126,8 @@ class NavigationDrawerWidget extends StatelessWidget {
     return TextField(
       style: TextStyle(color: color),
       decoration: InputDecoration(
-        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
         hintText: 'Search',
         hintStyle: TextStyle(color: color),
         prefixIcon: Icon(Icons.search, color: color),
@@ -167,9 +166,9 @@ class NavigationDrawerWidget extends StatelessWidget {
 
     switch (index) {
       case 0:
-        Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => HomeScreenGM(),
-        ));
+        // Navigator.of(context).push(MaterialPageRoute(
+        //   builder: (context) => HomeScreenGM(),
+        // ));
         break;
       case 1:
         Navigator.of(context).push(MaterialPageRoute(
