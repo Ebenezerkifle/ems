@@ -1,16 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ems/Screens/ChatPage.dart';
+import 'package:ems/Screens/SharedScreens/ChatPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
-class ChatHomePage extends StatefulWidget {
+class EmployeeInfo extends StatefulWidget {
   @override
-  _ChatHomePageState createState() => _ChatHomePageState();
+  _EmployeeInfoState createState() => _EmployeeInfoState();
 }
 
-class _ChatHomePageState extends State<ChatHomePage> {
+class _EmployeeInfoState extends State<EmployeeInfo> {
   var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
   CollectionReference chats = FirebaseFirestore.instance.collection('Chats');
 
@@ -103,8 +103,8 @@ class _ChatHomePageState extends State<ChatHomePage> {
                   Fluttertoast.showToast(msg: "Error occured");
                 }
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
+                  return const SpinKitDoubleBounce(
+                    color: Colors.blue,
                   );
                 }
                 return ListView(
@@ -115,10 +115,12 @@ class _ChatHomePageState extends State<ChatHomePage> {
                     Map<String, dynamic> data =
                         document.data()! as Map<String, dynamic>;
                     String avatar = 'assets/images/2.jpg';
-                    String name = data['firstName'] + ' ' + data['lastName'];
+                    String name = data['firstname'] + " " + data['middlename'];
                     String time = '08.10';
                     String receiverEmail = data['email'];
-                    return ChatRoomBuilder(avatar, name, time, receiverEmail);
+                    String position = data['position'];
+                    return ChatRoomBuilder(
+                        avatar, name, time, receiverEmail, position);
                   }).toList(),
                 );
               },
@@ -154,13 +156,15 @@ class ChatRoomBuilder extends StatefulWidget {
   String name;
   String time;
   String receiverEmail;
-  ChatRoomBuilder(this.avatar, this.name, this.time, this.receiverEmail,
+  String position;
+  ChatRoomBuilder(
+      this.avatar, this.name, this.time, this.receiverEmail, this.position,
       {Key? key})
       : super(key: key);
 
   @override
   _ChatRoomBuilderState createState() =>
-      _ChatRoomBuilderState(avatar, name, time, receiverEmail);
+      _ChatRoomBuilderState(avatar, name, time, receiverEmail, position);
 }
 
 class _ChatRoomBuilderState extends State<ChatRoomBuilder> {
@@ -168,51 +172,21 @@ class _ChatRoomBuilderState extends State<ChatRoomBuilder> {
   String name;
   String time;
   String receiverEmail;
+  String position;
 
-  _ChatRoomBuilderState(this.avatar, this.name, this.time, this.receiverEmail);
+  _ChatRoomBuilderState(
+      this.avatar, this.name, this.time, this.receiverEmail, this.position);
 
   var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
   CollectionReference chats = FirebaseFirestore.instance.collection('Chats');
-  var chatDocId;
-
-  @override
-  void initState() {
-    _fetchChatDocId().then((value) {
-      setState(() {
-        chatDocId = value;
-      });
-    });
-    super.initState();
-  }
-
-  Future _fetchChatDocId() async {
-    var chatDocId;
-    await chats
-        .where("Users", isEqualTo: {loginUserEmail: null, receiverEmail: null})
-        .limit(1)
-        .get()
-        .then((QuerySnapshot querySnapshot) async {
-          if (querySnapshot.docs.isNotEmpty) {
-            chatDocId = querySnapshot.docs.single.id;
-          } else {
-            await chats.add({
-              'Users': {loginUserEmail: null, receiverEmail: null}
-            }).then((value) => {
-                  chatDocId = value.id,
-                });
-          }
-        });
-    return chatDocId;
-  }
 
   @override
   Widget build(BuildContext context) {
-    String lastMessage = '';
     return GestureDetector(
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => ChatPage(receiverEmail, name, chatDocId),
+              builder: (context) => ChatPage(receiverEmail, name, position),
             ),
           );
         },
@@ -250,8 +224,8 @@ class _ChatRoomBuilderState extends State<ChatRoomBuilder> {
                         const SizedBox(
                           height: 10,
                         ),
-                        (chatDocId != null)
-                            ? LastMessage(chatDocId: chatDocId)
+                        (position != null)
+                            ? LastMessage(chatDocId: position)
                             : Container(),
                       ]),
                 ),
@@ -272,10 +246,9 @@ class _ChatRoomBuilderState extends State<ChatRoomBuilder> {
     CollectionReference notifications =
         FirebaseFirestore.instance.collection("Notifications");
     var query = notifications
-        .doc(loginUserEmail)
-        .collection('Notification')
         .where('seen', isEqualTo: false)
-        .where('sender', isEqualTo: receiverEmail)
+        .where('receiver', isEqualTo: loginUserEmail)
+        .where('title', isEqualTo: 'Message')
         .snapshots();
 
     return StreamBuilder(
@@ -325,7 +298,6 @@ class _LastMessageState extends State<LastMessage> {
             return const SpinKitDoubleBounce(
               color: Colors.blue,
             );
-            ;
           }
           if (snapshot.hasData) {
             DocumentSnapshot? last = snapshot.data!.docs.length > 0

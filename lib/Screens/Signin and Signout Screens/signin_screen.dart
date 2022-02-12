@@ -1,7 +1,11 @@
-import 'package:ems/Screens/Home_Screen_GM.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ems/Screens/SharedScreens/Home_Screen_AD.dart';
+import 'package:ems/Screens/Employee%20Screens/Home_Screen_EM.dart';
+import 'package:ems/Screens/GeneralManager%20Screens/Home_Screen_GM.dart';
+import 'package:ems/Screens/SubManager%20Screens/Home_Screen_SM.dart';
 import 'package:ems/Services/Authentication_Services.dart';
 import 'package:flutter/material.dart';
-import 'package:ems/Screens/signup_screen.dart';
+import 'package:ems/Screens/Signin%20and%20Signout%20Screens/signup_screen.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -159,11 +163,7 @@ class _LoginScreenState extends State<LoginScreen> {
             } else {
               setState(() => error = "successfully signed in!");
               Fluttertoast.showToast(msg: error);
-
-              // preferences.setString("email", email);
-
-              Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (context) => const HomeScreenGM()));
+              _navigate();
             }
           }
         },
@@ -177,6 +177,36 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  Future _navigate() async {
+    await FirebaseFirestore.instance
+        .collection('Users')
+        .where('email', isEqualTo: _emailController.text)
+        .get()
+        .then((QuerySnapshot snapshot) {
+      var result = snapshot.docs.first;
+      switch (result.get('position')) {
+        case 'Admin':
+          Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => const HomeScreenAD()));
+          break;
+        case 'General-Manager':
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+              builder: (context) => HomeScreenGM(
+                    userInfo: result,
+                  )));
+          break;
+        case 'Sub-Manager':
+          Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => const HomeScreenSM()));
+          break;
+        case 'Employee':
+          Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => const HomeScreenEM()));
+          break;
+      }
+    });
   }
 
   Widget buildSignUpButton() {

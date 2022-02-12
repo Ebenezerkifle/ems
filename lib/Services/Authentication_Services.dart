@@ -8,12 +8,13 @@ class Authentication {
 
 // register
 
-  Future register(Employee employee) async {
+  Future authenticat(Employee employee) async {
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
               email: employee.email, password: employee.password);
-      DatabaseServices().updateUsersData(employee, userCredential.user!.uid);
+
+      DatabaseServices().register(employee, userCredential.user!.uid);
 
       error = "The user is successfully registered!";
       return error;
@@ -54,5 +55,5 @@ class Authentication {
     }
   }
 
-  authenticat(Employee user) {}
+  authenticate(Employee user) {}
 }

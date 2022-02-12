@@ -1,6 +1,3 @@
-// ignore: file_names
-//import 'dart:ffi';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -15,20 +12,50 @@ class TaskPage extends StatefulWidget {
   TaskPage(this.receiverEmail, this.name);
 
   @override
-  _TaskPageState createState() =>
-      // ignore: no_logic_in_create_state
-      _TaskPageState(receiverEmail, name);
+  _TaskPageState createState() => _TaskPageState(receiverEmail, name);
 }
 
 class _TaskPageState extends State<TaskPage> {
-  var loginUser = FirebaseAuth.instance.currentUser!.email;
+  var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
 
-  CollectionReference chats = FirebaseFirestore.instance.collection("Chats");
+  CollectionReference tasks = FirebaseFirestore.instance.collection("Tasks");
 
   String receiverEmail;
   String name;
 
   _TaskPageState(this.receiverEmail, this.name);
+
+  var taskDocId;
+
+  @override
+  void initState() {
+    _fetchChatDocId().then((value) {
+      setState(() {
+        taskDocId = value;
+      });
+    });
+    super.initState();
+  }
+
+  Future _fetchChatDocId() async {
+    var taskDocId;
+    await tasks
+        .where("Users", isEqualTo: {loginUserEmail: null, receiverEmail: null})
+        .limit(1)
+        .get()
+        .then((QuerySnapshot querySnapshot) async {
+          if (querySnapshot.docs.isNotEmpty) {
+            taskDocId = querySnapshot.docs.single.id;
+          } else {
+            await tasks.add({
+              'Users': {loginUserEmail: null, receiverEmail: null}
+            }).then((value) => {
+                  taskDocId = value.id,
+                });
+          }
+        });
+    return taskDocId;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +65,7 @@ class _TaskPageState extends State<TaskPage> {
         child: Column(
           children: [
             _topChat(),
-            //_bodyChat(),
+            _bodyChat(),
             const SizedBox(
               height: 5,
             )
@@ -117,98 +144,60 @@ class _TaskPageState extends State<TaskPage> {
 
   Widget _bodyChat() {
     return Expanded(
-        child: Container(
-      padding: const EdgeInsets.only(left: 25, right: 25, top: 25),
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(45), topRight: Radius.circular(45)),
-        color: Colors.white,
-      ),
-      // child: StreamBuilder<QuerySnapshot>(
-
-      //   builder:
-      //       (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-      //     if (snapshot.hasError) {
-      //       Fluttertoast.showToast(msg: "Error occured");
-      //     }
-      //     if (snapshot.connectionState == ConnectionState.waiting) {
-      //       return const Center(
-      //         child: CircularProgressIndicator(),
-      //       );
-      //     }
-      //     return ListView(
-      //       padding: const EdgeInsets.only(top: 35),
-      //       physics: const BouncingScrollPhysics(),
-      //       children: snapshot.data!.docs.map((DocumentSnapshot document) {
-      //         Map<String, dynamic> data =
-      //             document.data()! as Map<String, dynamic>;
-      //         int sender = 0; //by default we assume sender is current user.
-      //         if (data['user'].toString() == receiverEmail) {
-      //           sender = 1;
-      //         }
-      //         return _itemChat(
-      //           avatar: 'assets/images/5.jpg',
-      //           chat: sender,
-      //           message: data['msg']!,
-      //           time: '18.00',
-      //         );
-      //       }).toList(),
-      //     );
-      //   },
-      // )),
-    ));
-  }
-
-  // 0 = Send
-  // 1 = Recieved
-  Widget _itemChat({int? chat, String? avatar, message, time}) {
-    return Row(
-      mainAxisAlignment:
-          chat == 0 ? MainAxisAlignment.end : MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        avatar != null
-            ? Avatar(
-                image: avatar,
-                size: 50,
-              )
-            : Text(
-                '$time',
-                style: TextStyle(color: Colors.grey.shade400),
-              ),
-        Flexible(
-          child: Container(
-            margin: const EdgeInsets.only(left: 10, right: 10, top: 20),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: chat == 0 ? Colors.indigo.shade100 : Colors.indigo.shade50,
-              borderRadius: chat == 0
-                  ? const BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30),
-                      bottomLeft: Radius.circular(30),
-                    )
-                  : const BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30),
-                      bottomRight: Radius.circular(30),
-                    ),
-            ),
-            child: Text('$message'),
+      child: Container(
+          padding: const EdgeInsets.only(left: 25, right: 25, top: 25),
+          width: double.infinity,
+          decoration: const BoxDecoration(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(45), topRight: Radius.circular(45)),
+            color: Colors.white,
           ),
-        ),
-        chat == 1
-            ? Text(
-                '$time',
-                style: TextStyle(color: Colors.grey.shade400),
-              )
-            : const SizedBox(),
-      ],
+          child: StreamBuilder<QuerySnapshot>(
+            stream: tasks
+                .doc(taskDocId.toString())
+                .collection("Tasks")
+                .orderBy('timeStamp')
+                .snapshots(),
+            builder:
+                (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+              if (snapshot.hasError) {
+                Fluttertoast.showToast(msg: "Error occured");
+              }
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+              return ListView(
+                padding: const EdgeInsets.only(top: 35),
+                physics: const BouncingScrollPhysics(),
+                children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                  Map<String, dynamic> data =
+                      document.data()! as Map<String, dynamic>;
+                  if (data.isEmpty) {
+                    return const Center(
+                      child: Text("No Task yet"),
+                    );
+                  }
+                  return _tasksItem(
+                    title: data['title'],
+                    descreption: data['description']!,
+                    time: '08.00',
+                  );
+                }).toList(),
+              );
+            },
+          )),
     );
   }
 
+  Widget _tasksItem({required String title, descreption, time}) {
+    return Container();
+  }
+
   void _createnewTask(context) {
+    TextEditingController titleController = TextEditingController();
+    TextEditingController descirptionController = TextEditingController();
     String title;
     String description;
     showDialog(
@@ -230,9 +219,7 @@ class _TaskPageState extends State<TaskPage> {
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   ),
                   TextFormField(
-                    // validator: (value) => value!.length < 6
-                    //     ? "Enter 6+ chars for password"
-                    //     : null,
+                    controller: titleController,
                     onChanged: (value) => {setState(() => title = value)},
                     keyboardType: TextInputType.text,
                     decoration: const InputDecoration(
@@ -243,12 +230,39 @@ class _TaskPageState extends State<TaskPage> {
                     // validator: (value) => value!.length < 6
                     //     ? "Enter 6+ chars for password"
                     //     : null,
+                    controller: descirptionController,
                     onChanged: (value) => {setState(() => description = value)},
                     keyboardType: TextInputType.text,
                     decoration: const InputDecoration(
                       hintText: "Description...",
                     ),
                   ),
+                  SizedBox(
+                    height: 20,
+                    child: InkWell(
+                      onTap: () {
+                        if (titleController.text.isNotEmpty &&
+                            descirptionController.text.isNotEmpty) {
+                          tasks.doc(taskDocId).collection('Tasks').add({
+                            "title": titleController.text.trim(),
+                            "description": descirptionController.text.trim(),
+                            "creator": loginUserEmail?.trim(),
+                            "assignedTo": receiverEmail.trim(),
+                            "timeStamp": DateTime.now()
+                            //"due_date":
+                          });
+                          descirptionController.clear();
+                          titleController.clear();
+                          Navigator.pop(context);
+                        }
+                      },
+                      child: Container(
+                        alignment: Alignment.center,
+                        color: Colors.indigoAccent,
+                        child: Text('Send'),
+                      ),
+                    ),
+                  )
                 ],
               ),
             ),
