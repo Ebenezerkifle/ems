@@ -17,16 +17,29 @@ class _ChatHomePageState extends State<ChatHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.indigo,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _top(),
-            _body(),
-          ],
+        backgroundColor: Colors.indigo,
+        body: SafeArea(
+          child: Column(
+            children: [
+              _top(),
+              _body(),
+            ],
+          ),
         ),
-      ),
-    );
+        bottomNavigationBar: NavigationBarTheme(
+            data: NavigationBarThemeData(
+                indicatorColor: Colors.indigoAccent,
+                labelTextStyle: MaterialStateProperty.all(const TextStyle(
+                    fontSize: 14, fontWeight: FontWeight.bold))),
+            child: NavigationBar(
+              destinations: const [
+                NavigationDestination(icon: Icon(Icons.home), label: "Home"),
+                NavigationDestination(
+                    icon: Icon(Icons.chat_bubble_outline), label: "Chat"),
+                NavigationDestination(
+                    icon: Icon(Icons.task_alt_outlined), label: "Tasks")
+              ],
+            )));
   }
 
   Widget _top() {
