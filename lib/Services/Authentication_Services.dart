@@ -53,4 +53,6 @@ class Authentication {
       return error;
     }
   }
+
+  authenticat(Employee user) {}
 }

@@ -10,6 +10,10 @@ class Employee {
 
   Employee.forJson(this.firstName, this.lastName, this.email, this.uid);
 
+  set position(String position) {}
+
+  set middleName(String middleName) {}
+
   static Employee fromJson(Map<String, dynamic> json) => Employee.forJson(
       json['firstname'], json['lastname'], json['email'], json['uid']);
 
