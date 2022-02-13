@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ems/Screens/user_page.dart';
-import 'package:ems/Screens/GeneralManager%20Screens/EmployeeInfo_Screen.dart';
 
 class NavigationDrawerWidget extends StatelessWidget {
   final padding = const EdgeInsets.symmetric(horizontal: 20);
@@ -8,8 +6,8 @@ class NavigationDrawerWidget extends StatelessWidget {
   const NavigationDrawerWidget({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    final name = 'Sarah Abs';
-    final email = 'sarah@abs.com';
+    final name = 'Abenezer Kifle';
+    final email = 'abeni@gmail.com';
     final urlImage = 'assets/user1.jpeg';
 
     return Drawer();
@@ -169,15 +167,15 @@ class NavigationDrawerWidget extends StatelessWidget {
 
     switch (index) {
       case 0:
-        // Navigator.of(context).push(MaterialPageRoute(
-        //   builder: (context) => HomeScreenGM(),
-        // ));
-        break;
+      // Navigator.of(context).push(MaterialPageRoute(
+      //   builder: (context) => HomeScreenGM(),
+      // ));
+      /* break;
       case 1:
         Navigator.of(context).push(MaterialPageRoute(
           builder: (context) => EmployeeInfo(),
         ));
-        break;
+        break; */
     }
   }
 }
