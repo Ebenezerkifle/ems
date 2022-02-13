@@ -185,10 +185,13 @@ class _TaskPageState extends State<TaskPage> {
                 children: snapshot.data!.docs.map((DocumentSnapshot document) {
                   Map<String, dynamic> data =
                       document.data()! as Map<String, dynamic>;
+
                   return _tasksItem(
                     title: data['title'],
-                    description: data['description']!,
+                    description: data['description'],
                     time: data['timeStamp'],
+                    documentId: document.id,
+                    status: data['status'],
                   );
                 }).toList(),
               );
@@ -197,24 +200,44 @@ class _TaskPageState extends State<TaskPage> {
     );
   }
 
-  Widget _tasksItem({required String title, description, var time}) {
+  Widget _tasksItem(
+      {required String title,
+      description,
+      var time,
+      var documentId,
+      required int status}) {
     return InkWell(
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) =>
-                TaskDetail(taskDocId, receiverEmail, description, title, time),
+            builder: (context) => TaskDetail(
+                taskDocId, receiverEmail, description, title, time, documentId),
           ),
         );
       },
       child: Card(
+        color: status == -1
+            ? Colors.redAccent
+            : status == 0
+                ? Colors.yellowAccent
+                : Colors.greenAccent,
         elevation: 5,
         child: Container(
+          color: status == -1
+              ? Colors.redAccent
+              : status == 0
+                  ? Colors.yellowAccent
+                  : Colors.greenAccent,
           alignment: Alignment.center,
           margin: const EdgeInsets.all(5.0),
           padding: const EdgeInsets.all(5.0),
           child: Stack(children: [
             Card(
+              color: status == -1
+                  ? Colors.redAccent
+                  : status == 0
+                      ? Colors.yellowAccent
+                      : Colors.greenAccent,
               margin: const EdgeInsets.symmetric(vertical: 20),
               elevation: 0,
               child: Row(
@@ -256,29 +279,6 @@ class _TaskPageState extends State<TaskPage> {
               ),
             ),
           ]),
-        ),
-      ),
-    );
-  }
-}
-
-class Avatar extends StatelessWidget {
-  final double size;
-  final image;
-  final EdgeInsets margin;
-  Avatar({this.image, this.size = 50, this.margin = const EdgeInsets.all(0)});
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: margin,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          image: DecorationImage(
-            image: AssetImage(image),
-          ),
         ),
       ),
     );

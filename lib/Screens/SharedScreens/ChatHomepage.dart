@@ -17,16 +17,16 @@ class _ChatHomePageState extends State<ChatHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.indigo,
-        body: SafeArea(
-          child: Column(
-            children: [
-              _top(),
-              _body(),
-            ],
-          ),
+      backgroundColor: Colors.indigo,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _top(),
+            _body(),
+          ],
         ),
- );
+      ),
+    );
   }
 
   Widget _top() {

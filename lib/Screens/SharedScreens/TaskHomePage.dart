@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ems/Screens/TaskPage.dart';
+import 'package:ems/Screens/SharedScreens/TaskPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -92,44 +92,49 @@ class _TaksHomePageState extends State<TaskHomePage> {
               color: Colors.white,
             ),
             child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection("Users")
-                  .where('email',
-                      isNotEqualTo: FirebaseAuth.instance.currentUser!.email)
-                  .snapshots(),
-              builder: (BuildContext context,
-                  AsyncSnapshot<QuerySnapshot> snapshot) {
-                if (snapshot.hasError) {
-                  Fluttertoast.showToast(msg: "Error occured");
-                }
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const SpinKitDoubleBounce(
-                    color: Colors.blue,
-                  );
-                }
-                return ListView(
-                  padding: const EdgeInsets.only(top: 35),
-                  physics: const BouncingScrollPhysics(),
-                  children:
-                      snapshot.data!.docs.map((DocumentSnapshot document) {
-                    Map<String, dynamic> data =
-                        document.data()! as Map<String, dynamic>;
-                    String avatar = 'assets/images/1.jpg';
-                    String name = data['firstname'] + " " + data['middlename'];
-                    String time = '08.10';
-                    String receiverEmail = data['email'];
-                    String position = data['position'];
-                    return _itemChats(
-                        avatar, name, time, receiverEmail, position, context);
-                  }).toList(),
-                );
-              },
-            )));
+                stream: FirebaseFirestore.instance
+                    .collection("Users")
+                    .where('position', isEqualTo: 'Sub-Manager')
+                    .snapshots(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (snapshot.hasError) {
+                    Fluttertoast.showToast(msg: "Error occured");
+                  }
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const SpinKitDoubleBounce(
+                      color: Colors.blue,
+                    );
+                  }
+                  if (snapshot.hasData) {
+                    return ListView(
+                      padding: const EdgeInsets.only(top: 35),
+                      physics: const BouncingScrollPhysics(),
+                      children:
+                          snapshot.data!.docs.map((DocumentSnapshot document) {
+                        Map<String, dynamic> data =
+                            document.data()! as Map<String, dynamic>;
+                        String avatar = 'assets/images/1.jpg';
+                        String name =
+                            data['firstname'] + " " + data['middlename'];
+                        String time = '08.10';
+                        String receiverEmail = data['email'];
+                        String department = data['department'];
+                        return _itemChats(avatar, name, time, receiverEmail,
+                            department, context);
+                      }).toList(),
+                    );
+                  } else {
+                    return const Center(
+                      child: Text("There is Nothing to Show!"),
+                    );
+                  }
+                })));
   }
 }
 
 Widget _itemChats(String avatar, String name, String time, String receiverEmail,
-    String position, BuildContext context) {
+    String department, BuildContext context) {
   return GestureDetector(
     onTap: () {
       Navigator.of(context).push(
@@ -171,7 +176,7 @@ Widget _itemChats(String avatar, String name, String time, String receiverEmail,
                   height: 10,
                 ),
                 Text(
-                  '$position',
+                  '$department',
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Colors.black54,

@@ -218,7 +218,6 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
       },
-      //  => print("Sign Up Pressed"),
       child: RichText(
         text: const TextSpan(children: [
           TextSpan(

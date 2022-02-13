@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Attendance/Attendance.dart';
 import 'package:ems/GeoFence/googleMap.dart';
+import 'package:ems/Screens/GeneralManager%20Screens/todoListProgress.dart';
 import 'package:ems/Screens/SharedScreens/ChatHomepage.dart';
 import 'package:ems/Screens/GeneralManager%20Screens/EmployeeInfo_Screen.dart';
 import 'package:ems/Screens/SharedScreens/TaskHomePage.dart';
@@ -187,7 +188,7 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => EmployeeInfo()));
+                              builder: (context) => const TodoListProgress()));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
