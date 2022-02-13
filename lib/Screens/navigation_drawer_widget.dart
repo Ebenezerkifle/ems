@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
-//import 'package:navigation_drawer_ui/pages/people_page.dart';
+import 'package:ems/Screens/GeneralManager Screens/Home_Screen_GM.dart';
 import 'package:ems/Screens/user_page.dart';
-import 'package:ems/Screens/GeneralManager%20Screens/EmployeeInfo_Screen.dart';
-//import 'package:navigation_drawer_ui/pages/favorite_page.dart';
 
 class NavigationDrawerWidget extends StatelessWidget {
   final padding = EdgeInsets.symmetric(horizontal: 20);
   @override
   Widget build(BuildContext context) {
-    final name = 'Sarah Abs';
-    final email = 'sarah@abs.com';
+    final name = 'Abenezer Kifle';
+    final email = 'abeni@gmail.com';
     final urlImage = 'assets/user1.jpeg';
 
     return Drawer(
@@ -36,39 +34,69 @@ class NavigationDrawerWidget extends StatelessWidget {
                   buildSearchField(),
                   const SizedBox(height: 24),
                   buildMenuItem(
-                    text: 'People',
-                    icon: Icons.people,
+                    text: 'Home',
+                    icon: Icons.home,
                     onClicked: () => selectedItem(context, 0),
                   ),
                   const SizedBox(height: 16),
                   buildMenuItem(
-                    text: 'Favourites',
-                    icon: Icons.favorite_border,
+                    text: 'Chat',
+                    icon: Icons.chat,
                     onClicked: () => selectedItem(context, 1),
                   ),
                   const SizedBox(height: 16),
                   buildMenuItem(
-                    text: 'Workflow',
+                    text: 'Tasks',
                     icon: Icons.workspaces_outline,
                     onClicked: () => selectedItem(context, 2),
                   ),
                   const SizedBox(height: 16),
                   buildMenuItem(
-                    text: 'Updates',
-                    icon: Icons.update,
+                    text: 'Employee Info',
+                    icon: Icons.info,
+                    onClicked: () => selectedItem(context, 3),
+                  ),
+                  const SizedBox(height: 16),
+                  buildMenuItem(
+                    text: 'Employee Progress',
+                    icon: Icons.auto_graph,
+                    onClicked: () => selectedItem(context, 3),
+                  ),
+                  const SizedBox(height: 16),
+                  buildMenuItem(
+                    text: 'Todo List Progress',
+                    icon: Icons.grading_sharp,
+                    onClicked: () => selectedItem(context, 3),
+                  ),
+                  const SizedBox(height: 16),
+                  buildMenuItem(
+                    text: 'Finance',
+                    icon: Icons.currency_exchange,
+                    onClicked: () => selectedItem(context, 3),
+                  ),
+                  const SizedBox(height: 16),
+                  buildMenuItem(
+                    text: 'Location',
+                    icon: Icons.location_pin,
+                    onClicked: () => selectedItem(context, 3),
+                  ),
+                  const SizedBox(height: 16),
+                  buildMenuItem(
+                    text: 'Attendance',
+                    icon: Icons.calendar_today,
                     onClicked: () => selectedItem(context, 3),
                   ),
                   const SizedBox(height: 24),
                   const Divider(color: Colors.white70),
                   const SizedBox(height: 24),
                   buildMenuItem(
-                    text: 'Plugins',
+                    text: 'Setting',
                     icon: Icons.account_tree_outlined,
                     onClicked: () => selectedItem(context, 4),
                   ),
                   const SizedBox(height: 16),
                   buildMenuItem(
-                    text: 'Notifications',
+                    text: 'Log Out',
                     icon: Icons.notifications_outlined,
                     onClicked: () => selectedItem(context, 5),
                   ),
@@ -166,15 +194,15 @@ class NavigationDrawerWidget extends StatelessWidget {
 
     switch (index) {
       case 0:
-        // Navigator.of(context).push(MaterialPageRoute(
-        //   builder: (context) => HomeScreenGM(),
-        // ));
-        break;
+      // Navigator.of(context).push(MaterialPageRoute(
+      //   builder: (context) => HomeScreenGM(),
+      // ));
+      /* break;
       case 1:
         Navigator.of(context).push(MaterialPageRoute(
           builder: (context) => EmployeeInfo(),
         ));
-        break;
+        break; */
     }
   }
 }
