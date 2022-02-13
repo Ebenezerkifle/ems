@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ems/Models/task.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -175,14 +176,16 @@ class _CreateTaskState extends State<CreateTask> {
           if (descirptionController.text.isNotEmpty &&
               titleController.text.isNotEmpty) {
             DateTime timeStamp = DateTime.now();
-            tasks.doc(taskDocId).collection('Tasks').add({
-              "title": titleController.text.trim(),
-              "description": descirptionController.text.trim(),
-              "creator": loginUserEmail?.trim(),
-              "assignedTo": receiverEmail.trim(),
-              "timeStamp": timeStamp,
-              //"due_date":
-            });
+            Task task = Task(
+              title: titleController.text.trim(),
+              description: descirptionController.text.trim(),
+              timeStamp: timeStamp,
+              creator: loginUserEmail.toString(),
+              assignedTo: receiverEmail.trim(),
+              status: -1,
+            );
+
+            tasks.doc(taskDocId).collection('Tasks').add(task.taskMap);
             descirptionController.clear();
             titleController.clear();
             Navigator.of(context).pop();
@@ -238,15 +241,17 @@ class TaskDetail extends StatefulWidget {
   String receiverEmail;
   String description;
   String title;
+  var documentId;
   var timeStamp;
   TaskDetail(this.taskDocId, this.receiverEmail, this.description, this.title,
-      this.timeStamp,
+      this.timeStamp, this.documentId,
       {Key? key})
       : super(key: key);
 
   @override
-  _TaskDetailState createState() =>
-      _TaskDetailState(taskDocId, receiverEmail, description, title, timeStamp);
+  // ignore: no_logic_in_create_state
+  _TaskDetailState createState() => _TaskDetailState(
+      taskDocId, receiverEmail, description, title, timeStamp, documentId);
 }
 
 class _TaskDetailState extends State<TaskDetail> {
@@ -255,10 +260,14 @@ class _TaskDetailState extends State<TaskDetail> {
   String description;
   String title;
   var timeStamp;
+  var documentId;
+
   _TaskDetailState(this.taskDocId, this.receiverEmail, this.description,
-      this.title, this.timeStamp);
+      this.title, this.timeStamp, this.documentId);
   CollectionReference tasks = FirebaseFirestore.instance.collection("Tasks");
   var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
+
+  int _status = -1;
 
   TextEditingController messageController = TextEditingController();
 
@@ -284,9 +293,9 @@ class _TaskDetailState extends State<TaskDetail> {
 
   Widget _topTask() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 25),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 25),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           Row(
             children: [
@@ -301,6 +310,7 @@ class _TaskDetailState extends State<TaskDetail> {
               Text(
                 title,
                 style: const TextStyle(
+                    overflow: TextOverflow.ellipsis,
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: Colors.white),
@@ -315,10 +325,18 @@ class _TaskDetailState extends State<TaskDetail> {
                   borderRadius: BorderRadius.circular(50),
                   color: Colors.black12,
                 ),
-                child: const Icon(
-                  Icons.call,
-                  size: 25,
-                  color: Colors.white,
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.done,
+                    size: 25,
+                    color: Colors.greenAccent,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _status = 1;
+                      _taskStatusChange(1);
+                    });
+                  },
                 ),
               ),
               const SizedBox(
@@ -330,10 +348,18 @@ class _TaskDetailState extends State<TaskDetail> {
                   borderRadius: BorderRadius.circular(50),
                   color: Colors.black12,
                 ),
-                child: const Icon(
-                  Icons.videocam,
-                  size: 25,
-                  color: Colors.white,
+                child: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _status = 0;
+                      _taskStatusChange(0);
+                    });
+                  },
+                  icon: const Icon(
+                    Icons.run_circle_outlined,
+                    size: 25,
+                    color: Colors.yellowAccent,
+                  ),
                 ),
               ),
             ],
@@ -341,6 +367,12 @@ class _TaskDetailState extends State<TaskDetail> {
         ],
       ),
     );
+  }
+
+  _taskStatusChange(int status) async {
+    tasks.doc(taskDocId).collection('Tasks').doc(documentId).update({
+      'status': _status,
+    });
   }
 
   Widget _bodyTask() {
@@ -360,7 +392,11 @@ class _TaskDetailState extends State<TaskDetail> {
           Card(
             elevation: 5,
             child: Container(
-                color: Colors.black12,
+                color: _status == -1
+                    ? Colors.redAccent
+                    : _status == 0
+                        ? Colors.yellowAccent
+                        : Colors.greenAccent,
                 padding: const EdgeInsets.all(3),
                 child: Text(description)),
           ),
