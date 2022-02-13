@@ -26,20 +26,7 @@ class _ChatHomePageState extends State<ChatHomePage> {
             ],
           ),
         ),
-        bottomNavigationBar: NavigationBarTheme(
-            data: NavigationBarThemeData(
-                indicatorColor: Colors.indigoAccent,
-                labelTextStyle: MaterialStateProperty.all(const TextStyle(
-                    fontSize: 14, fontWeight: FontWeight.bold))),
-            child: NavigationBar(
-              destinations: const [
-                NavigationDestination(icon: Icon(Icons.home), label: "Home"),
-                NavigationDestination(
-                    icon: Icon(Icons.chat_bubble_outline), label: "Chat"),
-                NavigationDestination(
-                    icon: Icon(Icons.task_alt_outlined), label: "Tasks")
-              ],
-            )));
+ );
   }
 
   Widget _top() {
