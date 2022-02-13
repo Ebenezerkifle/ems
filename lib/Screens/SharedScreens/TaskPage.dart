@@ -30,7 +30,7 @@ class _TaskPageState extends State<TaskPage> {
 
   @override
   void initState() {
-    _fetchChatDocId().then((value) {
+    _fetchTaskDocId().then((value) {
       setState(() {
         taskDocId = value;
       });
@@ -38,7 +38,7 @@ class _TaskPageState extends State<TaskPage> {
     super.initState();
   }
 
-  Future _fetchChatDocId() async {
+  Future _fetchTaskDocId() async {
     var taskDocId;
     await tasks
         .where("Users", isEqualTo: {loginUserEmail: null, receiverEmail: null})

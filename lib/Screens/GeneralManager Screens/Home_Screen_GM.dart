@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/GeoFence/googleMap.dart';
+import 'package:ems/Screens/GeneralManager%20Screens/employeeprogress.dart';
 import 'package:ems/Screens/GeneralManager%20Screens/todoListProgress.dart';
 import 'package:ems/Screens/SharedScreens/ChatHomepage.dart';
 import 'package:ems/Screens/GeneralManager%20Screens/EmployeeInfo_Screen.dart';
 import 'package:ems/Screens/SharedScreens/TaskHomePage.dart';
-import 'package:ems/Screens/Signin%20and%20Signout%20Screens/signin_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:ems/Screens/navigation_drawer_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -74,6 +74,7 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
     );
 
     return Scaffold(
+      endDrawer: const NavigationDrawerWidget(),
       body: Stack(children: <Widget>[
         Container(
             height: size.height * .3,
@@ -129,10 +130,11 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                         onPressed: () async {
                           Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
-                                  builder: (context) => const LoginScreen()));
-                          FirebaseAuth.instance.signOut();
+                                  builder: (context) =>
+                                      const NavigationDrawerWidget()));
+                          // FirebaseAuth.instance.signOut();
                         },
-                        icon: const Icon(Icons.logout),
+                        icon: const Icon(Icons.online_prediction_sharp),
                         color: Colors.white,
                       ),
                     ],
@@ -210,9 +212,8 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
 
                       InkWell(
                         onTap: () {
-                          // _showNotification();
-                          // Navigator.of(context).push(MaterialPageRoute(
-                          //     builder: (context) => const EmployeeInfo()));
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => const EmployeeProgress()));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -355,7 +356,7 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => EmployeeInfo()));
+                              builder: (context) => const EmployeeInfo()));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(

@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Models/task.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
 class CreateTask extends StatefulWidget {
   String receiverEmail;
@@ -10,6 +9,7 @@ class CreateTask extends StatefulWidget {
   CreateTask(this.receiverEmail, this.taskDocId, {Key? key}) : super(key: key);
 
   @override
+  // ignore: no_logic_in_create_state
   _CreateTaskState createState() => _CreateTaskState(
         receiverEmail,
         taskDocId,

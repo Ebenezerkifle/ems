@@ -5,14 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
-class EmployeeInfo extends StatefulWidget {
-  const EmployeeInfo({Key? key}) : super(key: key);
+class EmployeeProgress extends StatefulWidget {
+  const EmployeeProgress({Key? key}) : super(key: key);
 
   @override
-  _EmployeeInfoState createState() => _EmployeeInfoState();
+  _EmployeeProgressState createState() => _EmployeeProgressState();
 }
 
-class _EmployeeInfoState extends State<EmployeeInfo> {
+class _EmployeeProgressState extends State<EmployeeProgress> {
   var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
   CollectionReference tasks = FirebaseFirestore.instance.collection("Tasks");
 
@@ -38,7 +38,7 @@ class _EmployeeInfoState extends State<EmployeeInfo> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Employee \ninformation',
+            'Employee \nProgress',
             style: TextStyle(
                 fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
           ),
@@ -94,8 +94,10 @@ class _EmployeeInfoState extends State<EmployeeInfo> {
               color: Colors.white,
             ),
             child: StreamBuilder<QuerySnapshot>(
-                stream:
-                    FirebaseFirestore.instance.collection("Users").snapshots(),
+                stream: FirebaseFirestore.instance
+                    .collection("Users")
+                    .where('email', isNotEqualTo: loginUserEmail)
+                    .snapshots(),
                 builder: (BuildContext context,
                     AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (snapshot.hasError) {
@@ -145,15 +147,9 @@ Widget _itemChats(String avatar, String name, String time, String receiverEmail,
       );
     },
     child: Card(
-      margin: const EdgeInsets.symmetric(vertical: 20),
-      elevation: 0,
+      margin: const EdgeInsets.symmetric(vertical: 30),
       child: Row(
         children: [
-          Avatar(
-            margin: const EdgeInsets.only(right: 20),
-            size: 60,
-            image: avatar,
-          ),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -177,6 +173,7 @@ Widget _itemChats(String avatar, String name, String time, String receiverEmail,
                   height: 10,
                 ),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       '$position',
@@ -199,6 +196,9 @@ Widget _itemChats(String avatar, String name, String time, String receiverEmail,
                           fontSize: 12),
                     ),
                   ],
+                ),
+                const SizedBox(
+                  height: 20,
                 ),
               ],
             ),

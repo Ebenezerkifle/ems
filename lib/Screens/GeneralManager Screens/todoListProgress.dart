@@ -1,9 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ems/Screens/SharedScreens/TaskPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
 class TodoListProgress extends StatefulWidget {
   const TodoListProgress({Key? key}) : super(key: key);
@@ -14,73 +11,77 @@ class TodoListProgress extends StatefulWidget {
 
 class _TodoListProgressState extends State<TodoListProgress> {
   var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
+
   CollectionReference tasks = FirebaseFirestore.instance.collection("Tasks");
 
-  List status = ['Undone', 'On Progress', 'Done'];
+  List statusList = ['Undone', 'On Progress', 'Done'];
   List statusNum = [-1, 0, 1];
-  Future<List<dynamic>> tasksList = [] as Future<List>;
   late String _status;
   late int _statusNum;
-
-  // List<Map<String, dynamic>> taskProgress = [];
+  List taskList = [];
+  List documentIdList = [];
 
   @override
   void initState() {
     setState(() {
+      _status = statusList[0];
       _statusNum = statusNum[0];
-      _status = status[0];
     });
-    _fetchDocumentId().then((value) {
-      tasksList = value as Future<List>;
+    _fetchTasksLists().then((value) {
+      documentIdList = value;
     });
+    print("---------------------");
+    print(documentIdList.length);
     super.initState();
   }
 
-  Future<List<dynamic>> _fetchDocumentId() async {
-    List tasksList = [];
-    print("--------------------------");
-    await tasks.get().then((querySnapshot) {
-      for (var doc in querySnapshot.docs) {
-        var id = doc.id;
-        tasksList = _tasks(id) as List;
-      }
+  Future _fetchTasksLists() async {
+    List taskList = [];
+    await tasks.get().then((QuerySnapshot) {
+      QuerySnapshot.docs.forEach((element) {
+        taskList.add(element.id);
+        print(element.id);
+      });
     });
-    return tasksList;
+    return taskList;
   }
 
-  Future<List<dynamic>> _tasks(var id) async {
+  Future _tasksFromDocument(var docId) async {
     List tasksList = [];
-    tasks
-        .doc(id)
-        .collection("Tasks")
+    await tasks
+        .doc(docId)
+        .collection('Tasks')
         .where('status', isEqualTo: _statusNum)
-        .orderBy("timeStamp")
         .get()
-        .then((QuerySnapshot query) {
-      for (var element in query.docs) {
-        tasksList.add(element.data());
-        print(element.data());
-      }
+        .then((QuerySnapshot) {
+      QuerySnapshot.docs.forEach((element) {
+        taskList.add(element.data());
+      });
     });
     return tasksList;
   }
 
   @override
   Widget build(BuildContext context) {
+    print("___________________________-here I'm");
+    print(documentIdList.length);
     return Scaffold(
       backgroundColor: Colors.indigo,
       body: SafeArea(
         child: Column(
           children: [
-            _top(),
-            _body(),
+            _topChat(),
+            _bodyChat(),
+            const SizedBox(
+              height: 5,
+            )
           ],
         ),
       ),
     );
   }
 
-  Widget _top() {
+  Widget _topChat() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 25),
       child: Row(
@@ -106,65 +107,69 @@ class _TodoListProgressState extends State<TodoListProgress> {
             ],
           ),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Container(
                 padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(50),
-                  color: Colors.black12,
+                  color: Colors.black38,
                 ),
                 child: IconButton(
                   onPressed: () {
                     setState(() {
                       _statusNum = statusNum[0];
-                      _status = status[0];
+                      _status = statusList[0];
                     });
                   },
                   color: Colors.white,
                   icon: const Icon(
-                    Icons.not_started_rounded,
+                    Icons.not_interested_outlined,
                     color: Colors.red,
                     size: 25,
                   ),
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(50),
-                  color: Colors.black12,
-                ),
-                child: IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _statusNum = statusNum[1];
-                      _status = status[1];
-                    });
-                  },
-                  color: Colors.white,
-                  icon: const Icon(
-                    Icons.run_circle_outlined,
-                    color: Colors.yellow,
-                    size: 25,
-                  ),
-                ),
+              const SizedBox(
+                width: 10,
               ),
               Container(
                 padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(50),
-                  color: Colors.black12,
+                  color: Colors.black38,
+                ),
+                child: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _statusNum = statusNum[1];
+                      _status = statusList[1];
+                    });
+                  },
+                  icon: const Icon(
+                    Icons.run_circle_outlined,
+                    size: 25,
+                    color: Colors.yellow,
+                  ),
+                ),
+              ),
+              const SizedBox(
+                width: 10,
+              ),
+              Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(50),
+                  color: Colors.black38,
                 ),
                 child: IconButton(
                   onPressed: () {
                     setState(() {
                       _statusNum = statusNum[2];
-                      _status = status[2];
+                      _status = statusList[2];
                     });
                   },
                   icon: const Icon(
-                    Icons.done,
+                    Icons.done_all_outlined,
                     size: 25,
                     color: Colors.green,
                   ),
@@ -177,45 +182,77 @@ class _TodoListProgressState extends State<TodoListProgress> {
     );
   }
 
-  Widget _body() {
+  Widget _bodyChat() {
     return Expanded(
-        child: Container(
-            padding: const EdgeInsets.only(left: 25, right: 25, top: 25),
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(45), topRight: Radius.circular(45)),
-              color: Colors.white,
-            ),
-            child: ListView.builder(
-                shrinkWrap: true,
-                //itemCount: tasksList.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return Container();
-                  // _tasksItem(
-                  //   title: tasksList[index]['title'],
-                  //   description: tasksList[index]['description'],
-                  //   time: tasksList[index]['timeStamp'],
-                  //   status: tasksList[index]['status'],
-                  // );
-                })));
+      child: Container(
+          padding: const EdgeInsets.only(left: 25, right: 25, top: 25),
+          width: double.infinity,
+          decoration: const BoxDecoration(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(45), topRight: Radius.circular(45)),
+            color: Colors.white,
+          ),
+          child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: documentIdList.length,
+              itemBuilder: (BuildContext contex, int index) {
+                return StreamBuilder(
+                  stream: tasks
+                      .doc(documentIdList[index])
+                      .collection('Tasks')
+                      .where('status', isEqualTo: _statusNum)
+                      .snapshots(),
+                  builder: (BuildContext context,
+                      AsyncSnapshot<QuerySnapshot> snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Text("No data");
+                    }
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Container();
+                    }
+                    return ListView(
+                      shrinkWrap: true,
+                      padding: const EdgeInsets.only(top: 35),
+                      physics: const BouncingScrollPhysics(),
+                      children:
+                          snapshot.data!.docs.map((DocumentSnapshot document) {
+                        Map<String, dynamic> data =
+                            document.data()! as Map<String, dynamic>;
+
+                        return _tasksItem(
+                          title: data['title'],
+                          description: data['description'],
+                          time: data['timeStamp'],
+                          documentId: document.id,
+                          status: data['status'],
+                        );
+                      }).toList(),
+                    );
+                  },
+                );
+              })),
+    );
   }
 
   Widget _tasksItem(
-      {required String title, description, var time, required int status}) {
+      {required String title,
+      required description,
+      var time,
+      var documentId,
+      required int status}) {
     return InkWell(
-      // onTap: () {
-      //   Navigator.of(context).push(
-      //     MaterialPageRoute(
-      //       builder: (context) => TaskDetail(
-      //           taskDocId, receiverEmail, description, title, time, documentId),
-      //     ),
-      //   );
-      // },
+      onTap: () {
+        // Navigator.of(context).push(
+        //   MaterialPageRoute(
+        //     builder: (context) => TaskDetail(
+        //         taskDocId, receiverEmail, description, title, time, documentId),
+        //   ),
+        // );
+      },
       child: Card(
-        color: _statusNum == -1
+        color: status == -1
             ? Colors.redAccent
-            : _statusNum == 0
+            : status == 0
                 ? Colors.yellowAccent
                 : Colors.greenAccent,
         elevation: 5,
@@ -230,9 +267,9 @@ class _TodoListProgressState extends State<TodoListProgress> {
           padding: const EdgeInsets.all(5.0),
           child: Stack(children: [
             Card(
-              color: _statusNum == -1
+              color: status == -1
                   ? Colors.redAccent
-                  : _statusNum == 0
+                  : status == 0
                       ? Colors.yellowAccent
                       : Colors.greenAccent,
               margin: const EdgeInsets.symmetric(vertical: 20),
@@ -270,6 +307,8 @@ class _TodoListProgressState extends State<TodoListProgress> {
                           )
                         ]),
                   ),
+                  //   ],
+                  // ),
                 ],
               ),
             ),
