@@ -6,6 +6,7 @@ class Task {
   late String creator;
   late String assignedTo;
   late int status;
+  late String department;
 
   Task({
     required this.title,
@@ -14,6 +15,7 @@ class Task {
     required this.creator,
     required this.assignedTo,
     required this.status,
+    required this.department,
   });
 
   late Map<String, dynamic> taskMap = {
@@ -23,5 +25,6 @@ class Task {
     'assignedTo': assignedTo,
     'creator': creator,
     'status': status,
+    'department': department,
   };
 }
