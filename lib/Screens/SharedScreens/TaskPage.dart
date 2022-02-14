@@ -6,14 +6,27 @@ import 'package:fluttertoast/fluttertoast.dart';
 
 // ignore: must_be_immutable
 class TaskPage extends StatefulWidget {
+  final QueryDocumentSnapshot<Object?> userInfo;
   String receiverEmail;
   String name;
+  String receiverDepartement;
+  String receiverPosistion;
+  int progress;
 
   // ignore: use_key_in_widget_constructors
-  TaskPage(this.receiverEmail, this.name);
+  TaskPage(
+    this.userInfo,
+    this.receiverEmail,
+    this.name,
+    this.receiverDepartement,
+    this.receiverPosistion,
+    this.progress,
+  );
 
   @override
-  _TaskPageState createState() => _TaskPageState(receiverEmail, name);
+  // ignore: no_logic_in_create_state
+  _TaskPageState createState() => _TaskPageState(
+      receiverEmail, name, receiverDepartement, receiverPosistion, progress);
 }
 
 class _TaskPageState extends State<TaskPage> {
@@ -23,9 +36,14 @@ class _TaskPageState extends State<TaskPage> {
 
   String receiverEmail;
   String name;
+  String receiverDepartment;
+  String receiverPosistion;
+  final int _progress;
 
-  _TaskPageState(this.receiverEmail, this.name);
+  _TaskPageState(this.receiverEmail, this.name, this.receiverDepartment,
+      this.receiverPosistion, this._progress);
 
+  late String subManagerEmail;
   var taskDocId;
 
   @override
@@ -39,22 +57,45 @@ class _TaskPageState extends State<TaskPage> {
   }
 
   Future _fetchTaskDocId() async {
+    late var email;
     var taskDocId;
-    await tasks
-        .where("Users", isEqualTo: {loginUserEmail: null, receiverEmail: null})
-        .limit(1)
-        .get()
-        .then((QuerySnapshot querySnapshot) async {
-          if (querySnapshot.docs.isNotEmpty) {
+    print(widget.userInfo.get('position'));
+    if (widget.userInfo.get('position') == 'General-Manager' &&
+        receiverPosistion == 'Employee') {
+      await FirebaseFirestore.instance
+          .collection('Users')
+          .where('position', isEqualTo: 'Sub-Manager')
+          .where('department', isEqualTo: widget.userInfo.get('department'))
+          .get()
+          .then((value) {
+        email = value.docs.single.data();
+        email = email['email'];
+      });
+      await tasks
+          .where("Users", isEqualTo: {receiverEmail: null, email: null})
+          .limit(1)
+          .get()
+          .then((QuerySnapshot querySnapshot) async {
             taskDocId = querySnapshot.docs.single.id;
-          } else {
-            await tasks.add({
-              'Users': {loginUserEmail: null, receiverEmail: null}
-            }).then((value) => {
-                  taskDocId = value.id,
-                });
-          }
-        });
+          });
+    } else {
+      await tasks
+          .where("Users",
+              isEqualTo: {loginUserEmail: null, receiverEmail: null})
+          .limit(1)
+          .get()
+          .then((QuerySnapshot querySnapshot) async {
+            if (querySnapshot.docs.isNotEmpty) {
+              taskDocId = querySnapshot.docs.single.id;
+            } else {
+              await tasks.add({
+                'Users': {loginUserEmail: null, receiverEmail: null}
+              }).then((value) => {
+                    taskDocId = value.id,
+                  });
+            }
+          });
+    }
     return taskDocId;
   }
 
@@ -95,54 +136,58 @@ class _TaskPageState extends State<TaskPage> {
               Text(
                 name,
                 style: const TextStyle(
-                    fontSize: 14,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.white),
               ),
             ],
           ),
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(50),
-                  color: Colors.black12,
-                ),
-                child: IconButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            CreateTask(receiverEmail, taskDocId),
+          _progress == 0
+              ? Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(25),
+                        color: Colors.black12,
                       ),
-                    );
-                  },
-                  color: Colors.white,
-                  icon: const Icon(
-                    Icons.add_task,
-                    color: Colors.white,
-                    size: 25,
-                  ),
-                ),
-              ),
-              const SizedBox(
-                width: 20,
-              ),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(50),
-                  color: Colors.black12,
-                ),
-                child: const Icon(
-                  Icons.message,
-                  size: 25,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          )
+                      child: Column(
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                    builder: (context) => CreateTask(
+                                          widget.userInfo,
+                                          receiverEmail,
+                                          taskDocId,
+                                          receiverDepartment,
+                                        )),
+                              );
+                            },
+                            color: Colors.white,
+                            icon: const Icon(
+                              Icons.add_task,
+                              color: Colors.white,
+                              size: 25,
+                            ),
+                          ),
+                          const Text(
+                            'Add New Task',
+                            style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
+                          )
+                        ],
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 20,
+                    ),
+                  ],
+                )
+              : Container(),
         ],
       ),
     );
@@ -151,7 +196,7 @@ class _TaskPageState extends State<TaskPage> {
   Widget _bodyChat() {
     return Expanded(
       child: Container(
-          padding: const EdgeInsets.only(left: 25, right: 25, top: 25),
+          padding: const EdgeInsets.only(left: 25, right: 25, top: 0),
           width: double.infinity,
           decoration: const BoxDecoration(
             borderRadius: BorderRadius.only(
@@ -208,12 +253,14 @@ class _TaskPageState extends State<TaskPage> {
       required int status}) {
     return InkWell(
       onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => TaskDetail(
-                taskDocId, receiverEmail, description, title, time, documentId),
-          ),
-        );
+        _progress == 0
+            ? Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => TaskDetail(taskDocId, receiverEmail,
+                      description, title, time, documentId, status),
+                ),
+              )
+            : {};
       },
       child: Card(
         color: status == -1

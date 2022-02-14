@@ -4,24 +4,28 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class CreateTask extends StatefulWidget {
+  final QueryDocumentSnapshot<Object?> userInfo;
   String receiverEmail;
   String taskDocId;
-  CreateTask(this.receiverEmail, this.taskDocId, {Key? key}) : super(key: key);
+  String department;
+
+  CreateTask(this.userInfo, this.receiverEmail, this.taskDocId, this.department,
+      {Key? key})
+      : super(key: key);
 
   @override
   // ignore: no_logic_in_create_state
-  _CreateTaskState createState() => _CreateTaskState(
-        receiverEmail,
-        taskDocId,
-      );
+  _CreateTaskState createState() =>
+      _CreateTaskState(receiverEmail, taskDocId, department);
 }
 
 class _CreateTaskState extends State<CreateTask> {
   String receiverEmail;
   String taskDocId;
+  String department;
   CollectionReference tasks = FirebaseFirestore.instance.collection("Tasks");
 
-  _CreateTaskState(this.receiverEmail, this.taskDocId);
+  _CreateTaskState(this.receiverEmail, this.taskDocId, this.department);
 
   var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
   TextEditingController titleController = TextEditingController();
@@ -67,43 +71,12 @@ class _CreateTaskState extends State<CreateTask> {
               const Text(
                 'New Task',
                 style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.white),
               ),
             ],
           ),
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(50),
-                  color: Colors.black12,
-                ),
-                child: const Icon(
-                  Icons.call,
-                  size: 25,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(
-                width: 20,
-              ),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(50),
-                  color: Colors.black12,
-                ),
-                child: const Icon(
-                  Icons.videocam,
-                  size: 25,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          )
         ],
       ),
     );
@@ -183,6 +156,7 @@ class _CreateTaskState extends State<CreateTask> {
               creator: loginUserEmail.toString(),
               assignedTo: receiverEmail.trim(),
               status: -1,
+              department: department,
             );
 
             tasks.doc(taskDocId).collection('Tasks').add(task.taskMap);
@@ -243,15 +217,16 @@ class TaskDetail extends StatefulWidget {
   String title;
   var documentId;
   var timeStamp;
+  int status;
   TaskDetail(this.taskDocId, this.receiverEmail, this.description, this.title,
-      this.timeStamp, this.documentId,
+      this.timeStamp, this.documentId, this.status,
       {Key? key})
       : super(key: key);
 
   @override
   // ignore: no_logic_in_create_state
-  _TaskDetailState createState() => _TaskDetailState(
-      taskDocId, receiverEmail, description, title, timeStamp, documentId);
+  _TaskDetailState createState() => _TaskDetailState(taskDocId, receiverEmail,
+      description, title, timeStamp, documentId, status);
 }
 
 class _TaskDetailState extends State<TaskDetail> {
@@ -261,13 +236,12 @@ class _TaskDetailState extends State<TaskDetail> {
   String title;
   var timeStamp;
   var documentId;
+  int _status;
 
   _TaskDetailState(this.taskDocId, this.receiverEmail, this.description,
-      this.title, this.timeStamp, this.documentId);
+      this.title, this.timeStamp, this.documentId, this._status);
   CollectionReference tasks = FirebaseFirestore.instance.collection("Tasks");
   var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
-
-  int _status = -1;
 
   TextEditingController messageController = TextEditingController();
 
@@ -295,7 +269,7 @@ class _TaskDetailState extends State<TaskDetail> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 25),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           Row(
             children: [
@@ -320,7 +294,7 @@ class _TaskDetailState extends State<TaskDetail> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(50),
                   color: Colors.black12,
@@ -340,10 +314,10 @@ class _TaskDetailState extends State<TaskDetail> {
                 ),
               ),
               const SizedBox(
-                width: 20,
+                width: 5,
               ),
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(50),
                   color: Colors.black12,

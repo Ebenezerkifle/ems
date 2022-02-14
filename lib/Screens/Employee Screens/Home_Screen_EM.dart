@@ -1,36 +1,94 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ems/Attendance/Attendance.dart';
+import 'package:ems/GeoFence/googleMap.dart';
+import 'package:ems/Screens/Employee%20Screens/myTasks.dart';
+import 'package:ems/Screens/Employee%20Screens/myprogress.dart';
+import 'package:ems/Screens/GeneralManager%20Screens/todoListProgress.dart';
+import 'package:ems/Screens/SharedScreens/ChatHomepage.dart';
+import 'package:ems/Screens/SharedScreens/TaskHomePage.dart';
+import 'package:ems/Screens/navigation_drawer_widget.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 // ignore: unused_import
 import 'package:flutter_svg/flutter_svg.dart';
 
 class HomeScreenEM extends StatefulWidget {
-  const HomeScreenEM({Key? key}) : super(key: key);
+  QueryDocumentSnapshot<Object?> userInfo;
+  HomeScreenEM({
+    Key? key,
+    required this.userInfo,
+  }) : super(key: key);
 
   @override
   _HomeScreenEMState createState() => _HomeScreenEMState();
 }
 
 class _HomeScreenEMState extends State<HomeScreenEM> {
+  FlutterLocalNotificationsPlugin localNotification =
+      FlutterLocalNotificationsPlugin();
+
+  var scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    var androidInitialize =
+        const AndroidInitializationSettings('mipmap/ic_launcher');
+    var setting = InitializationSettings(android: androidInitialize);
+    localNotification.initialize(setting);
+    _fetchNotification();
+    super.initState();
+  }
+
+  Future _showNotification(QueryDocumentSnapshot<Object?> element) async {
+    var androidDetails = const AndroidNotificationDetails(
+        "channelId", "channelName",
+        channelDescription: "This is the description of the notification",
+        importance: Importance.high);
+    var generalNotificationDetail =
+        NotificationDetails(android: androidDetails);
+    await localNotification.show(0, element.get('title'), element.get('body'),
+        generalNotificationDetail);
+  }
+
+  _fetchNotification() {
+    CollectionReference notification =
+        FirebaseFirestore.instance.collection('Notification');
+    notification
+        .where('receiver', isEqualTo: widget.userInfo.get('email'))
+        .get()
+        .then(
+      (QuerySnapshot snapshot) {
+        //_showNotification();
+        snapshot.docs.forEach((element) {
+          _showNotification(element);
+        });
+        FlutterRingtonePlayer.playNotification();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // to get size
     var size = MediaQuery.of(context).size;
     //style
-    var cardTextStyle = TextStyle(
+    var cardTextStyle = const TextStyle(
       fontFamily: 'Montserat Regular',
       fontSize: 16,
       color: Color.fromRGBO(63, 63, 63, 1),
     );
 
     return Scaffold(
+      key: scaffoldKey,
+      endDrawer: NavigationDrawerWidget(widget.userInfo),
       body: Stack(children: <Widget>[
         Container(
-          height: size.height * .3,
-          decoration: const BoxDecoration(
-              image: DecorationImage(
-                  alignment: Alignment.topCenter,
-                  image: AssetImage('assets/images/mobile_1.png'),
-                  fit: BoxFit.fill)),
-        ),
+            height: size.height * .3,
+            decoration: const BoxDecoration(
+              color: Colors.indigo,
+            )),
         SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -38,7 +96,7 @@ class _HomeScreenEMState extends State<HomeScreenEM> {
               children: [
                 Container(
                   height: 64,
-                  margin: EdgeInsets.only(bottom: 20),
+                  margin: const EdgeInsets.only(bottom: 20),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -55,22 +113,34 @@ class _HomeScreenEMState extends State<HomeScreenEM> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         // ignore: prefer_const_literals_to_create_immutables
                         children: [
-                          const Text(
-                            'Anwar Kedir',
-                            style: TextStyle(
+                          Text(
+                            '${widget.userInfo.get('firstname') ?? ''}' +
+                                ' ' +
+                                '${widget.userInfo.get('middlename') ?? ''}',
+                            style: const TextStyle(
                                 fontFamily: 'Montserrat Medium',
                                 fontSize: 18,
                                 color: Colors.white),
                           ),
-                          const Text(
-                            '14806798',
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.white,
+                          Text(
+                            '${widget.userInfo.get('position') ?? ''}',
+                            style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.orange,
                                 fontFamily: 'Montserrat Regular'),
                           ),
                         ],
-                      )
+                      ),
+                      const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 40)),
+                      IconButton(
+                        alignment: Alignment.centerRight,
+                        onPressed: () {
+                          scaffoldKey.currentState?.openEndDrawer();
+                        },
+                        icon: const Icon(Icons.menu),
+                        color: Colors.white,
+                      ),
                     ],
                   ),
                 ),
@@ -81,117 +151,149 @@ class _HomeScreenEMState extends State<HomeScreenEM> {
                     primary: false,
                     crossAxisCount: 2,
                     children: <Widget>[
-                      // Card 3
-                      Card(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                        elevation: 4,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            SvgPicture.asset(
-                              'assets/images/emp-progress.svg',
-                              height: 64,
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                'My Progress',
-                                style: cardTextStyle,
+                      InkWell(
+                        // onTap: () {
+                        //   Navigator.of(context).push(MaterialPageRoute(
+                        //       builder: (context) =>
+                        //           MyProgress(widget.userInfo)));
+                        // },
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                          elevation: 4,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              SvgPicture.asset(
+                                'assets/images/todo.svg',
+                                height: 64,
                               ),
-                            ),
-                          ],
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'My Progress',
+                                  style: cardTextStyle,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Card 3
+                      ),
+                      // Tasks
+                      InkWell(
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) =>
+                                  TaskHomePage(widget.userInfo)));
+                        },
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                          elevation: 4,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              SvgPicture.asset(
+                                'assets/images/tasks.svg',
+                                height: 64,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'Tasks',
+                                  style: cardTextStyle,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Card 5
+                      ),
+                      //my attendance
+                      InkWell(
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => const CalendarPage()));
+                        },
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                          elevation: 4,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              SvgPicture.asset(
+                                'assets/images/calendar.svg',
+                                height: 64,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'My Attendance',
+                                  style: cardTextStyle,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Card 6
+                      ),
+                      //Location
+                      InkWell(
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => const GoogleMap()));
+                        },
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                          elevation: 4,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              SvgPicture.asset(
+                                'assets/images/location.svg',
+                                height: 64,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'My Location',
+                                  style: cardTextStyle,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-
-                      // Card 4
-                      Card(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                        elevation: 4,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            SvgPicture.asset(
-                              'assets/images/tasks.svg',
-                              height: 64,
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                'Tasks',
-                                style: cardTextStyle,
+                      // Card 7 chatroom
+                      InkWell(
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) =>
+                                  ChatHomePage(widget.userInfo)));
+                        },
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                          elevation: 4,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              SvgPicture.asset(
+                                'assets/images/chat.svg',
+                                height: 64,
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Card 5
-                      Card(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                        elevation: 4,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            SvgPicture.asset(
-                              'assets/images/calendar.svg',
-                              height: 64,
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                'My Attendance',
-                                style: cardTextStyle,
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'Chat',
+                                  style: cardTextStyle,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Card 6
-                      Card(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                        elevation: 4,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            SvgPicture.asset(
-                              'assets/images/location.svg',
-                              height: 64,
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                'Location',
-                                style: cardTextStyle,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Card 7
-                      Card(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                        elevation: 4,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            SvgPicture.asset(
-                              'assets/images/chat.svg',
-                              height: 64,
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                'Chat',
-                                style: cardTextStyle,
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ],

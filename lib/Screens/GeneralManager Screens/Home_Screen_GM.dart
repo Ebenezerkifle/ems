@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ems/Attendance/Attendance.dart';
 import 'package:ems/GeoFence/googleMap.dart';
+import 'package:ems/Screens/GeneralManager%20Screens/employeeprogress.dart';
 import 'package:ems/Screens/GeneralManager%20Screens/todoListProgress.dart';
 import 'package:ems/Screens/SharedScreens/ChatHomepage.dart';
 import 'package:ems/Screens/GeneralManager%20Screens/EmployeeInfo_Screen.dart';
@@ -22,6 +24,8 @@ class HomeScreenGM extends StatefulWidget {
 class _HomeScreenGMState extends State<HomeScreenGM> {
   FlutterLocalNotificationsPlugin localNotification =
       FlutterLocalNotificationsPlugin();
+
+  var scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -73,7 +77,8 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
     );
 
     return Scaffold(
-      endDrawer: const NavigationDrawerWidget(),
+      key: scaffoldKey,
+      endDrawer: NavigationDrawerWidget(widget.userInfo),
       body: Stack(children: <Widget>[
         Container(
             height: size.height * .3,
@@ -126,14 +131,10 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                           padding: EdgeInsets.symmetric(horizontal: 40)),
                       IconButton(
                         alignment: Alignment.centerRight,
-                        onPressed: () async {
-                          Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      const NavigationDrawerWidget()));
-                          // FirebaseAuth.instance.signOut();
+                        onPressed: () {
+                          scaffoldKey.currentState?.openEndDrawer();
                         },
-                        icon: const Icon(Icons.online_prediction_sharp),
+                        icon: const Icon(Icons.menu),
                         color: Colors.white,
                       ),
                     ],
@@ -149,8 +150,10 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                       //fiance
                       InkWell(
                         onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => EmployeeInfo()));
+                          // Navigator.of(context).push(MaterialPageRoute(
+                          //     builder: (context) => EmployeeInfo(
+                          //           userInfo: widget.userInfo,
+                          //         )));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -183,7 +186,8 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => const TodoListProgress()));
+                              builder: (context) =>
+                                  TodoListProgress(widget.userInfo)));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -211,9 +215,10 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
 
                       InkWell(
                         onTap: () {
-                          // _showNotification();
-                          // Navigator.of(context).push(MaterialPageRoute(
-                          //     builder: (context) => const EmployeeInfo()));
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => EmployeeProgress(
+                                    userInfo: widget.userInfo,
+                                  )));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -242,7 +247,8 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => TaskHomePage()));
+                              builder: (context) =>
+                                  TaskHomePage(widget.userInfo)));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -271,7 +277,7 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => EmployeeInfo()));
+                              builder: (context) => const CalendarPage()));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -328,7 +334,8 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => ChatHomePage()));
+                              builder: (context) =>
+                                  ChatHomePage(widget.userInfo)));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -356,7 +363,9 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => const EmployeeInfo()));
+                              builder: (context) => EmployeeInfo(
+                                    userInfo: widget.userInfo,
+                                  )));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(

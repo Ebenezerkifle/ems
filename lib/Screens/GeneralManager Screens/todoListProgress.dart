@@ -3,7 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class TodoListProgress extends StatefulWidget {
-  const TodoListProgress({Key? key}) : super(key: key);
+  final QueryDocumentSnapshot<Object?> userInfo;
+  const TodoListProgress(this.userInfo, {Key? key}) : super(key: key);
 
   @override
   _TodoListProgressState createState() => _TodoListProgressState();
@@ -28,43 +29,57 @@ class _TodoListProgressState extends State<TodoListProgress> {
       _statusNum = statusNum[0];
     });
     _fetchTasksLists().then((value) {
-      documentIdList = value;
+      setState(() {
+        documentIdList = value;
+      });
     });
-    print("---------------------");
-    print(documentIdList.length);
     super.initState();
   }
 
   Future _fetchTasksLists() async {
     List taskList = [];
-    await tasks.get().then((QuerySnapshot) {
-      QuerySnapshot.docs.forEach((element) {
+    await tasks.get().then((q) {
+      q.docs.forEach((element) {
         taskList.add(element.id);
-        print(element.id);
       });
     });
     return taskList;
   }
 
-  Future _tasksFromDocument(var docId) async {
-    List tasksList = [];
-    await tasks
-        .doc(docId)
-        .collection('Tasks')
-        .where('status', isEqualTo: _statusNum)
-        .get()
-        .then((QuerySnapshot) {
-      QuerySnapshot.docs.forEach((element) {
-        taskList.add(element.data());
-      });
-    });
-    return tasksList;
-  }
+  // Future _tasksFromDocument(var docId) async {
+  //   List tasksList = [];
+  //   await tasks
+  //       .doc(docId)
+  //       .collection('Tasks')
+  //       .where('status', isEqualTo: _statusNum)
+  //       .get()
+  //       .then((QuerySnapshot) {
+  //     QuerySnapshot.docs.forEach((element) {
+  //       taskList.add(element.data());
+  //     });
+  //   });
+  //   return tasksList;
+  // }
+
+  // Future _tasksForSubManager(var docId) async {
+  //   List tasksList = [];
+  //   await tasks
+  //       .doc(docId)
+  //       .collection('Tasks')
+  //       .where('position', isEqualTo: 'Employee')
+  //       .where('department', isEqualTo: widget.userInfo.get('department'))
+  //       .where('status', isEqualTo: _statusNum)
+  //       .get()
+  //       .then((QuerySnapshot) {
+  //     QuerySnapshot.docs.forEach((element) {
+  //       taskList.add(element.data());
+  //     });
+  //   });
+  //   return tasksList;
+  // }
 
   @override
   Widget build(BuildContext context) {
-    print("___________________________-here I'm");
-    print(documentIdList.length);
     return Scaffold(
       backgroundColor: Colors.indigo,
       body: SafeArea(
@@ -194,40 +209,62 @@ class _TodoListProgressState extends State<TodoListProgress> {
           ),
           child: ListView.builder(
               shrinkWrap: true,
+              reverse: true,
               itemCount: documentIdList.length,
               itemBuilder: (BuildContext contex, int index) {
+                Stream<QuerySnapshot<Map<String, dynamic>>> query = tasks
+                    .doc(documentIdList[index])
+                    .collection('Tasks')
+                    .where('status', isEqualTo: _statusNum)
+                    .snapshots();
+                Stream<QuerySnapshot<Map<String, dynamic>>> querySM = tasks
+                    .doc(documentIdList[index])
+                    .collection('Tasks')
+                    .where('department',
+                        isEqualTo: widget.userInfo.get('department'))
+                    .where('status', isEqualTo: _statusNum)
+                    .snapshots();
                 return StreamBuilder(
-                  stream: tasks
-                      .doc(documentIdList[index])
-                      .collection('Tasks')
-                      .where('status', isEqualTo: _statusNum)
-                      .snapshots(),
+                  stream: widget.userInfo.get('position') == 'General-Manager'
+                      ? query
+                      : querySM,
                   builder: (BuildContext context,
                       AsyncSnapshot<QuerySnapshot> snapshot) {
                     if (!snapshot.hasData) {
-                      return const Text("No data");
+                      return Container(
+                        height: 0,
+                      );
                     }
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Container();
+                      // return const CircularProgressIndicator();
                     }
-                    return ListView(
-                      shrinkWrap: true,
-                      padding: const EdgeInsets.only(top: 35),
-                      physics: const BouncingScrollPhysics(),
-                      children:
-                          snapshot.data!.docs.map((DocumentSnapshot document) {
-                        Map<String, dynamic> data =
-                            document.data()! as Map<String, dynamic>;
-
-                        return _tasksItem(
-                          title: data['title'],
-                          description: data['description'],
-                          time: data['timeStamp'],
-                          documentId: document.id,
-                          status: data['status'],
-                        );
-                      }).toList(),
-                    );
+                    if (snapshot.hasData) {
+                      return ListView(
+                        shrinkWrap: true,
+                        padding: const EdgeInsets.only(top: 35),
+                        physics: const BouncingScrollPhysics(),
+                        children: snapshot.data!.docs
+                            .map((DocumentSnapshot document) {
+                          Map<String, dynamic> data =
+                              document.data()! as Map<String, dynamic>;
+                          if (data.isNotEmpty) {
+                            return _tasksItem(
+                              title: data['title'],
+                              description: data['description'],
+                              time: data['timeStamp'],
+                              documentId: document.id,
+                              status: data['status'],
+                            );
+                          } else {
+                            return const SizedBox();
+                          }
+                        }).toList(),
+                      );
+                    } else {
+                      return const SizedBox(
+                        height: 0,
+                      );
+                    }
                   },
                 );
               })),
@@ -265,54 +302,53 @@ class _TodoListProgressState extends State<TodoListProgress> {
           alignment: Alignment.center,
           margin: const EdgeInsets.all(5.0),
           padding: const EdgeInsets.all(5.0),
-          child: Stack(children: [
-            Card(
-              color: status == -1
-                  ? Colors.redAccent
-                  : status == 0
-                      ? Colors.yellowAccent
-                      : Colors.greenAccent,
-              margin: const EdgeInsets.symmetric(vertical: 20),
-              elevation: 0,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                title,
-                                style: const TextStyle(
-                                    fontSize: 17, fontWeight: FontWeight.bold),
-                              ),
-                              const Text(
-                                '07:10',
-                                //time.toString(),
-                                style: TextStyle(
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                          Text(
-                            description,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Colors.black54,
-                              fontWeight: FontWeight.bold,
+          child: Container(
+            height: 40,
+            width: double.infinity,
+            color: status == -1
+                ? Colors.redAccent
+                : status == 0
+                    ? Colors.yellowAccent
+                    : Colors.greenAccent,
+            margin: const EdgeInsets.symmetric(vertical: 20),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              title,
+                              style: const TextStyle(
+                                  fontSize: 17, fontWeight: FontWeight.bold),
                             ),
-                          )
-                        ]),
-                  ),
-                  //   ],
-                  // ),
-                ],
-              ),
+                            const Text(
+                              '07:10',
+                              //time.toString(),
+                              style: TextStyle(
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          description,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.black54,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      ]),
+                ),
+                //   ],
+                // ),
+              ],
             ),
-          ]),
+          ),
         ),
       ),
     );

@@ -198,12 +198,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   )));
           break;
         case 'Sub-Manager':
-          Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => const HomeScreenSM()));
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+              builder: (context) => HomeScreenSM(userInfo: result)));
           break;
         case 'Employee':
-          Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => const HomeScreenEM()));
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+              builder: (context) => HomeScreenEM(userInfo: result)));
           break;
       }
     });

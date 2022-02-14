@@ -6,6 +6,10 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class TaskHomePage extends StatefulWidget {
+  final QueryDocumentSnapshot<Object?> userInfo;
+
+  TaskHomePage(this.userInfo, {Key? key}) : super(key: key);
+
   @override
   _TaksHomePageState createState() => _TaksHomePageState();
 }
@@ -14,9 +18,24 @@ class _TaksHomePageState extends State<TaskHomePage> {
   var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
   CollectionReference tasks = FirebaseFirestore.instance.collection("Tasks");
 
+  var scaffoldKey = GlobalKey<ScaffoldState>();
+  late int _assign;
+  late String _titleTop;
+
+  @override
+  void initState() {
+    setState(() {
+      _titleTop = 'Tasks \nAssigned to you';
+      _assign = 1;
+    });
+
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: scaffoldKey,
       backgroundColor: Colors.indigo,
       body: SafeArea(
         child: Column(
@@ -35,10 +54,20 @@ class _TaksHomePageState extends State<TaskHomePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Assign Tasks to \nyour subordinate',
-            style: TextStyle(
-                fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                _titleTop,
+                style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
+              ),
+              const SizedBox(width: 40),
+              _topbuttons(),
+              const SizedBox(width: 10)
+            ],
           ),
           Row(
             children: [
@@ -81,7 +110,75 @@ class _TaksHomePageState extends State<TaskHomePage> {
     );
   }
 
+  Widget _topbuttons() {
+    if (widget.userInfo.get('position') == 'Sub-Manager') {
+      return Row(
+        children: [
+          Container(
+            height: _assign == 0 ? 50 : 40,
+            width: _assign == 0 ? 50 : 40,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(50),
+              color: Colors.black26,
+            ),
+            child: IconButton(
+                onPressed: () {
+                  setState(() {
+                    _titleTop = 'Assign Tasks to \nyour subordinate';
+                    _assign = 0;
+                  });
+                },
+                color: Colors.white,
+                icon: const Icon(Icons.arrow_downward_rounded)),
+          ),
+          const SizedBox(width: 10),
+          Container(
+            height: _assign == 1 ? 50 : 40,
+            width: _assign == 1 ? 50 : 40,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(50),
+              color: Colors.black26,
+            ),
+            child: IconButton(
+                onPressed: () {
+                  setState(() {
+                    _titleTop = 'Tasks \nAssigned to you';
+                    _assign = 1;
+                  });
+                },
+                color: Colors.white,
+                icon: const Icon(Icons.arrow_upward_rounded)),
+          ),
+        ],
+      );
+    } else {
+      return Container();
+    }
+  }
+
   Widget _body() {
+    Stream<QuerySnapshot<Map<String, dynamic>>> queryGM = FirebaseFirestore
+        .instance
+        .collection("Users")
+        .where('position', isEqualTo: 'Sub-Manager')
+        .snapshots();
+    Stream<QuerySnapshot<Map<String, dynamic>>> querySM = FirebaseFirestore
+        .instance
+        .collection("Users")
+        .where('position', isEqualTo: 'Employee')
+        .where('department', isEqualTo: widget.userInfo.get('department'))
+        .snapshots();
+    Stream<QuerySnapshot<Map<String, dynamic>>> querySM2 = FirebaseFirestore
+        .instance
+        .collection("Users")
+        .where('position', isEqualTo: 'General-Manager')
+        .snapshots();
+    Stream<QuerySnapshot<Map<String, dynamic>>> queryEM = FirebaseFirestore
+        .instance
+        .collection("Users")
+        .where('position', isEqualTo: 'Sub-Manager')
+        .where('department', isEqualTo: widget.userInfo.get('department'))
+        .snapshots();
     return Expanded(
         child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -92,10 +189,13 @@ class _TaksHomePageState extends State<TaskHomePage> {
               color: Colors.white,
             ),
             child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection("Users")
-                    .where('position', isEqualTo: 'Sub-Manager')
-                    .snapshots(),
+                stream: widget.userInfo.get('position') == 'General-Manager'
+                    ? queryGM
+                    : widget.userInfo.get('position') == 'Employee'
+                        ? queryEM
+                        : _assign == 0
+                            ? querySM
+                            : querySM2,
                 builder: (BuildContext context,
                     AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (snapshot.hasError) {
@@ -120,8 +220,9 @@ class _TaksHomePageState extends State<TaskHomePage> {
                         String time = '08.10';
                         String receiverEmail = data['email'];
                         String department = data['department'];
+                        String position = data['position'];
                         return _itemChats(avatar, name, time, receiverEmail,
-                            department, context);
+                            department, position, context);
                       }).toList(),
                     );
                   } else {
@@ -131,65 +232,85 @@ class _TaksHomePageState extends State<TaskHomePage> {
                   }
                 })));
   }
-}
 
-Widget _itemChats(String avatar, String name, String time, String receiverEmail,
-    String department, BuildContext context) {
-  return GestureDetector(
-    onTap: () {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => TaskPage(receiverEmail, name),
-        ),
-      );
-    },
-    child: Card(
-      margin: const EdgeInsets.symmetric(vertical: 20),
-      elevation: 0,
-      child: Row(
-        children: [
-          Avatar(
-            margin: const EdgeInsets.only(right: 20),
-            size: 60,
-            image: avatar,
+  Widget _itemChats(
+      String avatar,
+      String name,
+      String time,
+      String receiverEmail,
+      String department,
+      String position,
+      BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => TaskPage(widget.userInfo, receiverEmail, name,
+                department, position, _assign),
           ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '$name',
-                      style: const TextStyle(
-                          fontSize: 17, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      '$time',
-                      style: const TextStyle(
-                          color: Colors.grey, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Text(
-                  '$department',
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.black54,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+        );
+      },
+      child: Card(
+        margin: const EdgeInsets.symmetric(vertical: 20),
+        elevation: 0,
+        child: Row(
+          children: [
+            Avatar(
+              margin: const EdgeInsets.only(right: 20),
+              size: 60,
+              image: avatar,
             ),
-          )
-        ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '$name',
+                        style: const TextStyle(
+                            fontSize: 17, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        '$time',
+                        style: const TextStyle(
+                            color: Colors.grey, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        '$department',
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.black54,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        ' $position',
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.redAccent,
+                          fontWeight: FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class Avatar extends StatelessWidget {

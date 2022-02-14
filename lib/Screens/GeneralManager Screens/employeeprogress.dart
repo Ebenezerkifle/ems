@@ -6,7 +6,8 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class EmployeeProgress extends StatefulWidget {
-  const EmployeeProgress({Key? key}) : super(key: key);
+  final QueryDocumentSnapshot<Object?> userInfo;
+  const EmployeeProgress({required this.userInfo, Key? key}) : super(key: key);
 
   @override
   _EmployeeProgressState createState() => _EmployeeProgressState();
@@ -84,6 +85,17 @@ class _EmployeeProgressState extends State<EmployeeProgress> {
   }
 
   Widget _body() {
+    Stream<QuerySnapshot<Map<String, dynamic>>> queryGM = FirebaseFirestore
+        .instance
+        .collection("Users")
+        .where('email', isNotEqualTo: loginUserEmail)
+        .snapshots();
+    Stream<QuerySnapshot<Map<String, dynamic>>> querySM = FirebaseFirestore
+        .instance
+        .collection("Users")
+        .where('position', isEqualTo: 'Employee')
+        .where('department', isEqualTo: widget.userInfo.get('department'))
+        .snapshots();
     return Expanded(
         child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -94,10 +106,9 @@ class _EmployeeProgressState extends State<EmployeeProgress> {
               color: Colors.white,
             ),
             child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection("Users")
-                    .where('email', isNotEqualTo: loginUserEmail)
-                    .snapshots(),
+                stream: widget.userInfo.get('position') == 'General-Manager'
+                    ? queryGM
+                    : querySM,
                 builder: (BuildContext context,
                     AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (snapshot.hasError) {
@@ -134,79 +145,86 @@ class _EmployeeProgressState extends State<EmployeeProgress> {
                   }
                 })));
   }
-}
 
-Widget _itemChats(String avatar, String name, String time, String receiverEmail,
-    String department, String position, BuildContext context) {
-  return GestureDetector(
-    onTap: () {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => TaskPage(receiverEmail, name),
-        ),
-      );
-    },
-    child: Card(
-      margin: const EdgeInsets.symmetric(vertical: 30),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '$name',
-                      style: const TextStyle(
-                          fontSize: 17, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      '$time',
-                      style: const TextStyle(
-                          color: Colors.grey, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '$position',
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
+  Widget _itemChats(
+      String avatar,
+      String name,
+      String time,
+      String receiverEmail,
+      String department,
+      String position,
+      BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => TaskPage(
+                widget.userInfo, receiverEmail, name, department, position, 1),
+          ),
+        );
+      },
+      child: Card(
+        margin: const EdgeInsets.symmetric(vertical: 30),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        name,
+                        style: const TextStyle(
+                            fontSize: 17, fontWeight: FontWeight.bold),
                       ),
-                    ),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    Text(
-                      '$department',
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          color: Colors.black54,
+                      Text(
+                        time,
+                        style: const TextStyle(
+                            color: Colors.grey, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        position,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.black,
                           fontWeight: FontWeight.bold,
-                          fontSize: 12),
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-              ],
-            ),
-          )
-        ],
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      Text(
+                        department,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            color: Colors.black54,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class Avatar extends StatelessWidget {

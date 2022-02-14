@@ -1,17 +1,69 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ems/Attendance/Attendance.dart';
+import 'package:ems/GeoFence/googleMap.dart';
+import 'package:ems/Screens/GeneralManager%20Screens/employeeprogress.dart';
+import 'package:ems/Screens/GeneralManager%20Screens/todoListProgress.dart';
 import 'package:ems/Screens/SharedScreens/ChatHomepage.dart';
-import 'package:ems/Screens/GeneralManager%20Screens/EmployeeInfo_Screen.dart';
+import 'package:ems/Screens/SharedScreens/TaskHomePage.dart';
+import 'package:ems/Screens/navigation_drawer_widget.dart';
 import 'package:flutter/material.dart';
-// ignore: unused_import
+import 'package:flutter_clean_calendar/flutter_clean_calendar.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class HomeScreenSM extends StatefulWidget {
-  const HomeScreenSM({Key? key}) : super(key: key);
+  final QueryDocumentSnapshot<Object?> userInfo;
+  const HomeScreenSM({required this.userInfo, Key? key}) : super(key: key);
 
   @override
   _HomeScreenSMState createState() => _HomeScreenSMState();
 }
 
 class _HomeScreenSMState extends State<HomeScreenSM> {
+  FlutterLocalNotificationsPlugin localNotification =
+      FlutterLocalNotificationsPlugin();
+
+  var scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    var androidInitialize =
+        const AndroidInitializationSettings('mipmap/ic_launcher');
+    var setting = InitializationSettings(android: androidInitialize);
+    localNotification.initialize(setting);
+    _fetchNotification();
+    super.initState();
+  }
+
+  Future _showNotification(QueryDocumentSnapshot<Object?> element) async {
+    var androidDetails = const AndroidNotificationDetails(
+        "channelId", "channelName",
+        channelDescription: "This is the description of the notification",
+        importance: Importance.high);
+    var generalNotificationDetail =
+        NotificationDetails(android: androidDetails);
+    await localNotification.show(0, element.get('title'), element.get('body'),
+        generalNotificationDetail);
+  }
+
+  _fetchNotification() {
+    CollectionReference notification =
+        FirebaseFirestore.instance.collection('Notification');
+    notification
+        .where('receiver', isEqualTo: widget.userInfo.get('email'))
+        .get()
+        .then(
+      (QuerySnapshot snapshot) {
+        //_showNotification();
+        snapshot.docs.forEach((element) {
+          _showNotification(element);
+        });
+        FlutterRingtonePlayer.playNotification();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // to get size
@@ -24,15 +76,14 @@ class _HomeScreenSMState extends State<HomeScreenSM> {
     );
 
     return Scaffold(
+      key: scaffoldKey,
+      endDrawer: NavigationDrawerWidget(widget.userInfo),
       body: Stack(children: <Widget>[
         Container(
-          height: size.height * .3,
-          decoration: const BoxDecoration(
-              image: DecorationImage(
-                  alignment: Alignment.topCenter,
-                  image: AssetImage('assets/images/mobile_1.png'),
-                  fit: BoxFit.fill)),
-        ),
+            height: size.height * .3,
+            decoration: const BoxDecoration(
+              color: Colors.indigo,
+            )),
         SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -57,22 +108,34 @@ class _HomeScreenSMState extends State<HomeScreenSM> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         // ignore: prefer_const_literals_to_create_immutables
                         children: [
-                          const Text(
-                            'Anwar Kedir',
-                            style: TextStyle(
+                          Text(
+                            '${widget.userInfo.get('firstname') ?? ''}' +
+                                ' ' +
+                                '${widget.userInfo.get('middlename') ?? ''}',
+                            style: const TextStyle(
                                 fontFamily: 'Montserrat Medium',
                                 fontSize: 18,
                                 color: Colors.white),
                           ),
-                          const Text(
-                            '14806798',
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.white,
+                          Text(
+                            '${widget.userInfo.get('position') ?? ''}',
+                            style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.orange,
                                 fontFamily: 'Montserrat Regular'),
                           ),
                         ],
-                      )
+                      ),
+                      const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 40)),
+                      IconButton(
+                        alignment: Alignment.centerRight,
+                        onPressed: () {
+                          scaffoldKey.currentState?.openEndDrawer();
+                        },
+                        icon: const Icon(Icons.menu),
+                        color: Colors.white,
+                      ),
                     ],
                   ),
                 ),
@@ -83,10 +146,12 @@ class _HomeScreenSMState extends State<HomeScreenSM> {
                     primary: false,
                     crossAxisCount: 2,
                     children: <Widget>[
+                      // TO DO list progress
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => EmployeeInfo()));
+                              builder: (context) =>
+                                  TodoListProgress(widget.userInfo)));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -111,10 +176,12 @@ class _HomeScreenSMState extends State<HomeScreenSM> {
                         ),
                         // Card 3
                       ),
+
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => EmployeeInfo()));
+                              builder: (context) =>
+                                  EmployeeProgress(userInfo: widget.userInfo)));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -139,10 +206,12 @@ class _HomeScreenSMState extends State<HomeScreenSM> {
                         ),
                         // Card 4
                       ),
+                      // Tasks
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => EmployeeInfo()));
+                              builder: (context) =>
+                                  TaskHomePage(widget.userInfo)));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -167,10 +236,11 @@ class _HomeScreenSMState extends State<HomeScreenSM> {
                         ),
                         // Card 5
                       ),
+                      //my attendance
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => EmployeeInfo()));
+                              builder: (context) => const CalendarPage()));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -195,10 +265,11 @@ class _HomeScreenSMState extends State<HomeScreenSM> {
                         ),
                         // Card 6
                       ),
+                      //Location
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => EmployeeInfo()));
+                              builder: (context) => const GoogleMap()));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -226,7 +297,8 @@ class _HomeScreenSMState extends State<HomeScreenSM> {
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => ChatHomePage()));
+                              builder: (context) =>
+                                  ChatHomePage(widget.userInfo)));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(

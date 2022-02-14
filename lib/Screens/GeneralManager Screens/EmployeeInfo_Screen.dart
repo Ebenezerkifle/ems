@@ -1,12 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ems/Screens/SharedScreens/TaskPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class EmployeeInfo extends StatefulWidget {
-  const EmployeeInfo({Key? key}) : super(key: key);
+  final QueryDocumentSnapshot<Object?> userInfo;
+  const EmployeeInfo({required this.userInfo, Key? key}) : super(key: key);
 
   @override
   _EmployeeInfoState createState() => _EmployeeInfoState();
@@ -132,81 +132,88 @@ class _EmployeeInfoState extends State<EmployeeInfo> {
                   }
                 })));
   }
-}
 
-Widget _itemChats(String avatar, String name, String time, String receiverEmail,
-    String department, String position, BuildContext context) {
-  return GestureDetector(
-    onTap: () {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => TaskPage(receiverEmail, name),
-        ),
-      );
-    },
-    child: Card(
-      margin: const EdgeInsets.symmetric(vertical: 20),
-      elevation: 0,
-      child: Row(
-        children: [
-          Avatar(
-            margin: const EdgeInsets.only(right: 20),
-            size: 60,
-            image: avatar,
-          ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '$name',
-                      style: const TextStyle(
-                          fontSize: 17, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      '$time',
-                      style: const TextStyle(
-                          color: Colors.grey, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Row(
-                  children: [
-                    Text(
-                      '$position',
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    Text(
-                      '$department',
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          color: Colors.black54,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12),
-                    ),
-                  ],
-                ),
-              ],
+  Widget _itemChats(
+      String avatar,
+      String name,
+      String time,
+      String receiverEmail,
+      String department,
+      String position,
+      BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        // Navigator.of(context).push(
+        //   MaterialPageRoute(
+        //     builder: (context) =>
+        //         TaskPage(widget.userInfo, receiverEmail, name, department),
+        //   ),
+        // );
+      },
+      child: Card(
+        margin: const EdgeInsets.symmetric(vertical: 20),
+        elevation: 0,
+        child: Row(
+          children: [
+            Avatar(
+              margin: const EdgeInsets.only(right: 20),
+              size: 60,
+              image: avatar,
             ),
-          )
-        ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '$name',
+                        style: const TextStyle(
+                            fontSize: 17, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        '$time',
+                        style: const TextStyle(
+                            color: Colors.grey, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Row(
+                    children: [
+                      Text(
+                        '$position',
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      Text(
+                        '$department',
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            color: Colors.black54,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class Avatar extends StatelessWidget {

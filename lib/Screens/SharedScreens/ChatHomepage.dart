@@ -6,6 +6,8 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class ChatHomePage extends StatefulWidget {
+  final QueryDocumentSnapshot<Object?> userInfo;
+  const ChatHomePage(this.userInfo, {Key? key}) : super(key: key);
   @override
   _ChatHomePageState createState() => _ChatHomePageState();
 }
@@ -14,9 +16,24 @@ class _ChatHomePageState extends State<ChatHomePage> {
   var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
   CollectionReference chats = FirebaseFirestore.instance.collection('Chats');
 
+  var scaffoldKey = GlobalKey<ScaffoldState>();
+  late String _titleTop;
+  late int _assign;
+
+  @override
+  void initState() {
+    setState(() {
+      _assign = 0;
+      _titleTop = 'Chat with \nyour Manager';
+    });
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: scaffoldKey,
+      //endDrawer: NavigationDrawerWidget(),
       backgroundColor: Colors.indigo,
       body: SafeArea(
         child: Column(
@@ -33,12 +50,23 @@ class _ChatHomePageState extends State<ChatHomePage> {
     return Container(
       padding: const EdgeInsets.only(top: 30, left: 30),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          const Text(
-            'Chat with \nyour subordinate',
-            style: TextStyle(
-                fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '$_titleTop',
+                style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
+              ),
+              const SizedBox(
+                width: 50,
+              ),
+              _topbuttons(),
+            ],
           ),
           Row(
             children: [
@@ -81,7 +109,75 @@ class _ChatHomePageState extends State<ChatHomePage> {
     );
   }
 
+  Widget _topbuttons() {
+    if (widget.userInfo.get('position') == 'Sub-Manager') {
+      return Row(
+        children: [
+          Container(
+            height: _assign == 1 ? 50 : 40,
+            width: _assign == 1 ? 50 : 40,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(50),
+              color: Colors.black26,
+            ),
+            child: IconButton(
+                onPressed: () {
+                  setState(() {
+                    _titleTop = 'Chat with \nyour subordinate';
+                    _assign = 1;
+                  });
+                },
+                color: Colors.white,
+                icon: const Icon(Icons.arrow_downward_outlined)),
+          ),
+          const SizedBox(width: 10),
+          Container(
+            height: _assign == 0 ? 50 : 40,
+            width: _assign == 0 ? 50 : 40,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(50),
+              color: Colors.black26,
+            ),
+            child: IconButton(
+                onPressed: () {
+                  setState(() {
+                    _titleTop = 'Chat with \nyour Manager';
+                    _assign = 0;
+                  });
+                },
+                color: Colors.white,
+                icon: const Icon(Icons.arrow_upward_outlined)),
+          ),
+        ],
+      );
+    } else {
+      return Container();
+    }
+  }
+
   Widget _body() {
+    Stream<QuerySnapshot<Map<String, dynamic>>> queryGM = FirebaseFirestore
+        .instance
+        .collection("Users")
+        .where('email', isNotEqualTo: FirebaseAuth.instance.currentUser!.email)
+        .snapshots();
+    Stream<QuerySnapshot<Map<String, dynamic>>> querySM = FirebaseFirestore
+        .instance
+        .collection("Users")
+        .where('position', isEqualTo: 'Employee')
+        .where('department', isEqualTo: widget.userInfo.get('department'))
+        .snapshots();
+    Stream<QuerySnapshot<Map<String, dynamic>>> querySM2 = FirebaseFirestore
+        .instance
+        .collection("Users")
+        .where('position', isEqualTo: 'General-Manager')
+        .snapshots();
+    Stream<QuerySnapshot<Map<String, dynamic>>> queryEM = FirebaseFirestore
+        .instance
+        .collection("Users")
+        .where('position', isEqualTo: 'Sub-Manager')
+        .where('department', isEqualTo: widget.userInfo.get('department'))
+        .snapshots();
     return Expanded(
         child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -92,18 +188,20 @@ class _ChatHomePageState extends State<ChatHomePage> {
               color: Colors.white,
             ),
             child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection("Users")
-                  .where('email',
-                      isNotEqualTo: FirebaseAuth.instance.currentUser!.email)
-                  .snapshots(),
+              stream: widget.userInfo.get('position') == 'General-Manager'
+                  ? queryGM
+                  : widget.userInfo.get('position') == 'Employee'
+                      ? queryEM
+                      : _assign == 0
+                          ? querySM2
+                          : querySM,
               builder: (BuildContext context,
                   AsyncSnapshot<QuerySnapshot> snapshot) {
                 if (snapshot.hasError) {
                   Fluttertoast.showToast(msg: "Error occured");
                 }
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const SpinKitDoubleBounce(
+                  return const SpinKitChasingDots(
                     color: Colors.blue,
                   );
                 }
@@ -218,7 +316,7 @@ class _ChatRoomBuilderState extends State<ChatRoomBuilder> {
         child: Stack(children: [
           Card(
             margin: const EdgeInsets.symmetric(vertical: 20),
-            elevation: 0,
+            elevation: 2,
             child: Row(
               children: [
                 Avatar(
@@ -249,19 +347,24 @@ class _ChatRoomBuilderState extends State<ChatRoomBuilder> {
                         const SizedBox(
                           height: 10,
                         ),
-                        (chatDocId != null)
-                            ? LastMessage(chatDocId: chatDocId)
-                            : Container(),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              (chatDocId != null)
+                                  ? LastMessage(chatDocId: chatDocId)
+                                  : Container(),
+                              Align(
+                                alignment: Alignment.bottomRight,
+                                child: _fetchNotification(
+                                    loginUserEmail.toString(), receiverEmail),
+                              ),
+                            ]),
                       ]),
                 ),
                 //   ],
                 // ),
               ],
             ),
-          ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: _fetchNotification(loginUserEmail.toString(), receiverEmail),
           ),
         ]));
   }
@@ -320,8 +423,8 @@ class _LastMessageState extends State<LastMessage> {
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const SpinKitDoubleBounce(
-              color: Colors.blue,
+            return const Center(
+              child: Text('....'),
             );
           }
           if (snapshot.hasData) {

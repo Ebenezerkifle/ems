@@ -1,89 +1,122 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ems/GeoFence/googleMap.dart';
+import 'package:ems/Models/task.dart';
+import 'package:ems/Screens/GeneralManager%20Screens/Home_Screen_GM.dart';
+import 'package:ems/Screens/GeneralManager%20Screens/todoListProgress.dart';
+import 'package:ems/Screens/SharedScreens/ChatHomepage.dart';
+import 'package:ems/Screens/SharedScreens/TaskHomePage.dart';
+import 'package:ems/Screens/Signin%20and%20Signout%20Screens/signin_screen.dart';
+import 'package:ems/Screens/user_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:location/location.dart';
 
 class NavigationDrawerWidget extends StatelessWidget {
   final padding = const EdgeInsets.symmetric(horizontal: 20);
+  final QueryDocumentSnapshot<Object?> userInfo;
 
-  const NavigationDrawerWidget({Key? key}) : super(key: key);
+  NavigationDrawerWidget(this.userInfo, {Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    final name = 'Abenezer Kifle';
-    final email = 'abeni@gmail.com';
-    final urlImage = 'assets/user1.jpeg';
+    final name = userInfo.get('firstname') + ' ' + userInfo.get('middlename');
+    final email = userInfo.get('email');
+    final urlImage =
+        'https://cdn.pixabay.com/photo/2020/07/01/12/58/icon-5359553_960_720.png';
 
-    return Drawer();
+    return Drawer(
+      child: Container(
+        color: Colors.indigo,
+        child: ListView(
+          children: <Widget>[
+            buildHeader(
+                //urlImage: urlImage,
+                name: name,
+                email: email,
+                onClicked: () {
+                  // Navigator.of(context).push(MaterialPageRoute(
+                  //   builder: (context) => UserPage(
+                  //     name: 'Sarah Abs',
+                  //     urlImage: urlImage,
+                  //   ),
+                  // ));
+                }),
+            Container(
+              padding: padding,
+              child: Column(
+                children: [
+                  const Divider(color: Colors.white70),
+                  const SizedBox(height: 12),
+                  buildSearchField(),
+                  const SizedBox(height: 24),
+                  buildMenuItem(
+                    text: 'Home',
+                    icon: Icons.home,
+                    onClicked: () => selectedItem(context, 0),
+                  ),
+                  const SizedBox(height: 6),
+                  buildMenuItem(
+                    text: 'Tasks',
+                    icon: Icons.task_alt_outlined,
+                    onClicked: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => TaskHomePage(userInfo)));
+                    },
+                  ),
+                  const SizedBox(height: 6),
+                  buildMenuItem(
+                    text: 'Chat',
+                    icon: Icons.chat_bubble_outline,
+                    onClicked: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => ChatHomePage(userInfo)));
+                    },
+                  ),
+                  const SizedBox(height: 6),
+                  buildMenuItem(
+                    text: 'Location',
+                    icon: Icons.location_on_outlined,
+                    onClicked: () {
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                          builder: (context) => const GoogleMap()));
+                    },
+                  ),
+                  buildMenuItem(
+                    text: 'Todo List Progress',
+                    icon: Icons.run_circle_outlined,
+                    onClicked: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => TodoListProgress(userInfo)));
+                    },
+                  ),
+                  const SizedBox(height: 6),
+                  buildMenuItem(
+                    text: 'Notifications',
+                    icon: Icons.notifications_outlined,
+                    onClicked: () => selectedItem(context, 5),
+                  ),
+                  const Divider(color: Colors.white70),
+                  buildMenuItem(
+                    text: 'Logout',
+                    icon: Icons.logout,
+                    onClicked: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => const LoginScreen()));
+                      FirebaseAuth.instance.signOut();
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
-  //   return Drawer(
-  //     child: Container(
-  //       color: Colors.indigo,
-  //       child: ListView(
-  //         children: <Widget>[
-  //           buildHeader(
-  //             urlImage: urlImage,
-  //             name: name,
-  //             email: email,
-  //             onClicked: () => Navigator.of(context).push(MaterialPageRoute(
-  //               builder: (context) => UserPage(
-  //                 name: 'Sarah Abs',
-  //                 urlImage: urlImage,
-  //               ),
-  //             )),
-  //           ),
-  //           Container(
-  //             padding: padding,
-  //             child: Column(
-  //               children: [
-  //                 const SizedBox(height: 12),
-  //                 buildSearchField(),
-  //                 const SizedBox(height: 24),
-  //                 buildMenuItem(
-  //                   text: 'People',
-  //                   icon: Icons.people,
-  //                   onClicked: () => selectedItem(context, 0),
-  //                 ),
-  //                 const SizedBox(height: 16),
-  //                 buildMenuItem(
-  //                   text: 'Favourites',
-  //                   icon: Icons.favorite_border,
-  //                   onClicked: () => selectedItem(context, 1),
-  //                 ),
-  //                 const SizedBox(height: 16),
-  //                 buildMenuItem(
-  //                   text: 'Workflow',
-  //                   icon: Icons.workspaces_outline,
-  //                   onClicked: () => selectedItem(context, 2),
-  //                 ),
-  //                 const SizedBox(height: 16),
-  //                 buildMenuItem(
-  //                   text: 'Updates',
-  //                   icon: Icons.update,
-  //                   onClicked: () => selectedItem(context, 3),
-  //                 ),
-  //                 const SizedBox(height: 24),
-  //                 const Divider(color: Colors.white70),
-  //                 const SizedBox(height: 24),
-  //                 buildMenuItem(
-  //                   text: 'Plugins',
-  //                   icon: Icons.account_tree_outlined,
-  //                   onClicked: () => selectedItem(context, 4),
-  //                 ),
-  //                 const SizedBox(height: 16),
-  //                 buildMenuItem(
-  //                   text: 'Notifications',
-  //                   icon: Icons.notifications_outlined,
-  //                   onClicked: () => selectedItem(context, 5),
-  //                 ),
-  //               ],
-  //             ),
-  //           ),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
-
   Widget buildHeader({
-    required String urlImage,
+    // required String urlImage,
     required String name,
     required String email,
     required VoidCallback onClicked,
@@ -91,10 +124,11 @@ class NavigationDrawerWidget extends StatelessWidget {
       InkWell(
         onTap: onClicked,
         child: Container(
+          color: Colors.black38,
           padding: padding.add(const EdgeInsets.symmetric(vertical: 40)),
           child: Row(
             children: [
-              CircleAvatar(radius: 30, backgroundImage: AssetImage(urlImage)),
+              //CircleAvatar(radius: 30, backgroundImage: AssetImage(urlImage)),
               const SizedBox(width: 20),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -165,17 +199,17 @@ class NavigationDrawerWidget extends StatelessWidget {
   void selectedItem(BuildContext context, int index) {
     Navigator.of(context).pop();
 
-    switch (index) {
-      case 0:
-      // Navigator.of(context).push(MaterialPageRoute(
-      //   builder: (context) => HomeScreenGM(),
-      // ));
-      /* break;
-      case 1:
-        Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => EmployeeInfo(),
-        ));
-        break; */
-    }
+    // switch (index) {
+    //   case 0:
+    //     Navigator.of(context).push(MaterialPageRoute(
+    //       builder: (context) => ChatHomePage(),
+    //     ));
+    //     break;
+    //   case 1:
+    //     // Navigator.of(context).push(MaterialPageRoute(
+    //     //   builder: (context) => EmployeeInfo(),
+    //     // ));
+    //     break;
+    // }
   }
 }
