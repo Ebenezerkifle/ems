@@ -59,7 +59,7 @@ class _TaskPageState extends State<TaskPage> {
   Future _fetchTaskDocId() async {
     late var email;
     var taskDocId;
-    print(widget.userInfo.get('position'));
+
     if (widget.userInfo.get('position') == 'General-Manager' &&
         receiverPosistion == 'Employee') {
       await FirebaseFirestore.instance
@@ -253,14 +253,12 @@ class _TaskPageState extends State<TaskPage> {
       required int status}) {
     return InkWell(
       onTap: () {
-        _progress == 0
-            ? Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => TaskDetail(taskDocId, receiverEmail,
-                      description, title, time, documentId, status),
-                ),
-              )
-            : {};
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => TaskDetail(taskDocId, receiverEmail,
+                description, title, time, documentId, status, _progress),
+          ),
+        );
       },
       child: Card(
         color: status == -1

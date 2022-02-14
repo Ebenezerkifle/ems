@@ -190,7 +190,7 @@ class _MyTasksState extends State<MyTasks> {
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => TaskDetail(taskDocId, receiverEmail,
-                description, title, time, documentId, status),
+                description, title, time, documentId, status, 1),
           ),
         );
       },

@@ -215,18 +215,19 @@ class TaskDetail extends StatefulWidget {
   String receiverEmail;
   String description;
   String title;
+  int progress;
   var documentId;
   var timeStamp;
   int status;
   TaskDetail(this.taskDocId, this.receiverEmail, this.description, this.title,
-      this.timeStamp, this.documentId, this.status,
+      this.timeStamp, this.documentId, this.status, this.progress,
       {Key? key})
       : super(key: key);
 
   @override
   // ignore: no_logic_in_create_state
   _TaskDetailState createState() => _TaskDetailState(taskDocId, receiverEmail,
-      description, title, timeStamp, documentId, status);
+      description, title, timeStamp, documentId, status, progress);
 }
 
 class _TaskDetailState extends State<TaskDetail> {
@@ -237,9 +238,17 @@ class _TaskDetailState extends State<TaskDetail> {
   var timeStamp;
   var documentId;
   int _status;
+  int _progress;
 
-  _TaskDetailState(this.taskDocId, this.receiverEmail, this.description,
-      this.title, this.timeStamp, this.documentId, this._status);
+  _TaskDetailState(
+      this.taskDocId,
+      this.receiverEmail,
+      this.description,
+      this.title,
+      this.timeStamp,
+      this.documentId,
+      this._status,
+      this._progress);
   CollectionReference tasks = FirebaseFirestore.instance.collection("Tasks");
   var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
 
@@ -269,10 +278,13 @@ class _TaskDetailState extends State<TaskDetail> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 25),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Row(
             children: [
+              const SizedBox(
+                width: 10,
+              ),
               GestureDetector(
                 onTap: () => Navigator.of(context).pop(),
                 child: const Icon(
@@ -291,53 +303,58 @@ class _TaskDetailState extends State<TaskDetail> {
               ),
             ],
           ),
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(50),
-                  color: Colors.black12,
-                ),
-                child: IconButton(
-                  icon: const Icon(
-                    Icons.done,
-                    size: 25,
-                    color: Colors.greenAccent,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _status = 1;
-                      _taskStatusChange(1);
-                    });
-                  },
-                ),
-              ),
-              const SizedBox(
-                width: 5,
-              ),
-              Container(
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(50),
-                  color: Colors.black12,
-                ),
-                child: IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _status = 0;
-                      _taskStatusChange(0);
-                    });
-                  },
-                  icon: const Icon(
-                    Icons.run_circle_outlined,
-                    size: 25,
-                    color: Colors.yellowAccent,
-                  ),
-                ),
-              ),
-            ],
-          )
+          const SizedBox(
+            width: 100,
+          ),
+          _progress == 0
+              ? Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(50),
+                        color: Colors.black12,
+                      ),
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.done,
+                          size: 25,
+                          color: Colors.greenAccent,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _status = 1;
+                            _taskStatusChange(1);
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 5,
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(50),
+                        color: Colors.black12,
+                      ),
+                      child: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _status = 0;
+                            _taskStatusChange(0);
+                          });
+                        },
+                        icon: const Icon(
+                          Icons.run_circle_outlined,
+                          size: 25,
+                          color: Colors.yellowAccent,
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : Container(),
         ],
       ),
     );
