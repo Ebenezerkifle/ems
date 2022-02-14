@@ -1,206 +1,191 @@
-import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 
-class CalendarGrid extends StatefulWidget {
-  const CalendarGrid({Key? key}) : super(key: key);
+import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart'
+    show CalendarCarousel;
+import 'package:flutter_calendar_carousel/classes/event.dart';
+import 'package:flutter_calendar_carousel/classes/event_list.dart';
+import 'package:intl/intl.dart' show DateFormat;
+
+class CalendarPage extends StatefulWidget {
+  const CalendarPage({Key? key}) : super(key: key);
 
   @override
-  _CalendarGridState createState() => _CalendarGridState();
+  _CalendarPageState createState() => _CalendarPageState();
 }
 
-class _CalendarGridState extends State<CalendarGrid> {
-  final DateTime _selectedDate = DateTime.now();
+class _CalendarPageState extends State<CalendarPage> {
+  final DateTime _currentDate = DateTime.now();
+  DateTime _currentDate2 = DateTime.now();
+  String _currentMonth = DateFormat.yMMM().format(DateTime.now());
+  DateTime _targetDateTime = DateTime.now();
 
-  int _selectedIndex = 0;
-  late int indexOfFirstDayMonth;
+  static final Widget _eventIcon = Container(
+    decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.all(Radius.circular(1000)),
+        border: Border.all(color: Colors.blue, width: 2.0)),
+    // child: const Icon(
+    //   Icons.person,
+    //   color: Colors.amber,
+    // ),
+  );
+
+  _setEvents() {}
+  //late EventList<Event> _markedDateMap = [] as EventList<Event>;
+
+  final EventList<Event> _markedDateMap = EventList<Event>(
+    events: {},
+  );
+
+  _iterateThroughDates() {
+    for (int i = 1; i < 14; i++) {
+      _markedDateMap.add(
+        DateTime(2022, 2, i),
+        Event(
+          date: DateTime(2022, 2, i),
+          title: '',
+          icon: _eventIcon,
+        ),
+      );
+    }
+  }
+
+  CalendarCarousel? _calendarCarouselNoHeader;
 
   @override
   void initState() {
+    _iterateThroughDates();
     super.initState();
-    indexOfFirstDayMonth = getIndexOfFirstDayInMonth(_selectedDate);
-    setState(() {
-      _selectedIndex = indexOfFirstDayMonth +
-          int.parse(DateFormat('d').format(DateTime.now())) -
-          1;
-    });
   }
+  /*
+    _markedDateMap.addAll(DateTime.now(), [
+      Event(
+        date: DateTime(2022, 2, 5),
+        title: '',
+        icon: _eventIcon,
+      ),
+      Event(
+        date: DateTime(2022, 2, 5),
+        title: '',
+        icon: _eventIcon,
+      ),
+      Event(
+        date: DateTime(2022, 2, 5),
+        title: '',
+        icon: _eventIcon,
+      ),
+      Event(
+        date: DateTime(2022, 2, 5),
+        title: '',
+        icon: _eventIcon,
+      ),
+      Event(
+        date: DateTime(2022, 2, 5),
+        title: '',
+        icon: _eventIcon,
+      ),
+      Event(
+        date: DateTime(2022, 2, 5),
+        title: '',
+        icon: _eventIcon,
+      ),
+      Event(
+        date: DateTime(2022, 2, 5),
+        title: '',
+        icon: _eventIcon,
+      ),
+      Event(
+        date: DateTime(2022, 2, 5),
+        title: '',
+        icon: _eventIcon,
+      ),
+    ]);
+  */
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    _calendarCarouselNoHeader = CalendarCarousel<Event>(
+      todayBorderColor: Colors.red,
+      onDayPressed: (DateTime date, List<Event> events) {
+        setState(() => _currentDate2 = date);
+        // events.forEach((event) => print(event.title));
+      },
+      daysHaveCircularBorder: false,
+      showOnlyCurrentMonthDate: true,
+      weekendTextStyle: const TextStyle(
+        color: Colors.black,
+      ),
+      thisMonthDayBorderColor: Colors.grey,
+      weekFormat: false,
+      markedDatesMap: _markedDateMap,
+      height: MediaQuery.of(context).size.height * 0.82,
+      selectedDateTime: _currentDate2,
+      targetDateTime: _targetDateTime,
+      customGridViewPhysics: const NeverScrollableScrollPhysics(),
+      minSelectedDate: _currentDate.subtract(const Duration(days: 360)),
+      maxSelectedDate: _currentDate.add(const Duration(days: 360)),
+      inactiveDaysTextStyle: const TextStyle(
+        color: Colors.tealAccent,
+        fontSize: 16,
+      ),
+      onCalendarChanged: (DateTime date) {
+        setState(() {
+          _targetDateTime = date;
+          _currentMonth = DateFormat.yMMM().format(_targetDateTime);
+        });
+      },
+      onDayLongPressed: (DateTime date) {
+        _dialogueBox(date);
+      },
+    );
+
+    return Material(
+        child: Scaffold(
       backgroundColor: Colors.indigo,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        shadowColor: Colors.transparent,
-        /* leading: const Icon(
-          Icons.arrow_back,
-          color: Colors.indigo,
-        ), */
-        /* actions: const [
-          Padding(
-            padding: EdgeInsets.all(12),
-            child: Icon(
-              Icons.arrow_forward,
-              color: Colors.indigo,
-            ),
-          )
-        ], */
-        title: Column(
+      body: SafeArea(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            const Text(
-              "Calendar",
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 22,
-                  color: Colors.indigo),
+            _top(),
+            const SizedBox(
+              height: 30,
             ),
-            Text(
-              DateFormat('MMMM yyyy').format(_selectedDate),
-              style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 15,
-                  color: Colors.grey),
-            )
+            _body(),
           ],
         ),
       ),
-      body: Column(
-        children: [
-          SizedBox(
-            height: 50,
-            child: GridView.builder(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 7,
-                ),
-                itemCount: daysOfWeek.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return Container(
-                    alignment: Alignment.center,
-                    child: Text(
-                      daysOfWeek[index],
-                      style: const TextStyle(
-                          fontSize: 15,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  );
-                }),
-          ),
-          Container(
-            decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    spreadRadius: 0.1,
-                    blurRadius: 7,
-                    offset: const Offset(0, 7.75),
-                  ),
-                ]),
-            child: GridView.builder(
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              padding: EdgeInsets.zero,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 7,
-              ),
-              itemCount: listOfDatesInMonth(_selectedDate).length +
-                  indexOfFirstDayMonth,
-              itemBuilder: (BuildContext context, int index) {
-                return Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: GestureDetector(
-                    onTap: () => index >= indexOfFirstDayMonth
-                        ? setState(() {
-                            _selectedIndex = index;
-                          })
-                        : null,
-                    child: Container(
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                            color: index == _selectedIndex
-                                ? Colors.indigo
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(50)),
-                        foregroundDecoration: BoxDecoration(
-                            color: index == _selectedIndex - 3 ||
-                                    index == _selectedIndex - 8
-                                ? Colors.red
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(50)),
-                        child: index < indexOfFirstDayMonth
-                            ? const Text("")
-                            : Text(
-                                '${index + 1 - indexOfFirstDayMonth}',
-                                style: TextStyle(
-                                    color: index == _selectedIndex
-                                        ? Colors.white
-                                        : index % 7 == 5 || index % 7 == 6
-                                            ? Colors.indigo
-                                            : Colors.black,
-                                    fontSize: 17),
-                              )),
-                  ),
-                );
-              },
-            ),
-          ),
-          const SizedBox(
-            height: 5,
-          ),
-          /* Expanded(
-            child: Column(
-              children: [
-                Container(
-                  width: MediaQuery.of(context).size.width,
-                  padding: const EdgeInsets.only(bottom: 20, top: 10),
-                  child: Image.asset(
-                    'assets/images/calendar-icon.jpg',
-                    fit: BoxFit.contain,
-                  ),
-                ),
-                const Text("No events today",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600))
-              ],
-            ),
-          ), */
-        ],
+    ));
+  }
+
+  Widget _top() {
+    return Container(
+      alignment: Alignment.centerLeft,
+      padding: const EdgeInsets.only(top: 30, left: 30),
+      child: const Text(
+        'My Attendace',
+        style: TextStyle(
+            fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
       ),
     );
   }
+
+  Widget _body() {
+    return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(45), topRight: Radius.circular(45)),
+          color: Colors.white,
+        ),
+        child: SingleChildScrollView(
+          child: Container(
+            child: _calendarCarouselNoHeader,
+          ),
+        ));
+  }
+
+  _dialogueBox(DateTime date) {
+    print(date.toString() + " pressed");
+  }
 }
-
-List<int> listOfDatesInMonth(DateTime currentDate) {
-  var selectedMonthFirstDay =
-      DateTime(currentDate.year, currentDate.month, currentDate.day);
-  var nextMonthFirstDay = DateTime(selectedMonthFirstDay.year,
-      selectedMonthFirstDay.month + 1, selectedMonthFirstDay.day);
-  var totalDays = nextMonthFirstDay.difference(selectedMonthFirstDay).inDays;
-
-  var listOfDates = List<int>.generate(totalDays, (i) => i + 1);
-  return (listOfDates);
-}
-
-int getIndexOfFirstDayInMonth(DateTime currentDate) {
-  var selectedMonthFirstDay =
-      DateTime(currentDate.year, currentDate.month, currentDate.day);
-  var day = DateFormat('EEE').format(selectedMonthFirstDay).toUpperCase();
-
-  return daysOfWeek.indexOf(day) - 1;
-}
-
-final List<String> daysOfWeek = [
-  "MON",
-  "TUE",
-  "WED",
-  "THU",
-  "FRI",
-  "SAT",
-  "SUN",
-];
