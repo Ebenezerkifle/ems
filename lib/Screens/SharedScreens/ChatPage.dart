@@ -94,37 +94,6 @@ class _ChatPageState extends State<ChatPage> {
               ),
             ],
           ),
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(50),
-                  color: Colors.black12,
-                ),
-                child: const Icon(
-                  Icons.call,
-                  size: 25,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(
-                width: 20,
-              ),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(50),
-                  color: Colors.black12,
-                ),
-                child: const Icon(
-                  Icons.videocam,
-                  size: 25,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          )
         ],
       ),
     );
@@ -167,7 +136,6 @@ class _ChatPageState extends State<ChatPage> {
                     sender = 1;
                   }
                   return _itemChat(
-                    avatar: 'assets/images/5.jpg',
                     chat: sender,
                     message: data['msg']!,
                     time: '08.00',
@@ -181,21 +149,18 @@ class _ChatPageState extends State<ChatPage> {
 
   // 0 = Send
   // 1 = Recieved
-  Widget _itemChat({int? chat, String? avatar, message, time}) {
+  Widget _itemChat({int? chat, message, time}) {
     return Row(
       mainAxisAlignment:
           chat == 0 ? MainAxisAlignment.end : MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        avatar != null
-            ? Avatar(
-                image: avatar,
-                size: 50,
-              )
-            : Text(
+        chat == 0
+            ? Text(
                 '$time',
                 style: TextStyle(color: Colors.grey.shade400),
-              ),
+              )
+            : Container(),
         Flexible(
           child: Container(
             margin: const EdgeInsets.only(left: 10, right: 10, top: 20),
@@ -293,28 +258,5 @@ class _ChatPageState extends State<ChatPage> {
       notificationModel.sendNotification();
       messageController.clear();
     }
-  }
-}
-
-class Avatar extends StatelessWidget {
-  final double size;
-  final image;
-  final EdgeInsets margin;
-  Avatar({this.image, this.size = 50, this.margin = const EdgeInsets.all(0)});
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: margin,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          image: DecorationImage(
-            image: AssetImage(image),
-          ),
-        ),
-      ),
-    );
   }
 }
