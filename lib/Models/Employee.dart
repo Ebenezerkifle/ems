@@ -1,3 +1,5 @@
+import 'package:ems/Models/Login.dart';
+
 class Employee {
   late String firstName;
   late String middleName;
@@ -5,13 +7,12 @@ class Employee {
   late String departement;
   late String position;
   late String uid;
-  late String email;
-  late String password;
   late String phoneNumber;
+  late Login login;
 
   Employee();
 
-  Employee.forJson(this.firstName, this.lastName, this.email, this.uid);
+  Employee.forJson(this.firstName, this.lastName, this.login, this.uid);
 
 /*   set position(String position) {}
 
@@ -26,8 +27,8 @@ class Employee {
         'lastname': lastName,
         'department': departement,
         'position': position,
-        'email': email,
-        'password': password, // can be ignored!
+        'email': login.email,
+        'password': login.password, // can be ignored!
         'phoneNumber': phoneNumber,
       };
 
@@ -41,14 +42,6 @@ class Employee {
 
   set setUID(String uid) {
     this.uid;
-  }
-
-  set setPassword(String password) {
-    this.password;
-  }
-
-  set setemail(String email) {
-    this.email;
   }
 
   set setphoneNumber(String phoneNumber) {

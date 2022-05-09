@@ -38,7 +38,7 @@ class _CalendarPageState extends State<CalendarPage> {
   );
 
   _iterateThroughDates() {
-    for (int i = 1; i < 14; i++) {
+    for (int i = 1; i < 15; i++) {
       _markedDateMap.add(
         DateTime(2022, 2, i),
         Event(

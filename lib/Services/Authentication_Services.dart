@@ -1,4 +1,5 @@
 import 'package:ems/Models/Employee.dart';
+import 'package:ems/Models/Login.dart';
 import 'package:ems/Services/Database_Services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -12,7 +13,7 @@ class Authentication {
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
-              email: employee.email, password: employee.password);
+              email: employee.login.email, password: employee.login.password);
 
       DatabaseServices().register(employee, userCredential.user!.uid);
 
@@ -33,11 +34,11 @@ class Authentication {
   }
 
   // login
-  Future singin(String email, String password) async {
+  Future singin(Login login) async {
     try {
       //UserCredential userCredential
-      await FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: email, password: password);
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: login.email, password: login.password);
       //DatabaseServices(uid: userCredential.user!.uid).updateUsersData(user);
       error = "The user is successfully registered!";
       return error;

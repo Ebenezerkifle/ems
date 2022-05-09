@@ -24,10 +24,18 @@ class _TaksHomePageState extends State<TaskHomePage> {
 
   @override
   void initState() {
+    if(widget.userInfo.get('position')=='General-Manager'){
+      setState(() {
+      _titleTop = 'Assign Tasks to \nyour subordinate';
+      _assign = 0;
+    });
+    }
+    else{
     setState(() {
       _titleTop = 'Tasks \nAssigned to you';
       _assign = 1;
     });
+    }
 
     super.initState();
   }

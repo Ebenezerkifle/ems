@@ -13,8 +13,8 @@ class DatabaseServices {
       'lastname': employee.lastName,
       'department': employee.departement,
       'position': employee.position,
-      'email': employee.email,
-      'password': employee.password, // can be ignored!
+      'email': employee.login.email,
+      'password': employee.login.password, // can be ignored!
       'phoneNumber': employee.phoneNumber,
     });
   }

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Models/task.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class CreateTask extends StatefulWidget {
   final QueryDocumentSnapshot<Object?> userInfo;
@@ -109,6 +110,8 @@ class _CreateTaskState extends State<CreateTask> {
                   //hintText: "Title",
                   border: OutlineInputBorder()),
               maxLines: 1,
+              maxLength: 10,
+              maxLengthEnforcement: MaxLengthEnforcement.enforced,
               style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,

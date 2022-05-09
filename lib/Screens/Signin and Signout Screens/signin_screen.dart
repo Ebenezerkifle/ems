@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ems/Models/Login.dart';
 import 'package:ems/Screens/SharedScreens/Home_Screen_AD.dart';
 import 'package:ems/Screens/Employee%20Screens/Home_Screen_EM.dart';
 import 'package:ems/Screens/GeneralManager%20Screens/Home_Screen_GM.dart';
@@ -21,6 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final Authentication _auth = Authentication();
+  final Login login = Login();
 
   String error = '';
 
@@ -155,8 +157,9 @@ class _LoginScreenState extends State<LoginScreen> {
         elevation: 5,
         onPressed: () async {
           if (_formKey.currentState!.validate()) {
-            dynamic result = await _auth.singin(
-                _emailController.text, _passwordController.text);
+            login.email = _emailController.text;
+            login.email = _passwordController.text;
+            dynamic result = await _auth.singin(login);
             if (result == null) {
               setState(() => error = "couldn't signin with this credential!");
               Fluttertoast.showToast(msg: error);

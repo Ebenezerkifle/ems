@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Models/Employee.dart';
+import 'package:ems/Models/Login.dart';
 import 'package:ems/Models/Notification.dart';
 import 'package:ems/Services/Authentication_Services.dart';
 import 'package:flutter/material.dart';
@@ -278,7 +279,7 @@ class FormScreenState extends State<FormScreen> {
               style: const TextStyle(color: Colors.indigo),
               onChanged: (value) {
                 setState(() {
-                  employee.email = value;
+                  employee.login.email = value;
                 });
               },
               decoration: const InputDecoration(
@@ -426,7 +427,7 @@ class FormScreenState extends State<FormScreen> {
               validator: (value) =>
                   value!.length < 6 ? "6+ characters required!" : null,
               onChanged: (value) {
-                setState(() => employee.password = value);
+                setState(() => employee.login.password = value);
               },
             ))
       ],
@@ -503,7 +504,7 @@ class FormScreenState extends State<FormScreen> {
         body: 'Request for approval of an employee on ' +
             employee.position +
             ' position',
-        senderEmail: employee.email,
+        senderEmail: employee.login.email,
         receiverEmail: generalManagerEmail.toString(),
         timeStamp: DateTime.now(),
         seen: false);

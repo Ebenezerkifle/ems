@@ -23,6 +23,7 @@ class _RegisterState extends State<Register> {
   String error = "";
 
   Employee user = Employee();
+  LoginScreen loginInfo = LoginScreen();
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +75,7 @@ class _RegisterState extends State<Register> {
                                   ? "Enter a valid email!"
                                   : null,
                               onChanged: (value) =>
-                                  {setState(() => user.email = value)},
+                                  {setState(() => user.login.email = value)},
                               keyboardType: TextInputType.text,
                               decoration:
                                   const InputDecoration(hintText: "email"),
@@ -100,7 +101,7 @@ class _RegisterState extends State<Register> {
                                   ? "Enter 6+ chars for password"
                                   : null,
                               onChanged: (value) =>
-                                  {setState(() => user.password = value)},
+                                  {setState(() => user.login.password = value)},
                               //controller: _middlenameController,
                               obscureText: true, // for password!
                               keyboardType: TextInputType.text,
@@ -134,7 +135,8 @@ class _RegisterState extends State<Register> {
                                       Fluttertoast.showToast(msg: error);
                                       Navigator.of(context).pushReplacement(
                                           MaterialPageRoute(
-                                              builder: (context) => Login()));
+                                              builder: (context) =>
+                                                  LoginScreen()));
                                     } else {
                                       setState(() => error = result);
                                       Fluttertoast.showToast(msg: error);
