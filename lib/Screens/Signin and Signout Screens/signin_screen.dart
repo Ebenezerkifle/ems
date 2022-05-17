@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Models/Login.dart';
+import 'package:ems/Screens/Employee%20Screens/Navigation.dart';
 import 'package:ems/Screens/SharedScreens/Home_Screen_AD.dart';
 import 'package:ems/Screens/Employee%20Screens/Home_Screen_EM.dart';
 import 'package:ems/Screens/GeneralManager%20Screens/Home_Screen_GM.dart';
@@ -206,7 +207,7 @@ class _LoginScreenState extends State<LoginScreen> {
           break;
         case 'Employee':
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (context) => HomeScreenEM(userInfo: result)));
+              builder: (context) => NavigationEM(userInfo: result)));
           break;
       }
     });

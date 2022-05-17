@@ -30,9 +30,27 @@ class DatabaseServices {
       });
       return itemsList;
     } catch (e) {
-      print(e.toString());
       return null;
     }
+  }
+
+  static Future getUserInformation(String email) async {
+    Employee employee = Employee();
+    await FirebaseFirestore.instance
+        .collection('Users')
+        .where('email', isEqualTo: email)
+        .get()
+        .then((QuerySnapshot snapshot) {
+      var result = snapshot.docs.first;
+      employee.firstName = result.get('firstname');
+      employee.lastName = result.get('lastname');
+      employee.position = result.get('position');
+      employee.departement = result.get('department');
+      employee.middleName = result.get('middlename');
+      employee.login.email = result.get('email');
+      employee.phoneNumber = result.get('phoneNumber');
+    });
+    return employee;
   }
 
   Future fetchMessage(

@@ -1,13 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Attendance/Attendance.dart';
 import 'package:ems/GeoFence/googleMap.dart';
-import 'package:ems/Screens/Employee%20Screens/myTasks.dart';
-import 'package:ems/Screens/Employee%20Screens/myprogress.dart';
-import 'package:ems/Screens/GeneralManager%20Screens/todoListProgress.dart';
 import 'package:ems/Screens/SharedScreens/ChatHomepage.dart';
 import 'package:ems/Screens/SharedScreens/TaskHomePage.dart';
 import 'package:ems/Screens/navigation_drawer_widget.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';

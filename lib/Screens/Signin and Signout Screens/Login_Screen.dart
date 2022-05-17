@@ -13,8 +13,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginState extends State<LoginScreen> {
-  //SharedPreferences preferences;
-  //_LoginState(this.preferences);
+  // SharedPreferences preferences;
+  // _LoginState(this.preferences);
 
   final Authentication _auth = Authentication();
   final _formKey = GlobalKey<FormState>();
@@ -95,18 +95,21 @@ class _LoginState extends State<LoginScreen> {
                 Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                   const Text("Don't have an account "),
                   GestureDetector(
-                    onTap: () {},
-                    //   Navigator.push(context,
-                    //       MaterialPageRoute(builder: (context) => Register()));
-                    // },
-                    child: const Text(
-                      "Register",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15.0,
-                          color: Colors.redAccent),
-                    ),
-                  )
+                      onTap: () {},
+                      //   Navigator.push(context,
+                      //       MaterialPageRoute(builder: (context) => Register()));
+                      // },
+
+                      child: Semantics(
+                        label: "Register",
+                        child: const Text(
+                          "Register",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15.0,
+                              color: Colors.redAccent),
+                        ),
+                      ))
                 ])
               ],
             )),
