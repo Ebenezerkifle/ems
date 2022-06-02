@@ -1,8 +1,13 @@
+import 'package:avatar_glow/avatar_glow.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Models/Notification.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:speech_to_text/speech_to_text.dart';
+
+final _speech = SpeechToText();
 
 // ignore: must_be_immutable
 class ChatPage extends StatefulWidget {
@@ -36,15 +41,51 @@ class _ChatPageState extends State<ChatPage> {
 
   _ChatPageState(this.receiverEmail, this.name, this.chatDocId);
 
-  // @override
-  // void initState() {
-  //   notifications
-  //       .doc(loginUserEmail)
-  //       .collection('Notification').where('field',isEqualTo: '')
-  //       .doc()
-  //       .update({'seen': true});
-  //   super.initState();
-  // }
+  SpeechToText _speechToText = SpeechToText();
+  bool _speechEnabled = false;
+  String _lastWords = '';
+  String message = 'This is test!';
+  bool isListening = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initSpeech();
+  }
+
+  /// This has to happen only once per app
+  void _initSpeech() async {
+    _speechEnabled = await _speechToText.initialize();
+    setState(() {});
+  }
+
+  /// Each time to start a speech recognition session
+  void _startListening() async {
+    await _speechToText.listen(onResult: _onSpeechResult);
+    setState(() {
+      isListening = true;
+    });
+  }
+
+  /// Manually stop the active speech recognition session
+  /// Note that there are also timeouts that each platform enforces
+  /// and the SpeechToText plugin supports setting timeouts on the
+  /// listen method.
+  void _stopListening() async {
+    await _speechToText.stop();
+    setState(() {
+      isListening = false;
+    });
+  }
+
+  /// This is the callback that the SpeechToText plugin calls when
+  /// the platform returns recognized words.
+  void _onSpeechResult(SpeechRecognitionResult result) {
+    setState(() {
+      _lastWords = result.recognizedWords;
+      messageController.text = result.recognizedWords;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -202,6 +243,24 @@ class _ChatPageState extends State<ChatPage> {
             color: Colors.white,
             child: Row(
               children: [
+                AvatarGlow(
+                  animate: isListening,
+                  endRadius: 75,
+                  glowColor: Theme.of(context).primaryColor,
+                  child: IconButton(
+                    // onPressed: toggleRecording,
+                    onPressed: () {
+                      _speechToText.isNotListening
+                          ? _startListening()
+                          : _stopListening();
+                    },
+                    icon: Icon(
+                      _speechToText.isListening ? Icons.mic : Icons.mic_off,
+                      color: Colors.blue,
+                    ),
+                    color: Colors.blueAccent,
+                  ),
+                ),
                 Flexible(
                   child: TextField(
                     controller: messageController,

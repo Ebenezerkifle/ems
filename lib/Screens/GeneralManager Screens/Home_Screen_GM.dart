@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Attendance/Attendance.dart';
-import 'package:ems/GeoFence/googleMap.dart';
+import 'package:ems/GeoFence/locationInfo.dart';
 import 'package:ems/Screens/GeneralManager%20Screens/employeeprogress.dart';
 import 'package:ems/Screens/GeneralManager%20Screens/todoListProgress.dart';
 import 'package:ems/Screens/SharedScreens/ChatHomepage.dart';
@@ -306,7 +306,7 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => const GoogleMap()));
+                              builder: (context) => EmployeeLocationInfo()));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(

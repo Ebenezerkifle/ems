@@ -40,7 +40,7 @@ class _MyLocationState extends State<MyLocation> {
   }
 
   static const _initialCameraPosition = CameraPosition(
-    target: LatLng(9.040558, 38.763039), // location of AAiT
+    target: LatLng(9.0410975, 38.7632006), // location of AAiT
     zoom: 15,
   );
 
@@ -59,12 +59,12 @@ class _MyLocationState extends State<MyLocation> {
         },
         mapType: MapType.normal,
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          print("*******************************************************");
-          getCurrentTag();
+          _getCurrentLocation();
         },
-        child: const Icon(Icons.center_focus_strong),
+        child: const Icon(Icons.my_location),
       ),
     );
   }
