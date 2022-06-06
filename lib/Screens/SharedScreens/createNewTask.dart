@@ -487,6 +487,7 @@ class _TaskDetailState extends State<TaskDetail> {
       child: ListView(
         padding: const EdgeInsets.all(8),
         shrinkWrap: true,
+        scrollDirection: Axis.vertical,
         children: [
           Card(
             elevation: 5,
@@ -496,13 +497,27 @@ class _TaskDetailState extends State<TaskDetail> {
                     : _status == 0
                         ? Colors.yellowAccent
                         : Colors.greenAccent,
-                padding: const EdgeInsets.all(3),
+                padding: const EdgeInsets.all(5),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     Text(description),
                     const SizedBox(height: 5),
-                    Image.network(fileUrl)
+                    SizedBox(
+                      height: 200,
+                      child: Image.network(fileUrl, frameBuilder:
+                          (context, child, frame, wasSynchronouslyLoaded) {
+                        return child;
+                      }, loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) {
+                          return child;
+                        } else {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                      }),
+                    )
                   ],
                 )),
           ),
