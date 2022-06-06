@@ -25,7 +25,7 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
+  var loginUserEmail = FirebaseAuth.instance.currentUser?.email;
   TextEditingController messageController = TextEditingController();
 
   var loginUser = FirebaseAuth.instance.currentUser;
@@ -49,6 +49,8 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   void initState() {
+    print('-------------------------------');
+    print(chatDocId);
     super.initState();
     _initSpeech();
   }
@@ -90,7 +92,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.indigo,
+      backgroundColor: const Color.fromARGB(255, 24, 30, 68),
       body: SafeArea(
         child: Stack(
           children: [
@@ -245,7 +247,7 @@ class _ChatPageState extends State<ChatPage> {
               children: [
                 AvatarGlow(
                   animate: isListening,
-                  endRadius: 75,
+                  endRadius: 25,
                   glowColor: Theme.of(context).primaryColor,
                   child: IconButton(
                     // onPressed: toggleRecording,

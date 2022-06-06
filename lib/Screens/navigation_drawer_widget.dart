@@ -79,7 +79,7 @@ class NavigationDrawerWidget extends StatelessWidget {
                     icon: Icons.location_on_outlined,
                     onClicked: () {
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
-                          builder: (context) => const GoogleMap()));
+                          builder: (context) => const GoogleMapInforamtion()));
                     },
                   ),
                   buildMenuItem(

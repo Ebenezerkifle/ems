@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ems/GeoFence/boundary_check.dart';
 import 'package:ems/GeoFence/googleMap.dart';
-import 'package:ems/Screens/SharedScreens/MapScreen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class EmployeeLocationInfo extends StatefulWidget {
   const EmployeeLocationInfo({Key? key}) : super(key: key);
@@ -14,12 +15,56 @@ class EmployeeLocationInfo extends StatefulWidget {
 class _EmployeeLocationInfoState extends State<EmployeeLocationInfo> {
   var scaffoldKey = GlobalKey<ScaffoldState>();
 
+  CollectionReference location =
+      FirebaseFirestore.instance.collection("Location");
+
+  Boundary boundary = Boundary();
+  late LatLng latLng;
+  bool region = false;
+
+  @override
+  void initState() {
+    _getCurrentLocation().then((value) {
+      setState(() {
+        latLng = value;
+        boundaryCheck();
+      });
+    });
+    super.initState();
+  }
+
+  Future _getCurrentLocation() async {
+    Position currentPosition = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    LatLng latLng = LatLng(currentPosition.latitude, currentPosition.longitude);
+
+    print("--------------------------------------------------------");
+    print(currentPosition.latitude.toString() + " latitude");
+    print(currentPosition.longitude.toString() + " longitude");
+    print("--------------------------------------------------------");
+
+    double latitude = currentPosition.latitude.toDouble();
+    double longitude = currentPosition.longitude.toDouble();
+
+    location.add(
+        {'latitude': latitude, 'longitude': longitude, 'time': DateTime.now()});
+
+    return latLng;
+  }
+
+  void boundaryCheck() {
+    region = boundary.CheckTheCurrent_Location(latLng);
+    print("-----------------------------");
+    print(region);
+    print("-----------------------------");
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         key: scaffoldKey,
         //endDrawer: NavigationDrawerWidget(),
-        backgroundColor: Colors.indigo,
+        backgroundColor: const Color.fromARGB(255, 24, 30, 68),
         body: SafeArea(
           child: Column(
             children: [
@@ -29,11 +74,16 @@ class _EmployeeLocationInfoState extends State<EmployeeLocationInfo> {
           ),
         ),
         floatingActionButton: FloatingActionButton(
+          backgroundColor: const Color.fromARGB(255, 24, 30, 68),
+          focusColor: Colors.white,
           onPressed: () => {
-            Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const GoogleMap()))
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => const GoogleMapInforamtion()))
           },
-          child: const Icon(Icons.my_location),
+          child: const Icon(
+            Icons.my_location,
+            color: Colors.white,
+          ),
         ));
   }
 
@@ -103,105 +153,105 @@ class _EmployeeLocationInfoState extends State<EmployeeLocationInfo> {
     );
 
     return Expanded(
-        child: Container(
-            padding: const EdgeInsets.only(left: 25, right: 25, top: 25),
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(45), topRight: Radius.circular(45)),
-              color: Colors.white,
-            ),
-            child: Expanded(
-                child: GridView.count(
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                    primary: false,
-                    crossAxisCount: 2,
-                    children: <Widget>[
-                  InkWell(
-                    onTap: () {
-                      // Navigator.of(context).push(MaterialPageRoute(
-                      //     builder: (context) =>
-                      //         TodoListProgress(widget.userInfo)));
-                    },
-                    child: Card(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                      elevation: 6,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: <Widget>[
-                          Text(
-                            '3',
-                            style: outOfFenceTextStyle,
+      child: Container(
+          padding: const EdgeInsets.only(left: 25, right: 25, top: 25),
+          width: double.infinity,
+          decoration: const BoxDecoration(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(45), topRight: Radius.circular(45)),
+            color: Colors.white,
+          ),
+          child: GridView.count(
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              primary: false,
+              crossAxisCount: 2,
+              children: <Widget>[
+                InkWell(
+                  onTap: () {
+                    // Navigator.of(context).push(MaterialPageRoute(
+                    //     builder: (context) =>
+                    //         TodoListProgress(widget.userInfo)));
+                  },
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    elevation: 6,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Text(
+                          '$region',
+                          style: outOfFenceTextStyle,
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            'Employees are out of working area!',
                           ),
-                          const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text(
-                              'Employees are out of working area!',
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 5,
-                          ),
-                          Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: <Widget>[
-                                Text(
-                                  "last updated, 12:00",
-                                  style: timeTextStyle,
-                                ),
-                                const Padding(padding: EdgeInsets.all(2.0)),
-                              ])
-                        ],
-                      ),
+                        ),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: <Widget>[
+                              Text(
+                                "last updated, 12:00",
+                                style: timeTextStyle,
+                              ),
+                              const Padding(padding: EdgeInsets.all(2.0)),
+                            ])
+                      ],
                     ),
-                    // Card 3
                   ),
-                  InkWell(
-                    onTap: () {
-                      // Navigator.of(context).push(MaterialPageRoute(
-                      //     builder: (context) =>
-                      //         TodoListProgress(widget.userInfo)));
-                    },
-                    child: Card(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                      elevation: 6,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: <Widget>[
-                          Text(
-                            '6',
-                            style: cardTextStyle,
+                  // Card 3
+                ),
+                InkWell(
+                  onTap: () {
+                    // Navigator.of(context).push(MaterialPageRoute(
+                    //     builder: (context) =>
+                    //         TodoListProgress(widget.userInfo)));
+                  },
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    elevation: 6,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Text(
+                          '6',
+                          style: cardTextStyle,
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            'Employees are on their working area!',
                           ),
-                          const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text(
-                              'Employees are on their working area!',
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 5,
-                          ),
-                          Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: <Widget>[
-                                Text(
-                                  "last updated, 12:00",
-                                  style: timeTextStyle,
-                                ),
-                                const Padding(padding: EdgeInsets.all(2.0)),
-                              ])
-                        ],
-                      ),
+                        ),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: <Widget>[
+                              Text(
+                                "last updated, 12:00",
+                                style: timeTextStyle,
+                              ),
+                              const Padding(padding: EdgeInsets.all(2.0)),
+                            ])
+                      ],
                     ),
-                    // Card 3
                   ),
-                ]))));
+                  // Card 3
+                ),
+              ])),
+    );
   }
 }

@@ -15,7 +15,7 @@ class TaskHomePage extends StatefulWidget {
 }
 
 class _TaksHomePageState extends State<TaskHomePage> {
-  var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
+  var loginUserEmail = FirebaseAuth.instance.currentUser?.email;
   CollectionReference tasks = FirebaseFirestore.instance.collection("Tasks");
 
   var scaffoldKey = GlobalKey<ScaffoldState>();
@@ -24,17 +24,16 @@ class _TaksHomePageState extends State<TaskHomePage> {
 
   @override
   void initState() {
-    if(widget.userInfo.get('position')=='General-Manager'){
+    if (widget.userInfo.get('position') == 'General-Manager') {
       setState(() {
-      _titleTop = 'Assign Tasks to \nyour subordinate';
-      _assign = 0;
-    });
-    }
-    else{
-    setState(() {
-      _titleTop = 'Tasks \nAssigned to you';
-      _assign = 1;
-    });
+        _titleTop = 'Assign Tasks to \nyour subordinate';
+        _assign = 0;
+      });
+    } else {
+      setState(() {
+        _titleTop = 'Tasks \nAssigned to you';
+        _assign = 1;
+      });
     }
 
     super.initState();
@@ -44,7 +43,7 @@ class _TaksHomePageState extends State<TaskHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: Colors.indigo,
+      backgroundColor: Color.fromARGB(255, 24, 30, 68),
       body: SafeArea(
         child: Column(
           children: [
@@ -278,7 +277,7 @@ class _TaksHomePageState extends State<TaskHomePage> {
                       Text(
                         '$name',
                         style: const TextStyle(
-                            fontSize: 17, fontWeight: FontWeight.bold),
+                            fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       Text(
                         '$time',
@@ -291,10 +290,11 @@ class _TaksHomePageState extends State<TaskHomePage> {
                     height: 10,
                   ),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '$department',
+                        department,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: Colors.black54,
@@ -305,7 +305,7 @@ class _TaksHomePageState extends State<TaskHomePage> {
                         ' $position',
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          color: Colors.redAccent,
+                          color: Color.fromARGB(255, 79, 83, 90),
                           fontWeight: FontWeight.normal,
                         ),
                       ),

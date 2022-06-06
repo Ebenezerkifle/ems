@@ -81,7 +81,7 @@ class _TodoListProgressState extends State<TodoListProgress> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.indigo,
+      backgroundColor: const Color.fromARGB(255, 24, 30, 68),
       body: SafeArea(
         child: Column(
           children: [

@@ -83,7 +83,7 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
         Container(
             height: size.height * .3,
             decoration: const BoxDecoration(
-              color: Colors.indigo,
+              color: Color.fromARGB(255, 24, 30, 68),
             )),
         SafeArea(
           child: Padding(
@@ -122,7 +122,7 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                             '${widget.userInfo.get('position') ?? ''}',
                             style: const TextStyle(
                                 fontSize: 12,
-                                color: Colors.orange,
+                                color: Color.fromARGB(255, 255, 123, 0),
                                 fontFamily: 'Montserrat Regular'),
                           ),
                         ],

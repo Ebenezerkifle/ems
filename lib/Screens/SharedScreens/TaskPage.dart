@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Screens/SharedScreens/createNewTask.dart';
+import 'package:ems/Services/Loading.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -30,7 +31,7 @@ class TaskPage extends StatefulWidget {
 }
 
 class _TaskPageState extends State<TaskPage> {
-  var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
+  var loginUserEmail = FirebaseAuth.instance.currentUser?.email;
 
   CollectionReference tasks = FirebaseFirestore.instance.collection("Tasks");
 
@@ -45,12 +46,14 @@ class _TaskPageState extends State<TaskPage> {
 
   late String subManagerEmail;
   var taskDocId;
+  bool loading = true;
 
   @override
   void initState() {
     _fetchTaskDocId().then((value) {
       setState(() {
         taskDocId = value;
+        loading = false;
       });
     });
     super.initState();
@@ -80,8 +83,10 @@ class _TaskPageState extends State<TaskPage> {
           });
     } else {
       await tasks
-          .where("Users",
-              isEqualTo: {loginUserEmail: null, receiverEmail: null})
+          .where("Users", isEqualTo: {
+            widget.userInfo.get('email'): null,
+            receiverEmail: null
+          })
           .limit(1)
           .get()
           .then((QuerySnapshot querySnapshot) async {
@@ -89,32 +94,38 @@ class _TaskPageState extends State<TaskPage> {
               taskDocId = querySnapshot.docs.single.id;
             } else {
               await tasks.add({
-                'Users': {loginUserEmail: null, receiverEmail: null}
+                'Users': {
+                  widget.userInfo.get('email'): null,
+                  receiverEmail: null
+                }
               }).then((value) => {
                     taskDocId = value.id,
                   });
             }
           });
     }
+
     return taskDocId;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.indigo,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _topChat(),
-            _bodyChat(),
-            const SizedBox(
-              height: 5,
-            )
-          ],
-        ),
-      ),
-    );
+    return loading
+        ? const Loading()
+        : Scaffold(
+            backgroundColor: const Color.fromARGB(255, 24, 30, 68),
+            body: SafeArea(
+              child: Column(
+                children: [
+                  _topChat(),
+                  _bodyChat(),
+                  const SizedBox(
+                    height: 5,
+                  )
+                ],
+              ),
+            ),
+          );
   }
 
   Widget _topChat() {
@@ -211,6 +222,8 @@ class _TaskPageState extends State<TaskPage> {
                 .snapshots(),
             builder:
                 (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+              print("====================================");
+              print(snapshot.hasData);
               if (snapshot.hasError) {
                 Fluttertoast.showToast(msg: "Error occured");
               }
@@ -220,6 +233,8 @@ class _TaskPageState extends State<TaskPage> {
                 );
               }
               if (!snapshot.hasData) {
+                print("====================================");
+                print('no data');
                 return const Center(
                   child: Text("No Task yet"),
                 );
@@ -230,13 +245,14 @@ class _TaskPageState extends State<TaskPage> {
                 children: snapshot.data!.docs.map((DocumentSnapshot document) {
                   Map<String, dynamic> data =
                       document.data()! as Map<String, dynamic>;
-
+                  print(snapshot.hasData);
                   return _tasksItem(
                     title: data['title'],
                     description: data['description'],
                     time: data['timeStamp'],
                     documentId: document.id,
                     status: data['status'],
+                    fileUrl: data['fileUrl'],
                   );
                 }).toList(),
               );
@@ -250,13 +266,22 @@ class _TaskPageState extends State<TaskPage> {
       description,
       var time,
       var documentId,
-      required int status}) {
+      required int status,
+      var fileUrl}) {
     return InkWell(
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => TaskDetail(taskDocId, receiverEmail,
-                description, title, time, documentId, status, _progress),
+            builder: (context) => TaskDetail(
+                taskDocId,
+                receiverEmail,
+                description,
+                title,
+                time,
+                documentId,
+                status,
+                _progress,
+                fileUrl),
           ),
         );
       },

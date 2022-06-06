@@ -19,9 +19,8 @@ class _MyLocationState extends State<MyLocation> {
   var geoLocator = Geolocator();
 
   void _getCurrentLocation() async {
-    Position currentPosition =
-        Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
-            as Position;
+    Position currentPosition = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
     LatLng latLng = LatLng(currentPosition.latitude, currentPosition.longitude);
     CameraPosition newCameraPosition = CameraPosition(target: latLng, zoom: 15);
     _googleMapController
@@ -47,9 +46,6 @@ class _MyLocationState extends State<MyLocation> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Geolocation"),
-      ),
       body: GoogleMap(
         myLocationButtonEnabled: false,
         zoomControlsEnabled: false,

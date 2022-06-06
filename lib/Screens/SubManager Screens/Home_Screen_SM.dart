@@ -82,7 +82,7 @@ class _HomeScreenSMState extends State<HomeScreenSM> {
         Container(
             height: size.height * .3,
             decoration: const BoxDecoration(
-              color: Colors.indigo,
+              color: Color.fromARGB(255, 24, 30, 68),
             )),
         SafeArea(
           child: Padding(
@@ -269,7 +269,8 @@ class _HomeScreenSMState extends State<HomeScreenSM> {
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => const GoogleMap()));
+                              builder: (context) =>
+                                  const GoogleMapInforamtion()));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(

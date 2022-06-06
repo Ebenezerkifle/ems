@@ -13,7 +13,7 @@ class ChatHomePage extends StatefulWidget {
 }
 
 class _ChatHomePageState extends State<ChatHomePage> {
-  var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
+  var loginUserEmail = FirebaseAuth.instance.currentUser?.email;
   CollectionReference chats = FirebaseFirestore.instance.collection('Chats');
 
   var scaffoldKey = GlobalKey<ScaffoldState>();
@@ -23,18 +23,25 @@ class _ChatHomePageState extends State<ChatHomePage> {
   @override
   void initState() {
     setState(() {
-      _assign = 0;
-      _titleTop = 'Chat with \nyour Manager';
+      if (widget.userInfo.get('position') == 'General-Manager') {
+        _assign = 1;
+        _titleTop = 'Chat with \nyour Subordinates';
+      } else {
+        _assign = 0;
+        _titleTop = 'Chat with \nyour Manager';
+      }
     });
     super.initState();
   }
+
+  void setTopTitle() {}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
       //endDrawer: NavigationDrawerWidget(),
-      backgroundColor: Colors.indigo,
+      backgroundColor: const Color.fromARGB(255, 24, 30, 68),
       body: SafeArea(
         child: Column(
           children: [
@@ -155,29 +162,38 @@ class _ChatHomePageState extends State<ChatHomePage> {
     }
   }
 
+  Stream<QuerySnapshot<Map<String, dynamic>>> fetchUsers() {
+    Stream<QuerySnapshot<Map<String, dynamic>>> query;
+    if (widget.userInfo.get('position') == 'General-Manager') {
+      query = FirebaseFirestore.instance
+          .collection("Users")
+          .where('position', isNotEqualTo: 'General-Manager')
+          .snapshots();
+    } else if (widget.userInfo.get('position') == 'Employee') {
+      query = FirebaseFirestore.instance
+          .collection("Users")
+          .where('position', isEqualTo: 'Sub-Manager')
+          .where('department', isEqualTo: widget.userInfo.get('department'))
+          .snapshots();
+    } else if (widget.userInfo.get('position') == 'Sub-Manager' &&
+        _assign == 1) {
+      query = FirebaseFirestore.instance
+          .collection("Users")
+          .where('position', isEqualTo: 'Employee')
+          .where('department', isEqualTo: widget.userInfo.get('department'))
+          .snapshots();
+    } else {
+      query = FirebaseFirestore.instance
+          .collection("Users")
+          .where('position', isEqualTo: 'General-Manager')
+          .snapshots();
+    }
+
+    return query;
+  }
+
   Widget _body() {
-    Stream<QuerySnapshot<Map<String, dynamic>>> queryGM = FirebaseFirestore
-        .instance
-        .collection("Users")
-        .where('email', isNotEqualTo: FirebaseAuth.instance.currentUser!.email)
-        .snapshots();
-    Stream<QuerySnapshot<Map<String, dynamic>>> querySM = FirebaseFirestore
-        .instance
-        .collection("Users")
-        .where('position', isEqualTo: 'Employee')
-        .where('department', isEqualTo: widget.userInfo.get('department'))
-        .snapshots();
-    Stream<QuerySnapshot<Map<String, dynamic>>> querySM2 = FirebaseFirestore
-        .instance
-        .collection("Users")
-        .where('position', isEqualTo: 'General-Manager')
-        .snapshots();
-    Stream<QuerySnapshot<Map<String, dynamic>>> queryEM = FirebaseFirestore
-        .instance
-        .collection("Users")
-        .where('position', isEqualTo: 'Sub-Manager')
-        .where('department', isEqualTo: widget.userInfo.get('department'))
-        .snapshots();
+    Stream<QuerySnapshot<Map<String, dynamic>>> query = fetchUsers();
     return Expanded(
         child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -189,12 +205,12 @@ class _ChatHomePageState extends State<ChatHomePage> {
             ),
             child: StreamBuilder<QuerySnapshot>(
               stream: widget.userInfo.get('position') == 'General-Manager'
-                  ? queryGM
+                  ? query
                   : widget.userInfo.get('position') == 'Employee'
-                      ? queryEM
+                      ? query
                       : _assign == 0
-                          ? querySM2
-                          : querySM,
+                          ? query
+                          : query,
               builder: (BuildContext context,
                   AsyncSnapshot<QuerySnapshot> snapshot) {
                 if (snapshot.hasError) {
@@ -202,7 +218,7 @@ class _ChatHomePageState extends State<ChatHomePage> {
                 }
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const SpinKitChasingDots(
-                    color: Colors.blue,
+                    color: Color.fromARGB(255, 24, 30, 68),
                   );
                 }
                 return ListView(
@@ -269,7 +285,7 @@ class _ChatRoomBuilderState extends State<ChatRoomBuilder> {
 
   _ChatRoomBuilderState(this.avatar, this.name, this.time, this.receiverEmail);
 
-  var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
+  var loginUserEmail = FirebaseAuth.instance.currentUser?.email;
   CollectionReference chats = FirebaseFirestore.instance.collection('Chats');
   var chatDocId;
 
@@ -278,6 +294,8 @@ class _ChatRoomBuilderState extends State<ChatRoomBuilder> {
     _fetchChatDocId().then((value) {
       setState(() {
         chatDocId = value;
+        print('----------------------------------------');
+        print("chatDocId: " + chatDocId);
       });
     });
     super.initState();

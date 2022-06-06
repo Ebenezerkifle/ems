@@ -128,6 +128,7 @@ class _MyTasksState extends State<MyTasks> {
   }
 
   Widget _body() {
+    var fileUrl;
     return Expanded(
       child: Container(
           padding: const EdgeInsets.only(left: 25, right: 25, top: 25),
@@ -171,6 +172,7 @@ class _MyTasksState extends State<MyTasks> {
                     time: data['timeStamp'],
                     documentId: document.id,
                     status: data['status'],
+                    fileUrl: data['fileUrl'],
                   );
                 }).toList(),
               );
@@ -184,13 +186,14 @@ class _MyTasksState extends State<MyTasks> {
       description,
       var time,
       var documentId,
-      required int status}) {
+      required int status,
+      required String fileUrl}) {
     return InkWell(
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => TaskDetail(taskDocId, receiverEmail,
-                description, title, time, documentId, status, 1),
+                description, title, time, documentId, status, 1, fileUrl),
           ),
         );
       },

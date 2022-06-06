@@ -5,6 +5,7 @@ import 'package:ems/Screens/SharedScreens/Home_Screen_AD.dart';
 import 'package:ems/Screens/GeneralManager%20Screens/Home_Screen_GM.dart';
 import 'package:ems/Screens/SubManager%20Screens/Home_Screen_SM.dart';
 import 'package:ems/Services/Authentication_Services.dart';
+import 'package:ems/Services/Loading.dart';
 import 'package:flutter/material.dart';
 import 'package:ems/Screens/Signin%20and%20Signout%20Screens/signup_screen.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -25,6 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final Login login = Login();
 
   String error = '';
+  bool loading = false;
 
   Widget buidEmail() {
     return Column(
@@ -55,13 +57,14 @@ class _LoginScreenState extends State<LoginScreen> {
               validator: (value) =>
                   !value!.contains('@') ? "Enter a valid email!" : null,
               keyboardType: TextInputType.emailAddress,
-              style: const TextStyle(color: Colors.indigo),
+              style: const TextStyle(color: Color.fromARGB(255, 24, 30, 68)),
               decoration: const InputDecoration(
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.only(top: 14),
-                prefixIcon: Icon(Icons.email, color: Colors.indigo),
+                prefixIcon:
+                    Icon(Icons.email, color: Color.fromARGB(255, 24, 30, 68)),
                 hintText: 'Email',
-                hintStyle: TextStyle(color: Colors.indigo),
+                hintStyle: TextStyle(color: Color.fromARGB(255, 24, 30, 68)),
               ),
             ))
       ],
@@ -95,13 +98,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 value!.length < 6 ? "Enter 6+ characters!" : null,
             controller: _passwordController,
             obscureText: true,
-            style: const TextStyle(color: Colors.indigo),
+            style: const TextStyle(color: Color.fromARGB(255, 24, 30, 68)),
             decoration: const InputDecoration(
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.only(top: 14),
-                prefixIcon: Icon(Icons.lock, color: Colors.indigo),
+                prefixIcon:
+                    Icon(Icons.lock, color: Color.fromARGB(255, 24, 30, 68)),
                 hintText: 'Password',
-                hintStyle: TextStyle(color: Colors.indigo)),
+                hintStyle: TextStyle(color: Color.fromARGB(255, 24, 30, 68))),
           ),
         )
       ],
@@ -163,9 +167,11 @@ class _LoginScreenState extends State<LoginScreen> {
             if (result == null) {
               setState(() => error = "couldn't signin with this credential!");
               Fluttertoast.showToast(msg: error);
+              loading = false;
             } else {
               setState(() => error = "successfully signed in!");
               Fluttertoast.showToast(msg: error);
+              loading = true;
               _navigate();
             }
           }
@@ -176,7 +182,9 @@ class _LoginScreenState extends State<LoginScreen> {
         child: const Text(
           'LOGIN',
           style: TextStyle(
-              color: Colors.indigo, fontSize: 18, fontWeight: FontWeight.bold),
+              color: Color.fromARGB(255, 24, 30, 68),
+              fontSize: 18,
+              fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -193,20 +201,24 @@ class _LoginScreenState extends State<LoginScreen> {
         case 'Admin':
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => const HomeScreenAD()));
+          loading = false;
           break;
         case 'General-Manager':
           Navigator.of(context).pushReplacement(MaterialPageRoute(
               builder: (context) => HomeScreenGM(
                     userInfo: result,
                   )));
+          loading = false;
           break;
         case 'Sub-Manager':
           Navigator.of(context).pushReplacement(MaterialPageRoute(
               builder: (context) => HomeScreenSM(userInfo: result)));
+          loading = false;
           break;
         case 'Employee':
           Navigator.of(context).pushReplacement(MaterialPageRoute(
               builder: (context) => NavigationEM(userInfo: result)));
+          loading = false;
           break;
       }
     });
@@ -230,7 +242,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   fontSize: 18,
                   fontWeight: FontWeight.w500)),
           TextSpan(
-              text: ' Sign Up',
+              text: 'Sign Up',
               style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -242,44 +254,47 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Form(
-        key: _formKey,
-        child: Stack(
-          children: <Widget>[
-            Container(
-              height: double.infinity,
-              width: double.infinity,
-              decoration: const BoxDecoration(color: Colors.indigo),
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 25, vertical: 120),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    const Text(
-                      'Sign In',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold),
+    return loading
+        ? const Loading()
+        : Scaffold(
+            body: Form(
+              key: _formKey,
+              child: Stack(
+                children: <Widget>[
+                  Container(
+                    height: double.infinity,
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
+                        color: Color.fromARGB(255, 24, 30, 68)),
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 25, vertical: 120),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          const Text(
+                            'Sign In',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 40,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 50),
+                          buidEmail(),
+                          const SizedBox(height: 20),
+                          buidPassword(),
+                          buildForgotPasswordButton(),
+                          // buildRememberCheckBox(),
+                          buildLoginButton(),
+                          buildSignUpButton(),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 50),
-                    buidEmail(),
-                    const SizedBox(height: 20),
-                    buidPassword(),
-                    buildForgotPasswordButton(),
-                    // buildRememberCheckBox(),
-                    buildLoginButton(),
-                    buildSignUpButton(),
-                  ],
-                ),
+                  )
+                ],
               ),
-            )
-          ],
-        ),
-      ),
-    );
+            ),
+          );
   }
 }

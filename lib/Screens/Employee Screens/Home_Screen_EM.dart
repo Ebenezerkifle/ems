@@ -239,7 +239,8 @@ class _HomeScreenEMState extends State<HomeScreenEM> {
                       InkWell(
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => const GoogleMap()));
+                              builder: (context) =>
+                                  const GoogleMapInforamtion()));
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(

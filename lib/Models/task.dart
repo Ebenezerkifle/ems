@@ -1,4 +1,4 @@
-class Task {
+class TaskInfo {
   late String title;
   late String description;
   late var timeStamp;
@@ -7,8 +7,9 @@ class Task {
   late String assignedTo;
   late int status;
   late String department;
+  late String fileUrl;
 
-  Task({
+  TaskInfo({
     required this.title,
     required this.description,
     required this.timeStamp,
@@ -26,5 +27,6 @@ class Task {
     'creator': creator,
     'status': status,
     'department': department,
+    if (fileUrl != null) 'fileUrl': fileUrl
   };
 }

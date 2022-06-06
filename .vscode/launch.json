@@ -5,6 +5,16 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "ems",
+            "program": "lib/main.dart",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                    "--no-sound-null-safety"
+                ]
+    },
+
+        {
             "name": "Launch Edge",
             "request": "launch",
             "type": "pwa-msedge",

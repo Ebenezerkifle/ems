@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ems/Screens/SharedScreens/TaskPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -14,13 +13,13 @@ class EmployeeProgress extends StatefulWidget {
 }
 
 class _EmployeeProgressState extends State<EmployeeProgress> {
-  var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
+  var loginUserEmail = FirebaseAuth.instance.currentUser?.email;
   CollectionReference tasks = FirebaseFirestore.instance.collection("Tasks");
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.indigo,
+      backgroundColor: const Color.fromARGB(255, 24, 30, 68),
       body: SafeArea(
         child: Column(
           children: [
@@ -156,12 +155,12 @@ class _EmployeeProgressState extends State<EmployeeProgress> {
       BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => TaskPage(
-                widget.userInfo, receiverEmail, name, department, position, 1),
-          ),
-        );
+        // Navigator.of(context).push(
+        //   MaterialPageRoute(
+        //     builder: (context) => TaskPage(
+        //         widget.userInfo, receiverEmail, name, department, position, 1),
+        //   ),
+        // );
       },
       child: Card(
         margin: const EdgeInsets.symmetric(vertical: 30),

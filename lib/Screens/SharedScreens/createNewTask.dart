@@ -1,8 +1,14 @@
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Models/task.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:percent_indicator/percent_indicator.dart';
+
+late final QueryDocumentSnapshot<Object?> userinfo;
 
 class CreateTask extends StatefulWidget {
   final QueryDocumentSnapshot<Object?> userInfo;
@@ -28,15 +34,20 @@ class _CreateTaskState extends State<CreateTask> {
 
   _CreateTaskState(this.receiverEmail, this.taskDocId, this.department);
 
-  var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
   TextEditingController titleController = TextEditingController();
   TextEditingController descirptionController = TextEditingController();
   var task1Id;
 
+  File? file;
+  UploadTask? uploadTask;
+  int upload = -1;
+  late TaskInfo task;
+  String urlDownload = '';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.indigo,
+      backgroundColor: const Color.fromARGB(255, 24, 30, 68),
       body: SafeArea(
         child: Stack(
           children: [
@@ -110,7 +121,7 @@ class _CreateTaskState extends State<CreateTask> {
                   //hintText: "Title",
                   border: OutlineInputBorder()),
               maxLines: 1,
-              maxLength: 10,
+              maxLength: 50,
               maxLengthEnforcement: MaxLengthEnforcement.enforced,
               style: const TextStyle(
                   fontSize: 18,
@@ -134,7 +145,6 @@ class _CreateTaskState extends State<CreateTask> {
               height: 5,
             ),
             _attachFileButton(),
-
             _submitButton(),
           ],
         ),
@@ -152,17 +162,20 @@ class _CreateTaskState extends State<CreateTask> {
           if (descirptionController.text.isNotEmpty &&
               titleController.text.isNotEmpty) {
             DateTime timeStamp = DateTime.now();
-            Task task = Task(
+            task = TaskInfo(
               title: titleController.text.trim(),
               description: descirptionController.text.trim(),
               timeStamp: timeStamp,
-              creator: loginUserEmail.toString(),
+              creator: widget.userInfo.get('email').toString(),
               assignedTo: receiverEmail.trim(),
               status: -1,
               department: department,
             );
-
+            task.fileUrl = urlDownload;
+            print('-----------------------------------------------*****');
+            print(task.fileUrl);
             tasks.doc(taskDocId).collection('Tasks').add(task.taskMap);
+
             descirptionController.clear();
             titleController.clear();
             Navigator.of(context).pop();
@@ -170,7 +183,7 @@ class _CreateTaskState extends State<CreateTask> {
         },
         padding: const EdgeInsets.all(15),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        color: Colors.indigo,
+        color: const Color.fromARGB(255, 24, 30, 68),
         child: const Text(
           'Send',
           style: TextStyle(
@@ -179,38 +192,127 @@ class _CreateTaskState extends State<CreateTask> {
       ),
     );
   }
-}
 
-Widget _attachFileButton() {
-  return Container(
-    padding: const EdgeInsets.symmetric(vertical: 5),
-    width: double.infinity,
-    child: RaisedButton(
-      elevation: 5,
-      onPressed: () async {
-        // if (_formKey.currentState!.validate()) {
-        //   dynamic result = await _auth.singin(
-        //       _emailController.text, _passwordController.text);
-        //   if (result == null) {
-        //     setState(() => error = "couldn't signin with this credential!");
-        //     Fluttertoast.showToast(msg: error);
-        //   } else {
-        //     setState(() => error = "successfully signed in!");
-        //     Fluttertoast.showToast(msg: error);
-        //     _navigate();
-        //   }
-        // }
-      },
-      padding: const EdgeInsets.all(15),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      color: Colors.indigo,
-      child: const Text(
-        'Attach File',
-        style: TextStyle(
-            color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+  UploadTask? uploadFile() {
+    print('--------------------------------------');
+    print(upload);
+    if (file != null) {
+      setState(() {
+        upload = 0;
+      });
+      print(upload);
+      final filename = file?.path.split('/').last;
+      final destination = 'files/$filename';
+      try {
+        final reference = FirebaseStorage.instance.ref().child(destination);
+        return reference.putFile(file!);
+      } on FirebaseException catch (e) {
+        return null;
+      }
+    }
+  }
+
+  Widget buildUploadStatus(UploadTask upLoadTask) =>
+      StreamBuilder<TaskSnapshot>(
+        stream: upLoadTask.snapshotEvents,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            final snap = snapshot.data;
+            final progress = snap!.bytesTransferred / snap.totalBytes;
+            return Text('$progress',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ));
+          } else {
+            return Container();
+          }
+        },
+      );
+
+  Widget _attachFileButton() {
+    final fileName =
+        file != null ? file?.path.split('/').last : "No File selected";
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      width: double.infinity,
+      child: RaisedButton(
+        elevation: 5,
+        onPressed: attachFile,
+        padding: const EdgeInsets.all(15),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        color: const Color.fromARGB(255, 24, 30, 68),
+        child: Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Text(
+                'Attach File:',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold),
+              ),
+              Text('$fileName',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  )),
+              if (file != null)
+                upload == -1
+                    ? IconButton(
+                        onPressed: () async {
+                          uploadTask = uploadFile();
+
+                          if (uploadTask != null) {
+                            final snapshot = await uploadTask?.whenComplete(() {
+                              setState(() {
+                                upload = 1;
+                              });
+                            });
+                            urlDownload =
+                                (await snapshot?.ref.getDownloadURL())!;
+                            print("------------------------------------------");
+                            print('file Url: $urlDownload');
+                            print("-----------------------------------------");
+                          }
+                        },
+                        icon: const Icon(Icons.upload),
+                        iconSize: 15,
+                        color: Colors.white,
+                      )
+                    : upload == 0
+                        ? CircularPercentIndicator(
+                            radius: 15.0,
+                            lineWidth: 2.0,
+                            percent: 1.0,
+                            center: buildUploadStatus(uploadTask!),
+                            progressColor: Colors.green,
+                          )
+                        : IconButton(
+                            onPressed: () {},
+                            icon: const Icon(Icons.close),
+                            iconSize: 15,
+                            color: Colors.white,
+                          )
+            ],
+          ),
+        ),
       ),
-    ),
-  );
+    );
+  }
+
+  Future attachFile() async {
+    FilePickerResult? result =
+        await FilePicker.platform.pickFiles(allowMultiple: false);
+    if (result == null) return;
+    final path = result.files.single.path!;
+    setState(() => file = File(path));
+  }
 }
 
 class TaskDetail extends StatefulWidget {
@@ -219,18 +321,19 @@ class TaskDetail extends StatefulWidget {
   String description;
   String title;
   int progress;
+  var fileUrl;
   var documentId;
   var timeStamp;
   int status;
   TaskDetail(this.taskDocId, this.receiverEmail, this.description, this.title,
-      this.timeStamp, this.documentId, this.status, this.progress,
+      this.timeStamp, this.documentId, this.status, this.progress, this.fileUrl,
       {Key? key})
       : super(key: key);
 
   @override
   // ignore: no_logic_in_create_state
   _TaskDetailState createState() => _TaskDetailState(taskDocId, receiverEmail,
-      description, title, timeStamp, documentId, status, progress);
+      description, title, timeStamp, documentId, status, progress, fileUrl);
 }
 
 class _TaskDetailState extends State<TaskDetail> {
@@ -242,6 +345,7 @@ class _TaskDetailState extends State<TaskDetail> {
   var documentId;
   int _status;
   int _progress;
+  var fileUrl;
 
   _TaskDetailState(
       this.taskDocId,
@@ -251,16 +355,17 @@ class _TaskDetailState extends State<TaskDetail> {
       this.timeStamp,
       this.documentId,
       this._status,
-      this._progress);
+      this._progress,
+      this.fileUrl);
   CollectionReference tasks = FirebaseFirestore.instance.collection("Tasks");
-  var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
+  var loginUserEmail = FirebaseAuth.instance.currentUser?.email;
 
   TextEditingController messageController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.indigo,
+      backgroundColor: const Color.fromARGB(255, 24, 30, 68),
       body: SafeArea(
         child: Stack(
           children: [
@@ -392,14 +497,21 @@ class _TaskDetailState extends State<TaskDetail> {
                         ? Colors.yellowAccent
                         : Colors.greenAccent,
                 padding: const EdgeInsets.all(3),
-                child: Text(description)),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Text(description),
+                    const SizedBox(height: 5),
+                    Image.network(fileUrl)
+                  ],
+                )),
           ),
           StreamBuilder<QuerySnapshot>(
             stream: tasks
                 .doc(taskDocId)
                 .collection("Messages")
                 .where("title", isEqualTo: title)
-                //.orderBy('timeStamp')
+                .orderBy('timeStamp')
                 .snapshots(),
             builder:
                 (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -506,7 +618,7 @@ class _TaskDetailState extends State<TaskDetail> {
                   onPressed: () {
                     _sendMessage();
                   },
-                  color: Colors.indigo,
+                  color: const Color.fromARGB(255, 24, 30, 68),
                   icon: const Icon(
                     Icons.send_rounded,
                     color: Colors.blue,
