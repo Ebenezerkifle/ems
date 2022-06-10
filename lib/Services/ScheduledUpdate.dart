@@ -5,11 +5,11 @@ import 'package:ems/Models/Location%20.dart';
 
 class ScheduledUpdate {
   static void update(String userEmail) async {
-    final CollectionReference locationStore =
+    CollectionReference locationStore =
         FirebaseFirestore.instance.collection("Locations");
     Location _currentLocation = Location();
     Boundary _boundary = Boundary();
-    final cron = Cron();
+    var cron = Cron();
     // ignore: prefer_typing_uninitialized_variables
     var locationDocId;
 
@@ -48,13 +48,12 @@ class ScheduledUpdate {
 
         await locationStore
             .doc(userEmail)
-            .collection(locationDocId)
-            .add(_currentLocation.locationMap);
+            .set(_currentLocation.locationMap, SetOptions(merge: true));
 
         // print(locationDocId);
 
         // await locationStore
-        //     .doc(locationDocId)
+        //     .doc(userEmail)
         //     .collection('Location')
         //     .add(_currentLocation.locationMap);
         print('successfully stored!');

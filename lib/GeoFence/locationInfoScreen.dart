@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ems/GeoFence/EmployeesLocationScreen.dart';
 import 'package:ems/GeoFence/boundary_check.dart';
 import 'package:ems/GeoFence/googleMap.dart';
 import 'package:ems/Models/Location%20.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -17,6 +19,7 @@ class _EmployeeLocationInfoState extends State<EmployeeLocationInfo> {
 
   CollectionReference locationFireStore =
       FirebaseFirestore.instance.collection("Locations");
+  var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
 
   Boundary boundary = Boundary();
   Location location = Location();
@@ -26,6 +29,8 @@ class _EmployeeLocationInfoState extends State<EmployeeLocationInfo> {
   List locationDocIdList = [];
   int numOfEmployeesOnWorkingArea = 0;
   int numOfEmployeesOutOfWorkingArea = 0;
+  List emailListOfWorkingEmployees = [];
+  List emailListOfNotWorkingEmployees = [];
 
   @override
   void initState() {
@@ -43,10 +48,19 @@ class _EmployeeLocationInfoState extends State<EmployeeLocationInfo> {
 
     try {
       print('fetching');
-      await FirebaseFirestore.instance.collection('Locations').get().then((q) {
+      await locationFireStore.get().then((q) {
         for (var element in q.docs) {
           print(element.id);
-          list.add(element.id);
+          list.add(element);
+          bool onRegion = element['onRegion'];
+          if (onRegion) {
+            emailListOfWorkingEmployees.add(element['userEmail']);
+            numOfEmployeesOnWorkingArea++;
+          } else {
+            emailListOfNotWorkingEmployees.add(element['userEmail']);
+
+            numOfEmployeesOutOfWorkingArea++;
+          }
         }
         print(list.length);
         print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
@@ -57,37 +71,9 @@ class _EmployeeLocationInfoState extends State<EmployeeLocationInfo> {
     return list;
   }
 
-  Future _trackLocationInformation() async {
-    print('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&');
-    print(locationDocList.length);
-    print('fetching the locations');
-    for (int i = 0; i < locationDocList.length; i++) {
-      await locationFireStore
-          .doc(locationDocIdList[i])
-          .collection('Location')
-          .orderBy('timeStamp')
-          .get()
-          .then((event) {
-        if (event.docs.isNotEmpty) {
-          Map<String, dynamic> documentData =
-              event.docs.first.data as Map<String, dynamic>;
-          bool onRegion = documentData['onRegion'];
-          print('==================================');
-          print(onRegion);
-          print('==================================');
-
-          if (onRegion) {
-            numOfEmployeesOnWorkingArea++;
-          } else {
-            numOfEmployeesOutOfWorkingArea++;
-          }
-        }
-      }).catchError((e) => print("error fetching data: $e"));
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    print(emailListOfWorkingEmployees);
     return Scaffold(
         key: scaffoldKey,
         //endDrawer: NavigationDrawerWidget(),
@@ -197,9 +183,11 @@ class _EmployeeLocationInfoState extends State<EmployeeLocationInfo> {
               children: <Widget>[
                 InkWell(
                   onTap: () {
-                    // Navigator.of(context).push(MaterialPageRoute(
-                    //     builder: (context) =>
-                    //         TodoListProgress(widget.userInfo)));
+                    if (numOfEmployeesOutOfWorkingArea > 0) {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => EmployeesLocationScreen(
+                              false, emailListOfWorkingEmployees)));
+                    }
                   },
                   child: Card(
                     shape: RoundedRectangleBorder(
@@ -243,9 +231,11 @@ class _EmployeeLocationInfoState extends State<EmployeeLocationInfo> {
                 ),
                 InkWell(
                   onTap: () {
-                    // Navigator.of(context).push(MaterialPageRoute(
-                    //     builder: (context) =>
-                    //         TodoListProgress(widget.userInfo)));
+                    if (numOfEmployeesOnWorkingArea > 0) {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => EmployeesLocationScreen(
+                              true, emailListOfWorkingEmployees)));
+                    }
                   },
                   child: Card(
                     shape: RoundedRectangleBorder(
