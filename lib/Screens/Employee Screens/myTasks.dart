@@ -192,8 +192,17 @@ class _MyTasksState extends State<MyTasks> {
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => TaskDetail(taskDocId, receiverEmail,
-                description, title, time, documentId, status, 1, fileUrl),
+            builder: (context) => TaskDetail(
+                taskDocId,
+                receiverEmail,
+                description,
+                title,
+                time,
+                documentId,
+                status,
+                1,
+                fileUrl,
+                widget.userInfo),
           ),
         );
       },

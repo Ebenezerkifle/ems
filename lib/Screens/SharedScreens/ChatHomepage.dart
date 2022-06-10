@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Screens/SharedScreens/ChatPage.dart';
+import 'package:ems/Services/Timeformat.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -294,8 +295,6 @@ class _ChatRoomBuilderState extends State<ChatRoomBuilder> {
     _fetchChatDocId().then((value) {
       setState(() {
         chatDocId = value;
-        print('----------------------------------------');
-        print("chatDocId: " + chatDocId);
       });
     });
     super.initState();
@@ -331,60 +330,105 @@ class _ChatRoomBuilderState extends State<ChatRoomBuilder> {
             ),
           );
         },
-        child: Stack(children: [
-          Card(
-            margin: const EdgeInsets.symmetric(vertical: 20),
-            elevation: 2,
-            child: Row(
-              children: [
-                Avatar(
-                  margin: const EdgeInsets.only(right: 20),
-                  size: 60,
-                  image: avatar,
-                ),
-                Expanded(
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+        child: Card(
+          margin: const EdgeInsets.symmetric(vertical: 20),
+          elevation: 4,
+          child: Row(
+            children: [
+              Avatar(
+                margin: const EdgeInsets.only(right: 20),
+                size: 60,
+                image: avatar,
+              ),
+              Expanded(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            name,
+                            style: const TextStyle(
+                                fontSize: 17, fontWeight: FontWeight.bold),
+                          ),
+                          _fetchNotification(
+                              loginUserEmail.toString(), receiverEmail),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              name,
-                              style: const TextStyle(
-                                  fontSize: 17, fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              time,
-                              style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              (chatDocId != null)
-                                  ? LastMessage(chatDocId: chatDocId)
-                                  : Container(),
-                              Align(
-                                alignment: Alignment.bottomRight,
-                                child: _fetchNotification(
-                                    loginUserEmail.toString(), receiverEmail),
-                              ),
-                            ]),
-                      ]),
-                ),
-                //   ],
-                // ),
-              ],
-            ),
+                            (chatDocId != null)
+                                ? lastMessage(chatDocId.toString())
+                                : Container(),
+                          ]),
+                    ]),
+              ),
+              //   ],
+              // ),
+            ],
           ),
-        ]));
+        ));
+  }
+
+  Widget lastMessage(var chatDocId) {
+    return StreamBuilder<QuerySnapshot>(
+        stream: chats
+            .doc(chatDocId)
+            .collection('Messages')
+            .orderBy('timeStamp')
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: Text('....'),
+            );
+          }
+          if (snapshot.hasData) {
+            DocumentSnapshot? last = snapshot.data!.docs.isNotEmpty
+                ? snapshot.data!.docs.last
+                : null;
+            var timeStamp;
+            if (last?.get('timeStamp') != null) {
+              timeStamp = TimeFormate.myDateFormat(last?.get("timeStamp"));
+            }
+            return Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      '${last?.get("msg") ?? ""}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: Colors.black54,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      '${timeStamp ?? ""}',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: Colors.black54,
+                          fontWeight: FontWeight.w300,
+                          fontSize: 11),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+          return Container();
+        });
   }
 
   Widget _fetchNotification(String loginUserEmail, String receiverEmail) {
@@ -416,49 +460,6 @@ class _ChatRoomBuilderState extends State<ChatRoomBuilder> {
           } else {
             return Container();
           }
-        });
-  }
-}
-
-class LastMessage extends StatefulWidget {
-  final String chatDocId;
-  const LastMessage({required this.chatDocId, Key? key}) : super(key: key);
-
-  @override
-  _LastMessageState createState() => _LastMessageState();
-}
-
-class _LastMessageState extends State<LastMessage> {
-  CollectionReference chats = FirebaseFirestore.instance.collection('Chats');
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
-        stream: chats
-            .doc(widget.chatDocId.trim().toString())
-            .collection('Messages')
-            .orderBy('timeStamp')
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: Text('....'),
-            );
-          }
-          if (snapshot.hasData) {
-            DocumentSnapshot? last = snapshot.data!.docs.length > 0
-                ? snapshot.data!.docs.last
-                : null;
-            return Text(
-              '${last?.get("msg") ?? ""}',
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.black54,
-                fontWeight: FontWeight.bold,
-              ),
-            );
-          }
-          return Container();
         });
   }
 }

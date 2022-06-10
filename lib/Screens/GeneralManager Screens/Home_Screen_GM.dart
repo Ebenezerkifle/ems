@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Attendance/Attendance.dart';
-import 'package:ems/GeoFence/locationInfo.dart';
+import 'package:ems/GeoFence/locationInfoScreen.dart';
 import 'package:ems/Screens/GeneralManager%20Screens/employeeprogress.dart';
 import 'package:ems/Screens/GeneralManager%20Screens/todoListProgress.dart';
 import 'package:ems/Screens/SharedScreens/ChatHomepage.dart';
@@ -57,9 +57,9 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
         .then(
       (QuerySnapshot snapshot) {
         //_showNotification();
-        snapshot.docs.forEach((element) {
+        for (var element in snapshot.docs) {
           _showNotification(element);
-        });
+        }
         FlutterRingtonePlayer.playNotification();
       },
     );
@@ -147,6 +147,221 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                     primary: false,
                     crossAxisCount: 2,
                     children: <Widget>[
+                      // Tasks
+                      InkWell(
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) =>
+                                  TaskHomePage(widget.userInfo)));
+                        },
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                          elevation: 4,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              SvgPicture.asset(
+                                'assets/images/tasks.svg',
+                                height: 64,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'Tasks',
+                                  style: cardTextStyle,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Card 5
+                      ),
+
+                      // Card 7 chatroom
+                      InkWell(
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) =>
+                                  ChatHomePage(widget.userInfo)));
+                        },
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                          elevation: 4,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              SvgPicture.asset(
+                                'assets/images/chat.svg',
+                                height: 64,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'Chat',
+                                  style: cardTextStyle,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      //Location
+                      InkWell(
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) =>
+                                  const EmployeeLocationInfo()));
+                        },
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                          elevation: 4,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              SvgPicture.asset(
+                                'assets/images/location.svg',
+                                height: 64,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'Location',
+                                  style: cardTextStyle,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // TO DO list progress
+                      InkWell(
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) =>
+                                  TodoListProgress(widget.userInfo)));
+                        },
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                          elevation: 4,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              SvgPicture.asset(
+                                'assets/images/todo.svg',
+                                height: 64,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'Todo List Progress',
+                                  style: cardTextStyle,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Card 3
+                      ),
+
+                      //employee progress
+                      InkWell(
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => EmployeeProgress(
+                                    userInfo: widget.userInfo,
+                                  )));
+                        },
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                          elevation: 4,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              SvgPicture.asset(
+                                'assets/images/emp-progress.svg',
+                                height: 64,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'Employee Progress',
+                                  style: cardTextStyle,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Card 4
+                      ),
+
+                      //my attendance
+                      InkWell(
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => const CalendarPage()));
+                        },
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                          elevation: 4,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              SvgPicture.asset(
+                                'assets/images/calendar.svg',
+                                height: 64,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'My Attendance',
+                                  style: cardTextStyle,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Card 6
+                      ),
+
+                      // Card 8  Employee info
+                      InkWell(
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => EmployeeInfo(
+                                    userInfo: widget.userInfo,
+                                  )));
+                        },
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                          elevation: 4,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              SvgPicture.asset(
+                                'assets/images/info.svg',
+                                height: 64,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'Employee Info',
+                                  style: cardTextStyle,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
                       //fiance
                       InkWell(
                         onTap: () {
@@ -182,213 +397,6 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                         ),
                         // Card 2
                       ),
-                      // TO DO list progress
-                      InkWell(
-                        onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) =>
-                                  TodoListProgress(widget.userInfo)));
-                        },
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                          elevation: 4,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              SvgPicture.asset(
-                                'assets/images/todo.svg',
-                                height: 64,
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  'Todo List Progress',
-                                  style: cardTextStyle,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        // Card 3
-                      ),
-
-                      InkWell(
-                        onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => EmployeeProgress(
-                                    userInfo: widget.userInfo,
-                                  )));
-                        },
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                          elevation: 4,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              SvgPicture.asset(
-                                'assets/images/emp-progress.svg',
-                                height: 64,
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  'Employee Progress',
-                                  style: cardTextStyle,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        // Card 4
-                      ),
-                      // Tasks
-                      InkWell(
-                        onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) =>
-                                  TaskHomePage(widget.userInfo)));
-                        },
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                          elevation: 4,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              SvgPicture.asset(
-                                'assets/images/tasks.svg',
-                                height: 64,
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  'Tasks',
-                                  style: cardTextStyle,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        // Card 5
-                      ),
-                      //my attendance
-                      InkWell(
-                        onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => const CalendarPage()));
-                        },
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                          elevation: 4,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              SvgPicture.asset(
-                                'assets/images/calendar.svg',
-                                height: 64,
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  'My Attendance',
-                                  style: cardTextStyle,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        // Card 6
-                      ),
-                      //Location
-                      InkWell(
-                        onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => EmployeeLocationInfo()));
-                        },
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                          elevation: 4,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              SvgPicture.asset(
-                                'assets/images/location.svg',
-                                height: 64,
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  'Location',
-                                  style: cardTextStyle,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      // Card 7 chatroom
-                      InkWell(
-                        onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) =>
-                                  ChatHomePage(widget.userInfo)));
-                        },
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                          elevation: 4,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              SvgPicture.asset(
-                                'assets/images/chat.svg',
-                                height: 64,
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  'Chat',
-                                  style: cardTextStyle,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      // Card 8  Employee info
-                      InkWell(
-                        onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => EmployeeInfo(
-                                    userInfo: widget.userInfo,
-                                  )));
-                        },
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                          elevation: 4,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              SvgPicture.asset(
-                                'assets/images/info.svg',
-                                height: 64,
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  'Employee Info',
-                                  style: cardTextStyle,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
                     ],
                   ),
                 )

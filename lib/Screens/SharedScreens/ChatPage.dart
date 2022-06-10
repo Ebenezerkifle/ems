@@ -1,11 +1,19 @@
+import 'dart:io';
+
 import 'package:avatar_glow/avatar_glow.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Models/Notification.dart';
+import 'package:ems/Services/FileServices.dart';
+import 'package:ems/Services/Timeformat.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+
+import '../GeneralManager Screens/EmployeeInfo_Screen.dart';
 
 final _speech = SpeechToText();
 
@@ -44,13 +52,17 @@ class _ChatPageState extends State<ChatPage> {
   SpeechToText _speechToText = SpeechToText();
   bool _speechEnabled = false;
   String _lastWords = '';
-  String message = 'This is test!';
   bool isListening = false;
+  int _sendButton = 0;
+
+  PlatformFile? pickedFile;
+  File? file;
+  int _file = 0;
+  String fileUrl = '';
+  late final fileName;
 
   @override
   void initState() {
-    print('-------------------------------');
-    print(chatDocId);
     super.initState();
     _initSpeech();
   }
@@ -181,7 +193,9 @@ class _ChatPageState extends State<ChatPage> {
                   return _itemChat(
                     chat: sender,
                     message: data['msg']!,
-                    time: '08.00',
+                    time: TimeFormate.myDateFormat(data['timeStamp']),
+                    fileName: data['fileName'],
+                    fileStatus: data['file'],
                   );
                 }).toList(),
               );
@@ -192,7 +206,7 @@ class _ChatPageState extends State<ChatPage> {
 
   // 0 = Send
   // 1 = Recieved
-  Widget _itemChat({int? chat, message, time}) {
+  Widget _itemChat({int? chat, message, time, fileName, fileStatus}) {
     return Row(
       mainAxisAlignment:
           chat == 0 ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -222,7 +236,8 @@ class _ChatPageState extends State<ChatPage> {
                       bottomRight: Radius.circular(30),
                     ),
             ),
-            child: Text('$message'),
+            child:
+                (fileStatus == 1) ? _showtheFile(fileName) : Text('$message'),
           ),
         ),
         chat == 1
@@ -235,6 +250,121 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
+  Widget _showtheFile(String fileName) {
+    return Row(
+      children: [
+        Avatar(
+          margin: const EdgeInsets.only(right: 20),
+          size: 40,
+          image: 'assets/images/fileIcon.png',
+        ),
+        Expanded(
+          child: Text(
+            fileName,
+            maxLines: 2,
+            style: const TextStyle(
+              color: Colors.black45,
+              fontWeight: FontWeight.w500,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future selectFile() async {
+    final result = await FilePicker.platform.pickFiles(allowMultiple: false);
+    final path = result!.files.single.path;
+
+    // ignore: unnecessary_null_comparison
+    if (result == null) return;
+    setState(() {
+      pickedFile = result.files.first;
+      file = File(path!);
+    });
+
+    if (pickedFile != null) {
+      _showSelectedFileDialogue(context);
+    }
+  }
+
+  _showSelectedFileDialogue(BuildContext context) {
+    fileName = file?.path.split('/').last;
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: const Text('A file is selected',
+                  style: TextStyle(color: Color.fromARGB(255, 24, 30, 68))),
+              content: SizedBox(
+                child: Column(
+                  children: [
+                    Image.file(File(pickedFile!.path!)),
+                    Text(
+                      fileName!,
+                      style: const TextStyle(
+                        color: Color.fromARGB(255, 24, 30, 68),
+                        fontSize: 15,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    )
+                  ],
+                ),
+
+                // fit: BoxFit.cover,
+              ),
+              actions: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    FlatButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text(
+                          'cancle',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                            color: Color.fromARGB(255, 24, 30, 68),
+                          ),
+                        )),
+                    FlatButton(
+                      child: const Text(
+                        'send',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                          color: Color.fromARGB(255, 24, 30, 68),
+                        ),
+                      ),
+                      onPressed: () async {
+                        Navigator.of(context).pop();
+                        setState(() {
+                          _file = 1;
+                        });
+                        if (file != null) {
+                          UploadTask? uploadTask =
+                              FileServices.uploadFile(file, fileName);
+
+                          if (uploadTask != null) {
+                            print('===============================');
+                            print('get file url');
+                            final snapshot =
+                                await uploadTask.whenComplete(() {});
+                            fileUrl = (await snapshot.ref.getDownloadURL());
+
+                            _sendMessage();
+                          }
+                        }
+                      },
+                    ),
+                  ],
+                )
+              ],
+            ));
+  }
+
   Widget _formChat() {
     return Positioned(
       child: Align(
@@ -245,26 +375,24 @@ class _ChatPageState extends State<ChatPage> {
             color: Colors.white,
             child: Row(
               children: [
-                AvatarGlow(
-                  animate: isListening,
-                  endRadius: 25,
-                  glowColor: Theme.of(context).primaryColor,
-                  child: IconButton(
-                    // onPressed: toggleRecording,
-                    onPressed: () {
-                      _speechToText.isNotListening
-                          ? _startListening()
-                          : _stopListening();
-                    },
-                    icon: Icon(
-                      _speechToText.isListening ? Icons.mic : Icons.mic_off,
-                      color: Colors.blue,
-                    ),
-                    color: Colors.blueAccent,
+                IconButton(
+                  onPressed: () {
+                    selectFile();
+                  },
+                  color: const Color.fromARGB(255, 24, 30, 68),
+                  icon: const Icon(
+                    Icons.attach_file_rounded,
+                    color: Color.fromARGB(255, 24, 30, 68),
+                    size: 28,
                   ),
                 ),
                 Flexible(
                   child: TextField(
+                    onTap: () => {
+                      setState(() {
+                        _sendButton = 1;
+                      }),
+                    },
                     controller: messageController,
                     decoration: InputDecoration(
                       hintText: 'Type your message...',
@@ -283,30 +411,53 @@ class _ChatPageState extends State<ChatPage> {
                     ),
                   ),
                 ),
-                IconButton(
-                  onPressed: () {
-                    _sendMessage();
-                  },
-                  color: Colors.blueAccent,
-                  icon: const Icon(
-                    Icons.send_rounded,
-                    color: Colors.blue,
-                    size: 28,
-                  ),
-                )
+                _sendButton == 1
+                    ? IconButton(
+                        onPressed: () {
+                          _sendMessage();
+                        },
+                        color: const Color.fromARGB(255, 24, 30, 68),
+                        icon: const Icon(
+                          Icons.send_rounded,
+                          color: Color.fromARGB(255, 24, 30, 68),
+                          size: 28,
+                        ),
+                      )
+                    : AvatarGlow(
+                        animate: isListening,
+                        endRadius: 25,
+                        glowColor: Theme.of(context).primaryColor,
+                        child: IconButton(
+                          // onPressed: toggleRecording,
+                          onPressed: () {
+                            _speechToText.isNotListening
+                                ? _startListening()
+                                : _stopListening();
+                          },
+                          icon: Icon(
+                            _speechToText.isListening
+                                ? Icons.mic
+                                : Icons.mic_off,
+                            color: const Color.fromARGB(255, 24, 30, 68),
+                          ),
+                          color: const Color.fromARGB(255, 24, 30, 68),
+                        ),
+                      ),
               ],
             )),
       ),
     );
   }
 
-  _sendMessage() {
-    if (messageController.text.isNotEmpty) {
+  void _sendMessage() {
+    if (messageController.text.isNotEmpty || fileUrl.isNotEmpty) {
       chats.doc(chatDocId).collection('Messages').add({
-        "msg": messageController.text.trim(),
+        "msg": (_file == 1) ? fileUrl.trim() : messageController.text.trim(),
         "user": loginUser?.email?.trim(),
         "receiver": receiverEmail.trim(),
         "timeStamp": DateTime.now(),
+        "fileName": (_file == 1) ? fileName : '',
+        "file": _file,
       });
 
       NotificationModel notificationModel = NotificationModel(

@@ -60,6 +60,10 @@ dependencies:
   firebase_storage:
   latlng: ^0.1.0
   percent_indicator: ^4.2.2
+  cron: ^0.5.0
+  super_banners: ^0.0.1
+  flutter_pdfview: ^1.2.2
+  flutter_speed_dial: ^6.0.0
  
 
 
@@ -107,7 +111,8 @@ flutter:
     - assets/images/5.jpg
     - assets/images/6.jpg
     - assets/images/7.jpg
-    - assets/images/8.jpg
+    - assets/images/8.jpg 
+    - assets/images/fileIcon.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

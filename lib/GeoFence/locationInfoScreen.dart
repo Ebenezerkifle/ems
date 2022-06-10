@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/GeoFence/boundary_check.dart';
 import 'package:ems/GeoFence/googleMap.dart';
+import 'package:ems/Models/Location%20.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class EmployeeLocationInfo extends StatefulWidget {
@@ -15,48 +15,75 @@ class EmployeeLocationInfo extends StatefulWidget {
 class _EmployeeLocationInfoState extends State<EmployeeLocationInfo> {
   var scaffoldKey = GlobalKey<ScaffoldState>();
 
-  CollectionReference location =
-      FirebaseFirestore.instance.collection("Location");
+  CollectionReference locationFireStore =
+      FirebaseFirestore.instance.collection("Locations");
 
   Boundary boundary = Boundary();
+  Location location = Location();
   late LatLng latLng;
   bool region = false;
+  List locationDocList = [];
+  List locationDocIdList = [];
+  int numOfEmployeesOnWorkingArea = 0;
+  int numOfEmployeesOutOfWorkingArea = 0;
 
   @override
   void initState() {
-    _getCurrentLocation().then((value) {
+    _fetchLocationDocumentList().then((value) {
       setState(() {
-        latLng = value;
-        boundaryCheck();
+        locationDocIdList = value;
       });
     });
     super.initState();
   }
 
-  Future _getCurrentLocation() async {
-    Position currentPosition = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
-    LatLng latLng = LatLng(currentPosition.latitude, currentPosition.longitude);
+  Future _fetchLocationDocumentList() async {
+    List list = [];
+    print('*********************');
 
-    print("--------------------------------------------------------");
-    print(currentPosition.latitude.toString() + " latitude");
-    print(currentPosition.longitude.toString() + " longitude");
-    print("--------------------------------------------------------");
-
-    double latitude = currentPosition.latitude.toDouble();
-    double longitude = currentPosition.longitude.toDouble();
-
-    location.add(
-        {'latitude': latitude, 'longitude': longitude, 'time': DateTime.now()});
-
-    return latLng;
+    try {
+      print('fetching');
+      await FirebaseFirestore.instance.collection('Locations').get().then((q) {
+        for (var element in q.docs) {
+          print(element.id);
+          list.add(element.id);
+        }
+        print(list.length);
+        print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+      });
+    } on Exception catch (e) {
+      print('Exception: ' + e.toString());
+    }
+    return list;
   }
 
-  void boundaryCheck() {
-    region = boundary.CheckTheCurrent_Location(latLng);
-    print("-----------------------------");
-    print(region);
-    print("-----------------------------");
+  Future _trackLocationInformation() async {
+    print('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&');
+    print(locationDocList.length);
+    print('fetching the locations');
+    for (int i = 0; i < locationDocList.length; i++) {
+      await locationFireStore
+          .doc(locationDocIdList[i])
+          .collection('Location')
+          .orderBy('timeStamp')
+          .get()
+          .then((event) {
+        if (event.docs.isNotEmpty) {
+          Map<String, dynamic> documentData =
+              event.docs.first.data as Map<String, dynamic>;
+          bool onRegion = documentData['onRegion'];
+          print('==================================');
+          print(onRegion);
+          print('==================================');
+
+          if (onRegion) {
+            numOfEmployeesOnWorkingArea++;
+          } else {
+            numOfEmployeesOutOfWorkingArea++;
+          }
+        }
+      }).catchError((e) => print("error fetching data: $e"));
+    }
   }
 
   @override
@@ -127,6 +154,7 @@ class _EmployeeLocationInfoState extends State<EmployeeLocationInfo> {
   }
 
   Widget _body() {
+    //_trackLocationInformation();
     var cardTextStyle = const TextStyle(
       fontFamily: 'Montserat Regular',
       fontWeight: FontWeight.bold,
@@ -177,35 +205,39 @@ class _EmployeeLocationInfoState extends State<EmployeeLocationInfo> {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8)),
                     elevation: 6,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        Text(
-                          '$region',
-                          style: outOfFenceTextStyle,
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            'Employees are out of working area!',
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            crossAxisAlignment: CrossAxisAlignment.end,
+                    child: StreamBuilder<Object>(
+                        stream: null,
+                        builder: (context, snapshot) {
+                          return Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: <Widget>[
                               Text(
-                                "last updated, 12:00",
-                                style: timeTextStyle,
+                                '$numOfEmployeesOutOfWorkingArea',
+                                style: outOfFenceTextStyle,
                               ),
-                              const Padding(padding: EdgeInsets.all(2.0)),
-                            ])
-                      ],
-                    ),
+                              const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text(
+                                  'Employees are out of working area!',
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 5,
+                              ),
+                              Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: <Widget>[
+                                    Text(
+                                      "last updated, 12:00",
+                                      style: timeTextStyle,
+                                    ),
+                                    const Padding(padding: EdgeInsets.all(2.0)),
+                                  ])
+                            ],
+                          );
+                        }),
                   ),
                   // Card 3
                 ),
@@ -224,7 +256,7 @@ class _EmployeeLocationInfoState extends State<EmployeeLocationInfo> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: <Widget>[
                         Text(
-                          '6',
+                          '$numOfEmployeesOnWorkingArea',
                           style: cardTextStyle,
                         ),
                         const Padding(

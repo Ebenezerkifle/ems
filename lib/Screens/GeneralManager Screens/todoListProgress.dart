@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:super_banners/super_banners.dart';
 
 class TodoListProgress extends StatefulWidget {
   final QueryDocumentSnapshot<Object?> userInfo;
@@ -11,7 +12,7 @@ class TodoListProgress extends StatefulWidget {
 }
 
 class _TodoListProgressState extends State<TodoListProgress> {
-  var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
+  //var loginUserEmail = widget.userInfo.get('email');
 
   CollectionReference tasks = FirebaseFirestore.instance.collection("Tasks");
 
@@ -39,44 +40,12 @@ class _TodoListProgressState extends State<TodoListProgress> {
   Future _fetchTasksLists() async {
     List taskList = [];
     await tasks.get().then((q) {
-      q.docs.forEach((element) {
+      for (var element in q.docs) {
         taskList.add(element.id);
-      });
+      }
     });
     return taskList;
   }
-
-  // Future _tasksFromDocument(var docId) async {
-  //   List tasksList = [];
-  //   await tasks
-  //       .doc(docId)
-  //       .collection('Tasks')
-  //       .where('status', isEqualTo: _statusNum)
-  //       .get()
-  //       .then((QuerySnapshot) {
-  //     QuerySnapshot.docs.forEach((element) {
-  //       taskList.add(element.data());
-  //     });
-  //   });
-  //   return tasksList;
-  // }
-
-  // Future _tasksForSubManager(var docId) async {
-  //   List tasksList = [];
-  //   await tasks
-  //       .doc(docId)
-  //       .collection('Tasks')
-  //       .where('position', isEqualTo: 'Employee')
-  //       .where('department', isEqualTo: widget.userInfo.get('department'))
-  //       .where('status', isEqualTo: _statusNum)
-  //       .get()
-  //       .then((QuerySnapshot) {
-  //     QuerySnapshot.docs.forEach((element) {
-  //       taskList.add(element.data());
-  //     });
-  //   });
-  //   return tasksList;
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -263,6 +232,7 @@ class _TodoListProgressState extends State<TodoListProgress> {
                     } else {
                       return const SizedBox(
                         height: 0,
+                        child: Center(child: Text('No task')),
                       );
                     }
                   },
@@ -286,71 +256,81 @@ class _TodoListProgressState extends State<TodoListProgress> {
         //   ),
         // );
       },
-      child: Card(
-        color: status == -1
-            ? Colors.redAccent
-            : status == 0
-                ? Colors.yellowAccent
-                : Colors.greenAccent,
-        elevation: 5,
-        child: Container(
-          color: status == -1
+      child: Stack(children: [
+        Card(
+          color: Colors.white,
+          elevation: 5,
+          child: Container(
+            color: Colors.white,
+            alignment: Alignment.center,
+            margin: const EdgeInsets.all(5.0),
+            padding: const EdgeInsets.all(5.0),
+            child: Container(
+              height: 40,
+              width: double.infinity,
+              color: Colors.white,
+              margin: const EdgeInsets.symmetric(vertical: 20),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                title,
+                                style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              const Text(
+                                '07:10',
+                                //time.toString(),
+                                style: TextStyle(
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.normal),
+                              ),
+                            ],
+                          ),
+                          Text(
+                            description,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.black54,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )
+                        ]),
+                  ),
+                  //   ],
+                  // ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        CornerBanner(
+          bannerColor: status == -1
               ? Colors.redAccent
               : status == 0
                   ? Colors.yellowAccent
                   : Colors.greenAccent,
-          alignment: Alignment.center,
-          margin: const EdgeInsets.all(5.0),
-          padding: const EdgeInsets.all(5.0),
-          child: Container(
-            height: 40,
-            width: double.infinity,
-            color: status == -1
-                ? Colors.redAccent
-                : status == 0
-                    ? Colors.yellowAccent
-                    : Colors.greenAccent,
-            margin: const EdgeInsets.symmetric(vertical: 20),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              title,
-                              style: const TextStyle(
-                                  fontSize: 17, fontWeight: FontWeight.bold),
-                            ),
-                            const Text(
-                              '07:10',
-                              //time.toString(),
-                              style: TextStyle(
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                        Text(
-                          description,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Colors.black54,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        )
-                      ]),
-                ),
-                //   ],
-                // ),
-              ],
-            ),
+          bannerPosition: CornerBannerPosition.topRight,
+          elevation: 3,
+          child: Padding(
+            padding: const EdgeInsets.all(3.0),
+            child: Text(statusList[_statusNum],
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 5,
+                )),
           ),
         ),
-      ),
+      ]),
     );
   }
 }

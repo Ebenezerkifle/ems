@@ -1,14 +1,23 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:io';
+import 'package:avatar_glow/avatar_glow.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Models/task.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:ems/Screens/SharedScreens/TaskHomePage.dart';
+import 'package:ems/Services/FileServices.dart';
+import 'package:ems/Services/Timeformat.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:overlay_support/overlay_support.dart';
 import 'package:percent_indicator/percent_indicator.dart';
-
-late final QueryDocumentSnapshot<Object?> userinfo;
+import 'package:super_banners/super_banners.dart';
+import 'package:speech_to_text/speech_to_text.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
 
 class CreateTask extends StatefulWidget {
   final QueryDocumentSnapshot<Object?> userInfo;
@@ -38,11 +47,12 @@ class _CreateTaskState extends State<CreateTask> {
   TextEditingController descirptionController = TextEditingController();
   var task1Id;
 
-  File? file;
+  //File? file;
   UploadTask? uploadTask;
   int upload = -1;
   late TaskInfo task;
   String urlDownload = '';
+  File? file;
 
   @override
   Widget build(BuildContext context) {
@@ -172,13 +182,14 @@ class _CreateTaskState extends State<CreateTask> {
               department: department,
             );
             task.fileUrl = urlDownload;
-            print('-----------------------------------------------*****');
-            print(task.fileUrl);
+
             tasks.doc(taskDocId).collection('Tasks').add(task.taskMap);
 
             descirptionController.clear();
             titleController.clear();
             Navigator.of(context).pop();
+          } else {
+            //Fluttertoast();
           }
         },
         padding: const EdgeInsets.all(15),
@@ -187,29 +198,10 @@ class _CreateTaskState extends State<CreateTask> {
         child: const Text(
           'Send',
           style: TextStyle(
-              color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+              color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
         ),
       ),
     );
-  }
-
-  UploadTask? uploadFile() {
-    print('--------------------------------------');
-    print(upload);
-    if (file != null) {
-      setState(() {
-        upload = 0;
-      });
-      print(upload);
-      final filename = file?.path.split('/').last;
-      final destination = 'files/$filename';
-      try {
-        final reference = FirebaseStorage.instance.ref().child(destination);
-        return reference.putFile(file!);
-      } on FirebaseException catch (e) {
-        return null;
-      }
-    }
   }
 
   Widget buildUploadStatus(UploadTask upLoadTask) =>
@@ -218,7 +210,8 @@ class _CreateTaskState extends State<CreateTask> {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             final snap = snapshot.data;
-            final progress = snap!.bytesTransferred / snap.totalBytes;
+            var progress = snap!.bytesTransferred / snap.totalBytes;
+            progress = progress * 100;
             return Text('$progress',
                 style: const TextStyle(
                   color: Colors.white,
@@ -231,8 +224,19 @@ class _CreateTaskState extends State<CreateTask> {
         },
       );
 
+  Future pickFile() async {
+    final result = await FilePicker.platform.pickFiles(allowMultiple: false);
+    final path = result!.files.single.path;
+
+    // ignore: unnecessary_null_comparison
+    if (result == null) return;
+    setState(() {
+      file = File(path!);
+    });
+  }
+
   Widget _attachFileButton() {
-    final fileName =
+    var fileName =
         file != null ? file?.path.split('/').last : "No File selected";
 
     return Container(
@@ -240,7 +244,12 @@ class _CreateTaskState extends State<CreateTask> {
       width: double.infinity,
       child: RaisedButton(
         elevation: 5,
-        onPressed: attachFile,
+        onPressed: () => {
+          pickFile(),
+          setState(() {
+            upload = -1;
+          }),
+        },
         padding: const EdgeInsets.all(15),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         color: const Color.fromARGB(255, 24, 30, 68),
@@ -265,9 +274,16 @@ class _CreateTaskState extends State<CreateTask> {
               if (file != null)
                 upload == -1
                     ? IconButton(
+                        icon: const Icon(Icons.upload),
+                        iconSize: 15,
+                        color: Colors.white,
                         onPressed: () async {
-                          uploadTask = uploadFile();
-
+                          uploadTask = FileServices.uploadFile(file, fileName);
+                          setState(() {
+                            upload = 0;
+                          });
+                          print('---------------------------');
+                          print(uploadTask == null);
                           if (uploadTask != null) {
                             final snapshot = await uploadTask?.whenComplete(() {
                               setState(() {
@@ -276,14 +292,8 @@ class _CreateTaskState extends State<CreateTask> {
                             });
                             urlDownload =
                                 (await snapshot?.ref.getDownloadURL())!;
-                            print("------------------------------------------");
-                            print('file Url: $urlDownload');
-                            print("-----------------------------------------");
                           }
                         },
-                        icon: const Icon(Icons.upload),
-                        iconSize: 15,
-                        color: Colors.white,
                       )
                     : upload == 0
                         ? CircularPercentIndicator(
@@ -291,7 +301,8 @@ class _CreateTaskState extends State<CreateTask> {
                             lineWidth: 2.0,
                             percent: 1.0,
                             center: buildUploadStatus(uploadTask!),
-                            progressColor: Colors.green,
+                            progressColor:
+                                const Color.fromARGB(255, 43, 190, 48),
                           )
                         : IconButton(
                             onPressed: () {},
@@ -305,14 +316,6 @@ class _CreateTaskState extends State<CreateTask> {
       ),
     );
   }
-
-  Future attachFile() async {
-    FilePickerResult? result =
-        await FilePicker.platform.pickFiles(allowMultiple: false);
-    if (result == null) return;
-    final path = result.files.single.path!;
-    setState(() => file = File(path));
-  }
 }
 
 class TaskDetail extends StatefulWidget {
@@ -325,8 +328,18 @@ class TaskDetail extends StatefulWidget {
   var documentId;
   var timeStamp;
   int status;
-  TaskDetail(this.taskDocId, this.receiverEmail, this.description, this.title,
-      this.timeStamp, this.documentId, this.status, this.progress, this.fileUrl,
+  QueryDocumentSnapshot<Object?> userInfo;
+  TaskDetail(
+      this.taskDocId,
+      this.receiverEmail,
+      this.description,
+      this.title,
+      this.timeStamp,
+      this.documentId,
+      this.status,
+      this.progress,
+      this.fileUrl,
+      this.userInfo,
       {Key? key})
       : super(key: key);
 
@@ -358,7 +371,62 @@ class _TaskDetailState extends State<TaskDetail> {
       this._progress,
       this.fileUrl);
   CollectionReference tasks = FirebaseFirestore.instance.collection("Tasks");
-  var loginUserEmail = FirebaseAuth.instance.currentUser?.email;
+
+  bool isListening = false;
+  SpeechToText _speechToText = SpeechToText();
+  bool _speechEnabled = false;
+  String _lastWords = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _initSpeech();
+  }
+
+  /// This has to happen only once per app
+  void _initSpeech() async {
+    _speechEnabled = await _speechToText.initialize();
+    setState(() {});
+  }
+
+  /// Each time to start a speech recognition session
+  void _startListening() async {
+    await _speechToText.listen(onResult: _onSpeechResult);
+    setState(() {
+      isListening = true;
+    });
+  }
+
+  /// Manually stop the active speech recognition session
+  /// Note that there are also timeouts that each platform enforces
+  /// and the SpeechToText plugin supports setting timeouts on the
+  /// listen method.
+  void _stopListening() async {
+    await _speechToText.stop();
+    setState(() {
+      isListening = false;
+    });
+  }
+
+  /// This is the callback that the SpeechToText plugin calls when
+  /// the platform returns recognized words.
+  void _onSpeechResult(SpeechRecognitionResult result) {
+    setState(() {
+      _lastWords = result.recognizedWords;
+      messageController.text = result.recognizedWords;
+    });
+  }
+
+  List statusList = [
+    'Undone',
+    'On Progress',
+    'Approved',
+    'Revise',
+    'Request For Review'
+  ];
+  String urlDownload = '';
+  int _file = 0;
+  FileServices fileServices = FileServices();
 
   TextEditingController messageController = TextEditingController();
 
@@ -366,6 +434,82 @@ class _TaskDetailState extends State<TaskDetail> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 24, 30, 68),
+      //floatingActionButtonLocation: FloatingActionButtonLocation.miniStartFloat,
+      floatingActionButton: _progress == 0
+          ? Align(
+              alignment: const Alignment(0.8, 0.7),
+              child: SpeedDial(
+                  animatedIcon: AnimatedIcons.menu_close,
+                  backgroundColor: const Color.fromARGB(255, 24, 30, 68),
+                  children: [
+                    SpeedDialChild(
+                      child: const Icon(
+                        Icons.rate_review_sharp,
+                        size: 25,
+                        color: Color.fromARGB(255, 255, 255, 255),
+                      ),
+                      onTap: () {
+                        setState(() {
+                          _status = 2;
+                          _taskStatusChange(2);
+                        });
+                      },
+                      label: "Revise",
+                      backgroundColor: const Color.fromARGB(255, 187, 184, 4),
+                    ),
+                    SpeedDialChild(
+                      label: "Approved",
+                      // labelStyle: ,
+                      child: const Icon(
+                        Icons.done,
+                        size: 25,
+                        color: Color.fromARGB(255, 255, 255, 255),
+                      ),
+                      onTap: () {
+                        setState(() {
+                          _status = 1;
+                          _taskStatusChange(1);
+                        });
+                      },
+                      backgroundColor: const Color.fromARGB(255, 10, 116, 33),
+                    ),
+                  ]),
+            )
+          : Align(
+              alignment: const Alignment(0.8, 0.7),
+              child: SpeedDial(
+                  animatedIcon: AnimatedIcons.menu_close,
+                  backgroundColor: const Color.fromARGB(255, 24, 30, 68),
+                  children: [
+                    SpeedDialChild(
+                      child: const Icon(
+                        Icons.reviews,
+                        size: 25,
+                        color: Color.fromARGB(255, 255, 255, 255),
+                      ),
+                      onTap: () {
+                        setState(() {
+                          _status = 3;
+                          _taskStatusChange(3);
+                        });
+                      },
+                      label: "Request For Review",
+                      backgroundColor: const Color.fromARGB(255, 17, 79, 173),
+                    ),
+                    SpeedDialChild(
+                      child: const Icon(Icons.run_circle,
+                          size: 25, color: Color.fromARGB(255, 157, 167, 18)),
+                      onTap: () {
+                        setState(() {
+                          _status = 0;
+                          _taskStatusChange(0);
+                        });
+                      },
+                      label: "On Progress",
+                      backgroundColor: const Color.fromARGB(255, 17, 79, 173),
+                    ),
+                  ]),
+            ),
       body: SafeArea(
         child: Stack(
           children: [
@@ -388,81 +532,29 @@ class _TaskDetailState extends State<TaskDetail> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const SizedBox(
-                width: 10,
-              ),
-              GestureDetector(
-                onTap: () => Navigator.of(context).pop(),
-                child: const Icon(
-                  Icons.arrow_back_ios,
-                  size: 25,
-                  color: Colors.white,
-                ),
-              ),
-              Text(
-                title,
-                style: const TextStyle(
-                    overflow: TextOverflow.ellipsis,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white),
-              ),
-            ],
+          const SizedBox(
+            width: 5,
+          ),
+          GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
+            child: const Icon(
+              Icons.arrow_back_ios,
+              size: 25,
+              color: Colors.white,
+            ),
+          ),
+          Text(
+            title,
+            maxLines: 1,
+            style: const TextStyle(
+                overflow: TextOverflow.ellipsis,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.white),
           ),
           const SizedBox(
-            width: 100,
+            width: 50,
           ),
-          _progress == 0
-              ? Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(50),
-                        color: Colors.black12,
-                      ),
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.done,
-                          size: 25,
-                          color: Colors.greenAccent,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _status = 1;
-                            _taskStatusChange(1);
-                          });
-                        },
-                      ),
-                    ),
-                    const SizedBox(
-                      width: 5,
-                    ),
-                    Container(
-                      padding: const EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(50),
-                        color: Colors.black12,
-                      ),
-                      child: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            _status = 0;
-                            _taskStatusChange(0);
-                          });
-                        },
-                        icon: const Icon(
-                          Icons.run_circle_outlined,
-                          size: 25,
-                          color: Colors.yellowAccent,
-                        ),
-                      ),
-                    ),
-                  ],
-                )
-              : Container(),
         ],
       ),
     );
@@ -475,9 +567,16 @@ class _TaskDetailState extends State<TaskDetail> {
   }
 
   Widget _bodyTask() {
+    var query = tasks
+        .doc(taskDocId)
+        .collection("Messages")
+        .where("title", isEqualTo: title)
+        .orderBy("timeStamp", descending: false)
+        .snapshots();
+
     return Expanded(
         child: Container(
-      padding: const EdgeInsets.only(left: 25, right: 25),
+      padding: const EdgeInsets.only(left: 25, right: 25, top: 25),
       width: double.infinity,
       decoration: const BoxDecoration(
         borderRadius: BorderRadius.only(
@@ -487,68 +586,87 @@ class _TaskDetailState extends State<TaskDetail> {
       child: ListView(
         padding: const EdgeInsets.all(8),
         shrinkWrap: true,
+        primary: false,
+        physics: const BouncingScrollPhysics(),
         scrollDirection: Axis.vertical,
         children: [
           Card(
-            elevation: 5,
-            child: Container(
-                color: _status == -1
-                    ? Colors.redAccent
-                    : _status == 0
-                        ? Colors.yellowAccent
-                        : Colors.greenAccent,
-                padding: const EdgeInsets.all(5),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Text(description),
-                    const SizedBox(height: 5),
-                    SizedBox(
-                      height: 200,
-                      child: Image.network(fileUrl, frameBuilder:
-                          (context, child, frame, wasSynchronouslyLoaded) {
-                        return child;
-                      }, loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) {
-                          return child;
-                        } else {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-                      }),
-                    )
-                  ],
-                )),
+            elevation: 8,
+            child: Stack(
+              children: [
+                Container(
+                    color: Colors.white,
+                    padding: const EdgeInsets.all(25),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Text(description,
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.normal,
+                              fontSize: 15,
+                            )),
+                        const SizedBox(height: 20),
+                        fileUrl == ''
+                            ? Container()
+                            : InkWell(
+                                onTap: () => {
+                                  _showtheFile(),
+                                },
+                                child: _showtheFile(),
+                              )
+                      ],
+                    )),
+                PositionedCornerBanner(
+                  bannerPosition: CornerBannerPosition.topRight,
+                  elevation: 5,
+                  bannerColor: _status == -1
+                      ? const Color.fromARGB(255, 177, 18, 18)
+                      : _status == 0
+                          ? const Color.fromARGB(255, 228, 228, 9)
+                          : _status == 1
+                              ? const Color.fromARGB(255, 35, 122, 38)
+                              : _status == 2
+                                  ? const Color.fromARGB(255, 58, 91, 199)
+                                  : const Color.fromARGB(255, 218, 145, 50),
+                  child: Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Text(statusList[_status + 1],
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        )),
+                  ),
+                ),
+              ],
+            ),
           ),
           StreamBuilder<QuerySnapshot>(
-            stream: tasks
-                .doc(taskDocId)
-                .collection("Messages")
-                .where("title", isEqualTo: title)
-                .orderBy('timeStamp')
-                .snapshots(),
+            stream: query,
             builder:
                 (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
               if (snapshot.hasData) {
                 return ListView(
                   padding: const EdgeInsets.only(top: 35),
                   physics: const BouncingScrollPhysics(),
+                  primary: true,
                   shrinkWrap: true,
                   children:
                       snapshot.data!.docs.map((DocumentSnapshot document) {
                     Map<String, dynamic> data =
                         document.data()! as Map<String, dynamic>;
-                    int sender =
-                        0; //by default we assume sender is current user.
+                    int sender = 0;
+                    //by default we assume sender is current user.
+
                     if (data['user'].toString() == receiverEmail) {
                       sender = 1;
                     }
                     return _taskItems(
-                      chat: sender,
-                      message: data['msg']!,
-                      time: '08.00',
-                    );
+                        chat: sender,
+                        message: data['msg']!,
+                        time: TimeFormate.myDateFormat(data['timeStamp']),
+                        file: data['file']);
                   }).toList(),
                 );
               } else {
@@ -561,7 +679,30 @@ class _TaskDetailState extends State<TaskDetail> {
     ));
   }
 
-  Widget _taskItems({int? chat, String? message, String? time}) {
+  Widget _showtheFile() {
+    return Row(
+      children: [
+        Avatar(
+          margin: const EdgeInsets.only(right: 20),
+          size: 40,
+          image: 'assets/images/fileIcon.png',
+        ),
+        Expanded(
+          child: Text(
+            fileUrl,
+            maxLines: 2,
+            style: const TextStyle(
+              color: Colors.black45,
+              fontWeight: FontWeight.w500,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _taskItems({int? chat, String? message, String? time, int? file}) {
     return Row(
       mainAxisAlignment:
           chat == 0 ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -585,7 +726,28 @@ class _TaskDetailState extends State<TaskDetail> {
                       bottomRight: Radius.circular(30),
                     ),
             ),
-            child: Text('$message'),
+            child: (file == 1)
+                ? Row(
+                    children: [
+                      Avatar(
+                        margin: const EdgeInsets.only(right: 20),
+                        size: 40,
+                        image: 'assets/images/fileIcon.png',
+                      ),
+                      Expanded(
+                        child: Text(
+                          fileUrl,
+                          maxLines: 2,
+                          style: const TextStyle(
+                            color: Colors.black45,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  )
+                : Text('$message'),
           ),
         ),
         chat == 1
@@ -598,8 +760,105 @@ class _TaskDetailState extends State<TaskDetail> {
     );
   }
 
+  PlatformFile? pickedFile;
+  File? file;
+
+  Future selectFile() async {
+    final result = await FilePicker.platform.pickFiles(allowMultiple: false);
+    final path = result!.files.single.path;
+
+    // ignore: unnecessary_null_comparison
+    if (result == null) return;
+    setState(() {
+      pickedFile = result.files.first;
+      file = File(path!);
+    });
+
+    if (pickedFile != null) {
+      _showSelectedFileDialogue(context);
+    }
+  }
+
+  _showSelectedFileDialogue(BuildContext context) {
+    final fileName = file?.path.split('/').last;
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: const Text('A file is selected',
+                  style: TextStyle(color: Color.fromARGB(255, 24, 30, 68))),
+              content: SizedBox(
+                child: Column(
+                  children: [
+                    Image.file(File(pickedFile!.path!)),
+                    Text(
+                      fileName!,
+                      style: const TextStyle(
+                        color: Color.fromARGB(255, 24, 30, 68),
+                        fontSize: 15,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    )
+                  ],
+                ),
+
+                // fit: BoxFit.cover,
+              ),
+              actions: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    FlatButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text(
+                          'cancle',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                            color: Color.fromARGB(255, 24, 30, 68),
+                          ),
+                        )),
+                    FlatButton(
+                      child: const Text(
+                        'send',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                          color: Color.fromARGB(255, 24, 30, 68),
+                        ),
+                      ),
+                      onPressed: () async {
+                        Navigator.of(context).pop();
+                        setState(() {
+                          _file = 1;
+                        });
+                        if (file != null) {
+                          UploadTask? uploadTask =
+                              FileServices.uploadFile(file, fileName);
+
+                          if (uploadTask != null) {
+                            print('===============================');
+                            print('get file url');
+                            final snapshot =
+                                await uploadTask.whenComplete(() {});
+                            urlDownload = (await snapshot.ref.getDownloadURL());
+                            fileUrl = urlDownload;
+
+                            print(fileUrl);
+                            _sendMessage();
+                          }
+                        }
+                      },
+                    ),
+                  ],
+                )
+              ],
+            ));
+  }
+
+  int _sendButton = 0;
   Widget _formTask() {
-    //var messageController;
     return Positioned(
       child: Align(
         alignment: Alignment.bottomCenter,
@@ -609,8 +868,24 @@ class _TaskDetailState extends State<TaskDetail> {
             color: Colors.white,
             child: Row(
               children: [
+                IconButton(
+                  onPressed: () {
+                    selectFile();
+                  },
+                  color: const Color.fromARGB(255, 24, 30, 68),
+                  icon: const Icon(
+                    Icons.attach_file_rounded,
+                    color: Color.fromARGB(255, 24, 30, 68),
+                    size: 28,
+                  ),
+                ),
                 Flexible(
                   child: TextField(
+                    onTap: () => {
+                      setState(() {
+                        _sendButton = 1;
+                      }),
+                    },
                     controller: messageController,
                     decoration: InputDecoration(
                       hintText: 'Type your message...',
@@ -629,31 +904,56 @@ class _TaskDetailState extends State<TaskDetail> {
                     ),
                   ),
                 ),
-                IconButton(
-                  onPressed: () {
-                    _sendMessage();
-                  },
-                  color: const Color.fromARGB(255, 24, 30, 68),
-                  icon: const Icon(
-                    Icons.send_rounded,
-                    color: Colors.blue,
-                    size: 28,
-                  ),
-                )
+                _sendButton == 1
+                    ? IconButton(
+                        onPressed: () {
+                          _sendMessage();
+                        },
+                        color: const Color.fromARGB(255, 24, 30, 68),
+                        icon: const Icon(
+                          Icons.send_rounded,
+                          color: Color.fromARGB(255, 24, 30, 68),
+                          size: 28,
+                        ),
+                      )
+                    : AvatarGlow(
+                        animate: isListening,
+                        endRadius: 25,
+                        glowColor: Theme.of(context).primaryColor,
+                        child: IconButton(
+                          // onPressed: toggleRecording,
+                          onPressed: () {
+                            _speechToText.isNotListening
+                                ? _startListening()
+                                : _stopListening();
+                          },
+                          icon: Icon(
+                            _speechToText.isListening
+                                ? Icons.mic
+                                : Icons.mic_off,
+                            color: const Color.fromARGB(255, 24, 30, 68),
+                          ),
+                          color: const Color.fromARGB(255, 24, 30, 68),
+                        ),
+                      ),
               ],
             )),
       ),
     );
   }
 
-  _sendMessage() {
-    if (messageController.text.isNotEmpty) {
+  void _sendMessage() {
+    print('-----------------------------------');
+    print('send message is invoked!');
+    print(fileUrl);
+    if (messageController.text.isNotEmpty || fileUrl != '') {
       tasks.doc(taskDocId).collection('Messages').add({
         "title": title.trim(),
-        "msg": messageController.text.trim(),
-        "user": loginUserEmail.toString(),
+        "msg": (_file == 1) ? fileUrl.trim() : messageController.text.trim(),
+        "user": widget.userInfo.get('email').toString(),
         "receiver": receiverEmail.trim(),
         "timeStamp": DateTime.now(),
+        "file": _file,
       });
 
       // NotificationModel notificationModel = NotificationModel(

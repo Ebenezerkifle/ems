@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -13,7 +12,7 @@ class EmployeeInfo extends StatefulWidget {
 }
 
 class _EmployeeInfoState extends State<EmployeeInfo> {
-  var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
+  // var loginUserEmail = FirebaseAuth.instance.currentUser!.email;
   CollectionReference tasks = FirebaseFirestore.instance.collection("Tasks");
 
   @override

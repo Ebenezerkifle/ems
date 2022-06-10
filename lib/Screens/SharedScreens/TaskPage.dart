@@ -1,9 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Screens/SharedScreens/createNewTask.dart';
 import 'package:ems/Services/Loading.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:ems/Services/Timeformat.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:super_banners/super_banners.dart';
 
 // ignore: must_be_immutable
 class TaskPage extends StatefulWidget {
@@ -31,8 +32,6 @@ class TaskPage extends StatefulWidget {
 }
 
 class _TaskPageState extends State<TaskPage> {
-  var loginUserEmail = FirebaseAuth.instance.currentUser?.email;
-
   CollectionReference tasks = FirebaseFirestore.instance.collection("Tasks");
 
   String receiverEmail;
@@ -47,6 +46,13 @@ class _TaskPageState extends State<TaskPage> {
   late String subManagerEmail;
   var taskDocId;
   bool loading = true;
+  List statusList = [
+    'Undone',
+    'On Progress',
+    'Approved',
+    'Revise',
+    'Request for Review'
+  ];
 
   @override
   void initState() {
@@ -113,6 +119,27 @@ class _TaskPageState extends State<TaskPage> {
     return loading
         ? const Loading()
         : Scaffold(
+            floatingActionButton: _progress == 0
+                ? FloatingActionButton(
+                    backgroundColor: const Color.fromARGB(255, 24, 30, 68),
+                    focusColor: Colors.white,
+                    onPressed: () => {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                            builder: (context) => CreateTask(
+                                  widget.userInfo,
+                                  receiverEmail,
+                                  taskDocId,
+                                  receiverDepartment,
+                                )),
+                      )
+                    },
+                    child: const Icon(
+                      Icons.add_task_sharp,
+                      color: Colors.white,
+                    ),
+                  )
+                : Container(),
             backgroundColor: const Color.fromARGB(255, 24, 30, 68),
             body: SafeArea(
               child: Column(
@@ -153,52 +180,57 @@ class _TaskPageState extends State<TaskPage> {
               ),
             ],
           ),
-          _progress == 0
-              ? Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(25),
-                        color: Colors.black12,
-                      ),
-                      child: Column(
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                    builder: (context) => CreateTask(
-                                          widget.userInfo,
-                                          receiverEmail,
-                                          taskDocId,
-                                          receiverDepartment,
-                                        )),
-                              );
-                            },
-                            color: Colors.white,
-                            icon: const Icon(
-                              Icons.add_task,
-                              color: Colors.white,
-                              size: 25,
-                            ),
-                          ),
-                          const Text(
-                            'Add New Task',
-                            style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white),
-                          )
-                        ],
-                      ),
-                    ),
-                    const SizedBox(
-                      width: 20,
-                    ),
-                  ],
-                )
-              : Container(),
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.more_vert),
+            color: Colors.white,
+          )
+          // _progress == 0
+          //     ? Row(
+          //         children: [
+          //           Container(
+          //             padding: const EdgeInsets.all(10),
+          //             decoration: BoxDecoration(
+          //               borderRadius: BorderRadius.circular(25),
+          //               color: Colors.black12,
+          //             ),
+          //             child: Column(
+          //               children: [
+          //                 IconButton(
+          //                   onPressed: () {
+          //                     Navigator.of(context).push(
+          //                       MaterialPageRoute(
+          //                           builder: (context) => CreateTask(
+          //                                 widget.userInfo,
+          //                                 receiverEmail,
+          //                                 taskDocId,
+          //                                 receiverDepartment,
+          //                               )),
+          //                     );
+          //                   },
+          //                   color: Colors.white,
+          //                   icon: const Icon(
+          //                     Icons.add_task,
+          //                     color: Colors.white,
+          //                     size: 25,
+          //                   ),
+          //                 ),
+          //                 const Text(
+          //                   'Add New Task',
+          //                   style: TextStyle(
+          //                       fontSize: 10,
+          //                       fontWeight: FontWeight.bold,
+          //                       color: Colors.white),
+          //                 )
+          //               ],
+          //             ),
+          //           ),
+          //           const SizedBox(
+          //             width: 20,
+          //           ),
+          //         ],
+          //       )
+          //     : Container(),
         ],
       ),
     );
@@ -218,12 +250,10 @@ class _TaskPageState extends State<TaskPage> {
             stream: tasks
                 .doc(taskDocId)
                 .collection("Tasks")
-                .orderBy("timeStamp")
+                .orderBy("timeStamp", descending: true)
                 .snapshots(),
             builder:
                 (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-              print("====================================");
-              print(snapshot.hasData);
               if (snapshot.hasError) {
                 Fluttertoast.showToast(msg: "Error occured");
               }
@@ -233,8 +263,6 @@ class _TaskPageState extends State<TaskPage> {
                 );
               }
               if (!snapshot.hasData) {
-                print("====================================");
-                print('no data');
                 return const Center(
                   child: Text("No Task yet"),
                 );
@@ -245,7 +273,7 @@ class _TaskPageState extends State<TaskPage> {
                 children: snapshot.data!.docs.map((DocumentSnapshot document) {
                   Map<String, dynamic> data =
                       document.data()! as Map<String, dynamic>;
-                  print(snapshot.hasData);
+
                   return _tasksItem(
                     title: data['title'],
                     description: data['description'],
@@ -281,75 +309,91 @@ class _TaskPageState extends State<TaskPage> {
                 documentId,
                 status,
                 _progress,
-                fileUrl),
+                fileUrl,
+                widget.userInfo),
           ),
         );
       },
-      child: Card(
-        color: status == -1
-            ? Colors.redAccent
-            : status == 0
-                ? Colors.yellowAccent
-                : Colors.greenAccent,
-        elevation: 5,
-        child: Container(
-          color: status == -1
-              ? Colors.redAccent
-              : status == 0
-                  ? Colors.yellowAccent
-                  : Colors.greenAccent,
-          alignment: Alignment.center,
-          margin: const EdgeInsets.all(5.0),
-          padding: const EdgeInsets.all(5.0),
-          child: Stack(children: [
-            Card(
-              color: status == -1
-                  ? Colors.redAccent
-                  : status == 0
-                      ? Colors.yellowAccent
-                      : Colors.greenAccent,
-              margin: const EdgeInsets.symmetric(vertical: 20),
-              elevation: 0,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Stack(
+        children: [
+          Card(
+            color: Colors.white,
+            elevation: 5,
+            child: Container(
+              alignment: Alignment.center,
+              margin: const EdgeInsets.all(5.0),
+              padding: const EdgeInsets.all(5.0),
+              child: Stack(children: [
+                Card(
+                  margin: const EdgeInsets.symmetric(vertical: 20),
+                  elevation: 0,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      title,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  Text(TimeFormate.myDateFormat(time),
+                                      //time.toString(),
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                        fontWeight: FontWeight.w400,
+                                        fontSize: 11,
+                                      )),
+                                ],
+                              ),
                               Text(
-                                title,
+                                description,
+                                overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                    fontSize: 17, fontWeight: FontWeight.bold),
-                              ),
-                              const Text(
-                                '07:10',
-                                //time.toString(),
-                                style: TextStyle(
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                          Text(
-                            description,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Colors.black54,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          )
-                        ]),
+                                  color: Colors.black54,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              )
+                            ]),
+                      ),
+                    ],
                   ),
-                  //   ],
-                  // ),
-                ],
-              ),
+                ),
+              ]),
             ),
-          ]),
-        ),
+          ),
+          PositionedCornerBanner(
+            bannerPosition: CornerBannerPosition.topRight,
+            bannerColor: status == -1
+                ? const Color.fromARGB(255, 177, 18, 18)
+                : status == 0
+                    ? const Color.fromARGB(255, 228, 228, 9)
+                    : status == 1
+                        ? const Color.fromARGB(255, 35, 122, 38)
+                        : status == 2
+                            ? const Color.fromARGB(255, 58, 91, 199)
+                            : const Color.fromARGB(255, 218, 145, 50),
+            child: Padding(
+              padding: const EdgeInsets.all(2.0),
+              child: Text(statusList[status + 1],
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  )),
+            ),
+          ),
+        ],
       ),
     );
   }

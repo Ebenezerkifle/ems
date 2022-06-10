@@ -2,6 +2,7 @@ import 'package:ems/Models/Employee.dart';
 import 'package:ems/Models/Login.dart';
 import 'package:ems/Services/Database_Services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class Authentication {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -36,7 +37,6 @@ class Authentication {
   // login
   Future singin(Login login) async {
     try {
-      //UserCredential userCredential
       await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: login.email, password: login.password);
       //DatabaseServices(uid: userCredential.user!.uid).updateUsersData(user);

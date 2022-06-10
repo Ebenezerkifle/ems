@@ -6,6 +6,8 @@ import 'package:ems/Screens/GeneralManager%20Screens/Home_Screen_GM.dart';
 import 'package:ems/Screens/SubManager%20Screens/Home_Screen_SM.dart';
 import 'package:ems/Services/Authentication_Services.dart';
 import 'package:ems/Services/Loading.dart';
+import 'package:ems/Services/ScheduledUpdate.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:ems/Screens/Signin%20and%20Signout%20Screens/signup_screen.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -162,8 +164,10 @@ class _LoginScreenState extends State<LoginScreen> {
         onPressed: () async {
           if (_formKey.currentState!.validate()) {
             login.email = _emailController.text;
-            login.email = _passwordController.text;
+            login.password = _passwordController.text;
+
             dynamic result = await _auth.singin(login);
+
             if (result == null) {
               setState(() => error = "couldn't signin with this credential!");
               Fluttertoast.showToast(msg: error);
@@ -191,17 +195,22 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future _navigate() async {
+    var LoginUserEmail = FirebaseAuth.instance.currentUser!.email;
     await FirebaseFirestore.instance
         .collection('Users')
-        .where('email', isEqualTo: _emailController.text)
+        .where('email', isEqualTo: LoginUserEmail)
         .get()
         .then((QuerySnapshot snapshot) {
       var result = snapshot.docs.first;
+
+      ScheduledUpdate.update(LoginUserEmail!);
+
       switch (result.get('position')) {
         case 'Admin':
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => const HomeScreenAD()));
           loading = false;
+
           break;
         case 'General-Manager':
           Navigator.of(context).pushReplacement(MaterialPageRoute(

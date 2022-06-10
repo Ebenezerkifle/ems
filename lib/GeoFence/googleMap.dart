@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ems/GeoFence/boundary_check.dart';
+import 'package:ems/Models/Location%20.dart';
 import 'package:ems/Services/Loading.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter/material.dart';
@@ -14,13 +14,14 @@ class GoogleMapInforamtion extends StatefulWidget {
 }
 
 class _GoogleMapState extends State<GoogleMapInforamtion> {
-  late LatLng latLng;
-  final LatLng point1 = LatLng(9.0401445, 38.761665);
-  final LatLng point2 = LatLng(9.0401417, 38.7616608);
-  final LatLng point3 = LatLng(9.0401224, 38.7616357);
-  final LatLng point4 = LatLng(9.0401061, 38.7615946);
+  late LatLng myCurrentLocation;
+  final LatLng point1 = LatLng(9.039871, 38.762031);
+  final LatLng point2 = LatLng(9.039651, 38.761204);
+  final LatLng point3 = LatLng(9.040687, 38.760914);
+  final LatLng point4 = LatLng(9.040948, 38.761777);
 
-  Boundary boundary = Boundary();
+  //final Boundary _boundary = Boundary();
+  final Location _location = Location();
 
   CollectionReference location =
       FirebaseFirestore.instance.collection("Location");
@@ -29,37 +30,26 @@ class _GoogleMapState extends State<GoogleMapInforamtion> {
 
   @override
   void initState() {
-    _getCurrentLocation().then((value) {
+    _fetchCurrentLocation().then((value) {
       setState(() {
-        latLng = value;
+        myCurrentLocation = value;
         loading = false;
       });
     });
     super.initState();
   }
 
-  Future _getCurrentLocation() async {
+  Future _fetchCurrentLocation() async {
     Position currentPosition = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
     LatLng latLng = LatLng(currentPosition.latitude, currentPosition.longitude);
-
-    print("--------------------------------------------------------");
-    print(currentPosition.latitude.toString() + " latitude");
-    print(currentPosition.longitude.toString() + " longitude");
-    print("--------------------------------------------------------");
-
-    // double latitude = currentPosition.latitude.toDouble();
-    // double longitude = currentPosition.longitude.toDouble();
-
-    // location.add(
-    //     {'latitude': latitude, 'longitude': longitude, 'time': DateTime.now()});
 
     return latLng;
   }
 
   @override
   Widget build(BuildContext context) {
-    var points = <LatLng>[point1, point2, point3, point4];
+    var points = <LatLng>[point1, point2, point3, point4, point1];
 
     return loading
         ? const Loading()
@@ -70,14 +60,14 @@ class _GoogleMapState extends State<GoogleMapInforamtion> {
             ),
             floatingActionButton: FloatingActionButton(
               onPressed: () => {
-                _getCurrentLocation(),
+                _location.fetchCurrentLocation(),
               },
               child: const Icon(Icons.my_location),
             ),
             body: FlutterMap(
               options: MapOptions(
-                center: LatLng(9.0401061, 38.7615946),
-                zoom: 40.0,
+                center: point1,
+                zoom: 20.0,
                 interactiveFlags: InteractiveFlag.all,
               ),
               layers: [
@@ -94,7 +84,7 @@ class _GoogleMapState extends State<GoogleMapInforamtion> {
                     Marker(
                       width: 60.0,
                       height: 60.0,
-                      point: LatLng(9.0401061, 38.7615946),
+                      point: myCurrentLocation,
                       builder: (ctx) => GestureDetector(
                         onTap: () {},
                         child: const Icon(
@@ -104,19 +94,6 @@ class _GoogleMapState extends State<GoogleMapInforamtion> {
                         ),
                       ),
                     ),
-                    // Marker(
-                    //   width: 60.0,
-                    //   height: 60.0,
-                    //   point: LatLng(9.0400975, 38.7632006),
-                    //   builder: (ctx) => GestureDetector(
-                    //     onTap: () {},
-                    //     child: Icon(
-                    //       Icons.fmd_good_sharp,
-                    //       color: Colors.green[600],
-                    //       size: 20,
-                    //     ),
-                    //   ),
-                    // ),
                   ],
                 ),
                 PolylineLayerOptions(polylines: [
