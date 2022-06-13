@@ -30,32 +30,9 @@ class ScheduledUpdate {
       print(_currentLocation.currentLocation);
       print('*************************************************');
       try {
-        // await locationStore
-        //     .where("Users", isEqualTo: {userEmail: null})
-        //     .limit(1)
-        //     .get()
-        //     .then((QuerySnapshot querySnapshot) async {
-        //       if (querySnapshot.docs.isNotEmpty) {
-        //         locationDocId = querySnapshot.docs.single.id;
-        //       } else {
-        //         await locationDocId.add({
-        //           'Users': {userEmail: null}
-        //         }).then((value) => {
-        //               locationDocId = value.id,
-        //             });
-        //       }
-        //     });
-
         await locationStore
             .doc(userEmail)
             .set(_currentLocation.locationMap, SetOptions(merge: true));
-
-        // print(locationDocId);
-
-        // await locationStore
-        //     .doc(userEmail)
-        //     .collection('Location')
-        //     .add(_currentLocation.locationMap);
         print('successfully stored!');
       } on Exception catch (e) {
         print('exception: ' + e.toString());

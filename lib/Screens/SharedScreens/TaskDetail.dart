@@ -1,7 +1,8 @@
 import 'dart:io';
-
 import 'package:avatar_glow/avatar_glow.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ems/Models/task.dart';
+import 'package:ems/Services/Collection.dart';
 import 'package:ems/Services/FileServices.dart';
 import 'package:ems/Services/Timeformat.dart';
 import 'package:ems/Widget/Avatar.dart';
@@ -21,10 +22,12 @@ class TaskDetail extends StatefulWidget {
   String title;
   int progress;
   var fileUrl;
+  int file;
   var documentId;
   var timeStamp;
   int status;
   QueryDocumentSnapshot<Object?> userInfo;
+  var fileName;
 
   TaskDetail(
       this.taskDocId,
@@ -36,6 +39,8 @@ class TaskDetail extends StatefulWidget {
       this.status,
       this.progress,
       this.fileUrl,
+      this.file,
+      this.fileName,
       this.userInfo,
       {Key? key})
       : super(key: key);
@@ -43,7 +48,7 @@ class TaskDetail extends StatefulWidget {
   @override
   // ignore: no_logic_in_create_state
   _TaskDetailState createState() => _TaskDetailState(taskDocId, receiverEmail,
-      description, title, timeStamp, documentId, status, progress, fileUrl);
+      description, title, timeStamp, documentId, status, progress);
 }
 
 class _TaskDetailState extends State<TaskDetail> {
@@ -55,22 +60,21 @@ class _TaskDetailState extends State<TaskDetail> {
   var documentId;
   int _status;
   int _progress;
-  var fileUrl;
 
   _TaskDetailState(
-      this.taskDocId,
-      this.receiverEmail,
-      this.description,
-      this.title,
-      this.timeStamp,
-      this.documentId,
-      this._status,
-      this._progress,
-      this.fileUrl);
+    this.taskDocId,
+    this.receiverEmail,
+    this.description,
+    this.title,
+    this.timeStamp,
+    this.documentId,
+    this._status,
+    this._progress,
+  );
   CollectionReference tasks = FirebaseFirestore.instance.collection("Tasks");
 
   bool isListening = false;
-  SpeechToText _speechToText = SpeechToText();
+  final SpeechToText _speechToText = SpeechToText();
   bool _speechEnabled = false;
   String _lastWords = '';
   List statusList = [
@@ -83,10 +87,17 @@ class _TaskDetailState extends State<TaskDetail> {
   PlatformFile? pickedFile;
   File? file;
   String urlDownload = '';
-  int _file = 0;
   int _sendButton = 0;
   FileServices fileServices = FileServices();
   TextEditingController messageController = TextEditingController();
+  int _file = 0;
+  List<String> collections = [
+    TaskCollection.unDone,
+    TaskCollection.onProgress,
+    TaskCollection.accepted,
+    TaskCollection.revise,
+    TaskCollection.requestForReview
+  ];
 
   @override
   void initState() {
@@ -130,6 +141,8 @@ class _TaskDetailState extends State<TaskDetail> {
 
   @override
   Widget build(BuildContext context) {
+    print('--------------------');
+    print(_status);
     return Scaffold(
       backgroundColor: EmsColor.backgroundColor,
       //floatingActionButtonLocation: FloatingActionButtonLocation.miniStartFloat,
@@ -148,8 +161,9 @@ class _TaskDetailState extends State<TaskDetail> {
                       ),
                       onTap: () {
                         setState(() {
-                          _status = 2;
-                          _taskStatusChange(2);
+                          int _previousStatus = _status;
+                          _status = 3;
+                          _taskStatusChange(3, _previousStatus);
                         });
                       },
                       label: "Revise",
@@ -165,8 +179,9 @@ class _TaskDetailState extends State<TaskDetail> {
                       ),
                       onTap: () {
                         setState(() {
-                          _status = 1;
-                          _taskStatusChange(1);
+                          int _previousStatus = _status;
+                          _status = 2;
+                          _taskStatusChange(2, _previousStatus);
                         });
                       },
                       backgroundColor: EmsColor.acceptedColor,
@@ -187,8 +202,9 @@ class _TaskDetailState extends State<TaskDetail> {
                       ),
                       onTap: () {
                         setState(() {
-                          _status = 3;
-                          _taskStatusChange(3);
+                          int _previousStatus = _status;
+                          _status = 4;
+                          _taskStatusChange(3, _previousStatus);
                         });
                       },
                       label: "Request For Review",
@@ -202,8 +218,9 @@ class _TaskDetailState extends State<TaskDetail> {
                       ),
                       onTap: () {
                         setState(() {
-                          _status = 0;
-                          _taskStatusChange(0);
+                          int _previousStatus = _status;
+                          _status = 1;
+                          _taskStatusChange(_status, _previousStatus);
                         });
                       },
                       label: "On Progress",
@@ -261,9 +278,57 @@ class _TaskDetailState extends State<TaskDetail> {
     );
   }
 
-  void _taskStatusChange(int status) async {
+  void _taskStatusChange(int status, int _previousStatus) async {
+    var oldCollection =
+        TaskCollection.taskStatusCollection.doc(collections[_previousStatus]);
+    var newCollection =
+        TaskCollection.taskStatusCollection.doc(collections[_status]);
+
     tasks.doc(taskDocId).collection('Tasks').doc(documentId).update({
       'status': _status,
+    });
+
+    var docId;
+
+    await oldCollection
+        .collection(collections[_previousStatus])
+        .where('title', isEqualTo: title)
+        .get()
+        .then((value) {
+      value.docs.forEach((element) async {
+        docId = element.id;
+        print(docId);
+        await oldCollection
+            .collection(collections[_previousStatus])
+            .doc(docId)
+            .get()
+            .then((documentSnapshot) {
+          if (documentSnapshot.exists) {
+            documentSnapshot['title'];
+            TaskInfo taskInfo = TaskInfo(
+                title: documentSnapshot['title'],
+                description: documentSnapshot['description'],
+                timeStamp: documentSnapshot['timeStamp'],
+                creator: documentSnapshot['creator'],
+                assignedTo: documentSnapshot['assignedTo'],
+                status: _status,
+                department: documentSnapshot['department'],
+                fileStatus: documentSnapshot['file']);
+            taskInfo.fileUrl = documentSnapshot['fileUrl'];
+            taskInfo.fileName = documentSnapshot['fileName'];
+            newCollection.set({collections[status]: null});
+            newCollection
+                .collection(collections[status])
+                .add(taskInfo.taskMap)
+                .then((value) => {
+                      oldCollection
+                          .collection(collections[_previousStatus])
+                          .doc(docId)
+                          .delete()
+                    });
+          } else {}
+        });
+      });
     });
   }
 
@@ -308,7 +373,7 @@ class _TaskDetailState extends State<TaskDetail> {
                               fontSize: 15,
                             )),
                         const SizedBox(height: 20),
-                        fileUrl == ''
+                        _file == 1
                             ? Container()
                             : InkWell(
                                 onTap: () => {
@@ -321,18 +386,18 @@ class _TaskDetailState extends State<TaskDetail> {
                 PositionedCornerBanner(
                   bannerPosition: CornerBannerPosition.topRight,
                   elevation: 5,
-                  bannerColor: _status == -1
+                  bannerColor: _status == 0
                       ? EmsColor.unDoneColor
-                      : _status == 0
+                      : _status == 1
                           ? EmsColor.onProgressColor
-                          : _status == 1
+                          : _status == 2
                               ? EmsColor.acceptedColor
-                              : _status == 2
+                              : _status == 3
                                   ? EmsColor.reviseColor
                                   : EmsColor.requestForReviewColor,
                   child: Padding(
                     padding: const EdgeInsets.all(2.0),
-                    child: Text(statusList[_status + 1],
+                    child: Text(statusList[_status],
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -365,9 +430,12 @@ class _TaskDetailState extends State<TaskDetail> {
                     }
                     return _taskItems(
                         chat: sender,
-                        message: data['msg']!,
+                        message: (data['file'] == 0)
+                            ? data['msg']!
+                            : data['fileName'],
                         time: TimeFormate.myDateFormat(data['timeStamp']),
-                        file: data['file']);
+                        file: data['file'],
+                        fileUrl: data['fileUrl']);
                   }).toList(),
                 );
               } else {
@@ -390,7 +458,7 @@ class _TaskDetailState extends State<TaskDetail> {
         ),
         Expanded(
           child: Text(
-            fileUrl,
+            widget.fileName,
             maxLines: 2,
             style: const TextStyle(
               color: Colors.black45,
@@ -403,7 +471,16 @@ class _TaskDetailState extends State<TaskDetail> {
     );
   }
 
-  Widget _taskItems({int? chat, String? message, String? time, int? file}) {
+  Widget _taskItems(
+      {int? chat,
+      required String message,
+      String? time,
+      required int file,
+      required fileUrl}) {
+    String _fileType = '';
+    if (file == 1) {
+      _fileType = message.split('.').last;
+    }
     return Row(
       mainAxisAlignment:
           chat == 0 ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -427,28 +504,32 @@ class _TaskDetailState extends State<TaskDetail> {
                       bottomRight: Radius.circular(30),
                     ),
             ),
-            child: (file == 1)
-                ? Row(
-                    children: [
-                      const Avatar(
-                        margin: EdgeInsets.only(right: 20),
-                        size: 40,
-                        image: 'assets/images/fileIcon.png',
-                      ),
-                      Expanded(
-                        child: Text(
-                          fileUrl,
-                          maxLines: 2,
-                          style: const TextStyle(
-                            color: Colors.black45,
-                            fontWeight: FontWeight.w500,
+            child: (file == 0)
+                ? Text(message)
+                : (_fileType == 'jpg' ||
+                        _fileType == 'png' ||
+                        _fileType == 'jpeg')
+                    ? Image.network(fileUrl)
+                    : Row(
+                        children: [
+                          const Avatar(
+                            margin: EdgeInsets.only(right: 20),
+                            size: 40,
+                            image: 'assets/images/fileIcon.png',
                           ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                          Expanded(
+                            child: Text(
+                              message,
+                              maxLines: 2,
+                              style: const TextStyle(
+                                color: Colors.black45,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  )
-                : Text('$message'),
           ),
         ),
         chat == 1
@@ -528,9 +609,7 @@ class _TaskDetailState extends State<TaskDetail> {
                       ),
                       onPressed: () async {
                         Navigator.of(context).pop();
-                        setState(() {
-                          _file = 1;
-                        });
+
                         if (file != null) {
                           UploadTask? uploadTask =
                               FileServices.uploadFile(file, fileName);
@@ -541,10 +620,10 @@ class _TaskDetailState extends State<TaskDetail> {
                             final snapshot =
                                 await uploadTask.whenComplete(() {});
                             urlDownload = (await snapshot.ref.getDownloadURL());
-                            fileUrl = urlDownload;
-
-                            print(fileUrl);
-                            _sendMessage();
+                            setState(() {
+                              _file = 1;
+                            });
+                            _sendMessage(urlDownload);
                           }
                         }
                       },
@@ -604,7 +683,7 @@ class _TaskDetailState extends State<TaskDetail> {
                 _sendButton == 1
                     ? IconButton(
                         onPressed: () {
-                          _sendMessage();
+                          _sendMessage('msg');
                         },
                         color: EmsColor.backgroundColor,
                         icon: const Icon(
@@ -639,14 +718,14 @@ class _TaskDetailState extends State<TaskDetail> {
     );
   }
 
-  void _sendMessage() {
+  void _sendMessage(String _fileUrl) {
     print('-----------------------------------');
     print('send message is invoked!');
-    print(fileUrl);
-    if (messageController.text.isNotEmpty || fileUrl != '') {
+    print(_fileUrl);
+    if (messageController.text.isNotEmpty && _file == 0) {
       tasks.doc(taskDocId).collection('Messages').add({
         "title": title.trim(),
-        "msg": (_file == 1) ? fileUrl.trim() : messageController.text.trim(),
+        "msg": messageController.text.trim(),
         "user": widget.userInfo.get('email').toString(),
         "receiver": receiverEmail.trim(),
         "timeStamp": DateTime.now(),
@@ -662,6 +741,18 @@ class _TaskDetailState extends State<TaskDetail> {
       //     seen: false);
       // notificationModel.sendNotification();
       messageController.clear();
+    }
+    if (_file == 1) {
+      final fileName = file?.path.split('/').last;
+      tasks.doc(taskDocId).collection('Messages').add({
+        "title": title.trim(),
+        "fileUrl": _fileUrl.trim(),
+        "fileName": fileName,
+        "user": widget.userInfo.get('email').toString(),
+        "receiver": receiverEmail.trim(),
+        "timeStamp": DateTime.now(),
+        "file": _file,
+      });
     }
   }
 }

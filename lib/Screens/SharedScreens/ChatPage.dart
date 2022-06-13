@@ -181,8 +181,7 @@ class _ChatPageState extends State<ChatPage> {
                   child: CircularProgressIndicator(),
                 );
               }
-              print('-----------------------------------');
-              print(snapshot.hasData);
+
               return snapshot.hasData
                   ? ListView(
                       padding: const EdgeInsets.only(top: 35),
@@ -191,7 +190,7 @@ class _ChatPageState extends State<ChatPage> {
                           snapshot.data!.docs.map((DocumentSnapshot document) {
                         Map<String, dynamic> data =
                             document.data()! as Map<String, dynamic>;
-                        print(data.isEmpty);
+
                         int sender =
                             0; //by default we assume sender is current user.
                         if (data['user'].toString() == receiverEmail) {

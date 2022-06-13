@@ -281,6 +281,8 @@ class _TaskPageState extends State<TaskPage> {
                     time: data['timeStamp'],
                     documentId: document.id,
                     status: data['status'],
+                    file: data['file'],
+                    fileName: data['fileName'],
                     fileUrl: data['fileUrl'],
                   );
                 }).toList(),
@@ -296,6 +298,8 @@ class _TaskPageState extends State<TaskPage> {
       var time,
       var documentId,
       required int status,
+      required int file,
+      required String fileName,
       var fileUrl}) {
     return InkWell(
       onTap: () {
@@ -311,6 +315,8 @@ class _TaskPageState extends State<TaskPage> {
                 status,
                 _progress,
                 fileUrl,
+                file,
+                fileName,
                 widget.userInfo),
           ),
         );
@@ -375,18 +381,18 @@ class _TaskPageState extends State<TaskPage> {
           ),
           PositionedCornerBanner(
             bannerPosition: CornerBannerPosition.topRight,
-            bannerColor: status == -1
+            bannerColor: status == 0
                 ? EmsColor.unDoneColor
-                : status == 0
+                : status == 1
                     ? EmsColor.onProgressColor
-                    : status == 1
+                    : status == 2
                         ? EmsColor.acceptedColor
-                        : status == 2
+                        : status == 3
                             ? EmsColor.reviseColor
                             : EmsColor.requestForReviewColor,
             child: Padding(
               padding: const EdgeInsets.all(2.0),
-              child: Text(statusList[status + 1],
+              child: Text(statusList[status],
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,

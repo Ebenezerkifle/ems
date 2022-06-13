@@ -173,6 +173,8 @@ class _MyTasksState extends State<MyTasks> {
                     time: data['timeStamp'],
                     documentId: document.id,
                     status: data['status'],
+                    file: data['file'],
+                    fileName: data['fileName'],
                     fileUrl: data['fileUrl'],
                   );
                 }).toList(),
@@ -188,6 +190,8 @@ class _MyTasksState extends State<MyTasks> {
       var time,
       var documentId,
       required int status,
+      required int file,
+      required String fileName,
       required String fileUrl}) {
     return InkWell(
       onTap: () {
@@ -203,6 +207,8 @@ class _MyTasksState extends State<MyTasks> {
                 status,
                 1,
                 fileUrl,
+                file,
+                fileName,
                 widget.userInfo),
           ),
         );

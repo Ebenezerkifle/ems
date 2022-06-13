@@ -5,6 +5,7 @@ import 'package:ems/GeoFence/googleMap.dart';
 import 'package:ems/Screens/SharedScreens/ChatHomepage.dart';
 import 'package:ems/Screens/SharedScreens/TaskHomePage.dart';
 import 'package:ems/Screens/navigation_drawer_widget.dart';
+import 'package:ems/Widget/EmsColor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
@@ -83,8 +84,8 @@ class _HomeScreenEMState extends State<HomeScreenEM> {
       body: Stack(children: <Widget>[
         Container(
             height: size.height * .3,
-            decoration: const BoxDecoration(
-              color: Colors.indigo,
+            decoration: BoxDecoration(
+              color: EmsColor.backgroundColor,
             )),
         SafeArea(
           child: Padding(
@@ -105,28 +106,32 @@ class _HomeScreenEMState extends State<HomeScreenEM> {
                       const SizedBox(
                         width: 16,
                       ),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        // ignore: prefer_const_literals_to_create_immutables
-                        children: [
-                          Text(
-                            '${widget.userInfo.get('firstname') ?? ''}' +
-                                ' ' +
-                                '${widget.userInfo.get('middlename') ?? ''}',
-                            style: const TextStyle(
-                                fontFamily: 'Montserrat Medium',
-                                fontSize: 18,
-                                color: Colors.white),
-                          ),
-                          Text(
-                            '${widget.userInfo.get('position') ?? ''}',
-                            style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.orange,
-                                fontFamily: 'Montserrat Regular'),
-                          ),
-                        ],
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          // ignore: prefer_const_literals_to_create_immutables
+                          children: [
+                            Text(
+                              '${widget.userInfo.get('firstname') ?? ''}' +
+                                  ' ' +
+                                  '${widget.userInfo.get('middlename') ?? ''}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  fontFamily: 'Montserrat Medium',
+                                  fontSize: 18,
+                                  color: Colors.white),
+                            ),
+                            Text(
+                              '${widget.userInfo.get('position') ?? ''}',
+                              style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.orange,
+                                  fontFamily: 'Montserrat Regular'),
+                            ),
+                          ],
+                        ),
                       ),
                       const Padding(
                           padding: EdgeInsets.symmetric(horizontal: 40)),

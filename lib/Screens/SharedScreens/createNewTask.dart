@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Models/task.dart';
+import 'package:ems/Services/Collection.dart';
 import 'package:ems/Services/FileServices.dart';
 import 'package:ems/Widget/EmsColor.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -156,6 +157,7 @@ class _CreateTaskState extends State<CreateTask> {
     );
   }
 
+  int _file = 0;
   Widget _submitButton() {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 0),
@@ -171,17 +173,27 @@ class _CreateTaskState extends State<CreateTask> {
                 titleController.text.isNotEmpty) {
               DateTime timeStamp = DateTime.now();
               task = TaskInfo(
-                title: titleController.text.trim(),
-                description: descirptionController.text.trim(),
-                timeStamp: timeStamp,
-                creator: widget.userInfo.get('email').toString(),
-                assignedTo: receiverEmail.trim(),
-                status: -1,
-                department: department,
-              );
-              task.fileUrl = urlDownload;
-
+                  title: titleController.text.trim(),
+                  description: descirptionController.text.trim(),
+                  timeStamp: timeStamp,
+                  creator: widget.userInfo.get('email').toString(),
+                  assignedTo: receiverEmail.trim(),
+                  status: 0,
+                  department: department,
+                  fileStatus: _file);
+              if (_file == 1) {
+                task.fileUrl = urlDownload;
+                task.fileName = file!.path.split('/').last;
+              }
               tasks.doc(taskDocId).collection('Tasks').add(task.taskMap);
+              TaskCollection.taskStatusCollection
+                  .doc(TaskCollection.unDone)
+                  .set({TaskCollection.unDone: null});
+              TaskCollection.taskStatusCollection
+                  .doc(TaskCollection.unDone)
+                  .collection(TaskCollection.unDone)
+                  .add(task.taskMap);
+              //TaskCollection.doc(unDone).set({task.taskMap});
 
               descirptionController.clear();
               titleController.clear();
@@ -190,9 +202,6 @@ class _CreateTaskState extends State<CreateTask> {
               //Fluttertoast();
             }
           },
-          // padding: const EdgeInsets.all(15),
-          // shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          // color: const Color.fromARGB(255, 24, 30, 68),
           child: const Text(
             'Send',
             style: TextStyle(
@@ -297,6 +306,7 @@ class _CreateTaskState extends State<CreateTask> {
                                   await uploadTask?.whenComplete(() {
                                 setState(() {
                                   upload = 1;
+                                  _file = 1;
                                 });
                               });
                               urlDownload =

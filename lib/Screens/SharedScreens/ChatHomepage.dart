@@ -370,13 +370,12 @@ class _ChatRoomBuilderState extends State<ChatRoomBuilder> {
             DocumentSnapshot? lastMsg = snapshot.data!.docs.isNotEmpty
                 ? snapshot.data!.docs.last
                 : null;
-            print('-------------------------');
-            print(lastMsg == null);
+
             var timeStamp;
             var lastMsgContent;
             if (lastMsg != null) {
               timeStamp = TimeFormate.myDateFormat(lastMsg.get("timeStamp"));
-              print(lastMsg.get('file'));
+
               if (lastMsg.get('file') == 1) {
                 lastMsgContent = lastMsg.get('fileName');
               } else {
@@ -384,9 +383,6 @@ class _ChatRoomBuilderState extends State<ChatRoomBuilder> {
               }
             }
 
-            print('--------------------------------------');
-            print(timeStamp);
-            print(lastMsgContent);
             return Expanded(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

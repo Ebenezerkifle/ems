@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:ems/Services/Collection.dart';
+import 'package:ems/Services/Timeformat.dart';
+import 'package:ems/Widget/EmsColor.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:super_banners/super_banners.dart';
 
 class TodoListProgress extends StatefulWidget {
@@ -16,41 +19,32 @@ class _TodoListProgressState extends State<TodoListProgress> {
 
   CollectionReference tasks = FirebaseFirestore.instance.collection("Tasks");
 
-  List statusList = ['Undone', 'On Progress', 'Done'];
-  List statusNum = [-1, 0, 1];
-  late String _status;
-  late int _statusNum;
+  List statusList = [
+    'Undone',
+    'On Progress',
+    'Approved',
+    'Revise',
+    'Request For Review'
+  ];
+  //List statusNum = [0, 1, 2, 3, 4];
+  late String _status = statusList[0];
+  late int _statusNum = 0;
   List taskList = [];
   List documentIdList = [];
-
-  @override
-  void initState() {
-    setState(() {
-      _status = statusList[0];
-      _statusNum = statusNum[0];
-    });
-    _fetchTasksLists().then((value) {
-      setState(() {
-        documentIdList = value;
-      });
-    });
-    super.initState();
-  }
-
-  Future _fetchTasksLists() async {
-    List taskList = [];
-    await tasks.get().then((q) {
-      for (var element in q.docs) {
-        taskList.add(element.id);
-      }
-    });
-    return taskList;
-  }
+  List<String> collections = [
+    TaskCollection.unDone,
+    TaskCollection.onProgress,
+    TaskCollection.accepted,
+    TaskCollection.revise,
+    TaskCollection.requestForReview
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 24, 30, 68),
+      backgroundColor: EmsColor.backgroundColor,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: _floatingActionButton(),
       body: SafeArea(
         child: Column(
           children: [
@@ -62,6 +56,90 @@ class _TodoListProgressState extends State<TodoListProgress> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _floatingActionButton() {
+    return SpeedDial(
+      animatedIcon: AnimatedIcons.menu_close,
+      backgroundColor: EmsColor.backgroundColor,
+      children: [
+        SpeedDialChild(
+          child: const Icon(
+            Icons.done,
+            size: 30,
+            color: Colors.white,
+          ),
+          onTap: () {
+            setState(() {
+              _statusNum = 2;
+              _status = statusList[2];
+            });
+          },
+          label: statusList[2],
+          backgroundColor: EmsColor.acceptedColor,
+        ),
+        SpeedDialChild(
+          child: const Icon(
+            Icons.rate_review_sharp,
+            size: 30,
+            color: Color.fromARGB(255, 255, 255, 255),
+          ),
+          onTap: () {
+            setState(() {
+              _statusNum = 3;
+              _status = statusList[3];
+            });
+          },
+          label: statusList[3],
+          backgroundColor: EmsColor.reviseColor,
+        ),
+        SpeedDialChild(
+          child: const Icon(
+            Icons.reviews,
+            size: 30,
+            color: Color.fromARGB(255, 255, 255, 255),
+          ),
+          onTap: () {
+            setState(() {
+              _statusNum = 4;
+              _status = statusList[4];
+            });
+          },
+          label: statusList[4],
+          backgroundColor: EmsColor.requestForReviewColor,
+        ),
+        SpeedDialChild(
+          child: const Icon(
+            Icons.run_circle,
+            size: 30,
+            color: Color.fromARGB(255, 255, 255, 255),
+          ),
+          onTap: () {
+            setState(() {
+              _statusNum = 1;
+              _status = statusList[1];
+            });
+          },
+          label: statusList[1],
+          backgroundColor: EmsColor.onProgressColor,
+        ),
+        SpeedDialChild(
+          child: const Icon(
+            Icons.not_interested_outlined,
+            size: 30,
+            color: Color.fromARGB(255, 255, 255, 255),
+          ),
+          onTap: () {
+            setState(() {
+              _statusNum = 0;
+              _status = statusList[0];
+            });
+          },
+          label: statusList[0],
+          backgroundColor: EmsColor.unDoneColor,
+        )
+      ],
     );
   }
 
@@ -90,155 +168,149 @@ class _TodoListProgressState extends State<TodoListProgress> {
               ),
             ],
           ),
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(50),
-                  color: Colors.black38,
-                ),
-                child: IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _statusNum = statusNum[0];
-                      _status = statusList[0];
-                    });
-                  },
-                  color: Colors.white,
-                  icon: const Icon(
-                    Icons.not_interested_outlined,
-                    color: Colors.red,
-                    size: 25,
-                  ),
-                ),
-              ),
-              const SizedBox(
-                width: 10,
-              ),
-              Container(
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(50),
-                  color: Colors.black38,
-                ),
-                child: IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _statusNum = statusNum[1];
-                      _status = statusList[1];
-                    });
-                  },
-                  icon: const Icon(
-                    Icons.run_circle_outlined,
-                    size: 25,
-                    color: Colors.yellow,
-                  ),
-                ),
-              ),
-              const SizedBox(
-                width: 10,
-              ),
-              Container(
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(50),
-                  color: Colors.black38,
-                ),
-                child: IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _statusNum = statusNum[2];
-                      _status = statusList[2];
-                    });
-                  },
-                  icon: const Icon(
-                    Icons.done_all_outlined,
-                    size: 25,
-                    color: Colors.green,
-                  ),
-                ),
-              ),
-            ],
-          )
+          // Row(
+          //   children: [
+          //     Container(
+          //       padding: const EdgeInsets.all(5),
+          //       decoration: BoxDecoration(
+          //         borderRadius: BorderRadius.circular(50),
+          //         color: Colors.black38,
+          //       ),
+          //       child: IconButton(
+          //         onPressed: () {
+          //           setState(() {
+          //             _statusNum = statusNum[0];
+          //             _status = statusList[0];
+          //           });
+          //         },
+          //         color: Colors.white,
+          //         icon: const Icon(
+          //           Icons.not_interested_outlined,
+          //           color: Colors.red,
+          //           size: 25,
+          //         ),
+          //       ),
+          //     ),
+          //     const SizedBox(
+          //       width: 10,
+          //     ),
+          //     Container(
+          //       padding: const EdgeInsets.all(5),
+          //       decoration: BoxDecoration(
+          //         borderRadius: BorderRadius.circular(50),
+          //         color: Colors.black38,
+          //       ),
+          //       child: IconButton(
+          //         onPressed: () {
+          //           setState(() {
+          //             _statusNum = statusNum[1];
+          //             _status = statusList[1];
+          //           });
+          //         },
+          //         icon: const Icon(
+          //           Icons.run_circle_outlined,
+          //           size: 25,
+          //           color: Colors.yellow,
+          //         ),
+          //       ),
+          //     ),
+          //     const SizedBox(
+          //       width: 10,
+          //     ),
+          //     Container(
+          //       padding: const EdgeInsets.all(5),
+          //       decoration: BoxDecoration(
+          //         borderRadius: BorderRadius.circular(50),
+          //         color: Colors.black38,
+          //       ),
+          //       child: IconButton(
+          //         onPressed: () {
+          //           setState(() {
+          //             _statusNum = statusNum[2];
+          //             _status = statusList[2];
+          //           });
+          //         },
+          //         icon: const Icon(
+          //           Icons.done_all_outlined,
+          //           size: 25,
+          //           color: Colors.green,
+          //         ),
+          //       ),
+          //     ),
+          //   ],
+          // )
         ],
       ),
     );
   }
 
   Widget _bodyChat() {
+    Stream<QuerySnapshot<Map<String, dynamic>>> query = TaskCollection
+        .taskStatusCollection
+        .doc(collections[_statusNum])
+        .collection(collections[_statusNum])
+        .orderBy('timeStamp')
+        .snapshots();
+    Stream<QuerySnapshot<Map<String, dynamic>>> querySM = TaskCollection
+        .taskStatusCollection
+        .doc(collections[_statusNum])
+        .collection(collections[_statusNum])
+        .where('department', isEqualTo: widget.userInfo.get('department'))
+        .where('status', isEqualTo: _statusNum)
+        .snapshots();
     return Expanded(
-      child: Container(
-          padding: const EdgeInsets.only(left: 25, right: 25, top: 25),
-          width: double.infinity,
-          decoration: const BoxDecoration(
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(45), topRight: Radius.circular(45)),
-            color: Colors.white,
-          ),
-          child: ListView.builder(
-              shrinkWrap: true,
-              reverse: true,
-              itemCount: documentIdList.length,
-              itemBuilder: (BuildContext contex, int index) {
-                Stream<QuerySnapshot<Map<String, dynamic>>> query = tasks
-                    .doc(documentIdList[index])
-                    .collection('Tasks')
-                    .where('status', isEqualTo: _statusNum)
-                    .snapshots();
-                Stream<QuerySnapshot<Map<String, dynamic>>> querySM = tasks
-                    .doc(documentIdList[index])
-                    .collection('Tasks')
-                    .where('department',
-                        isEqualTo: widget.userInfo.get('department'))
-                    .where('status', isEqualTo: _statusNum)
-                    .snapshots();
-                return StreamBuilder(
-                  stream: widget.userInfo.get('position') == 'General-Manager'
-                      ? query
-                      : querySM,
-                  builder: (BuildContext context,
-                      AsyncSnapshot<QuerySnapshot> snapshot) {
-                    if (!snapshot.hasData) {
-                      return Container(
-                        height: 0,
-                      );
-                    }
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      // return const CircularProgressIndicator();
-                    }
-                    if (snapshot.hasData) {
-                      return ListView(
-                        shrinkWrap: true,
-                        padding: const EdgeInsets.only(top: 35),
-                        physics: const BouncingScrollPhysics(),
-                        children: snapshot.data!.docs
-                            .map((DocumentSnapshot document) {
-                          Map<String, dynamic> data =
-                              document.data()! as Map<String, dynamic>;
-                          if (data.isNotEmpty) {
-                            return _tasksItem(
-                              title: data['title'],
-                              description: data['description'],
-                              time: data['timeStamp'],
-                              documentId: document.id,
-                              status: data['status'],
-                            );
-                          } else {
-                            return const SizedBox();
-                          }
-                        }).toList(),
-                      );
-                    } else {
-                      return const SizedBox(
-                        height: 0,
-                        child: Center(child: Text('No task')),
-                      );
-                    }
-                  },
-                );
-              })),
-    );
+        child: Container(
+            padding: const EdgeInsets.only(left: 25, right: 25, top: 25),
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(45), topRight: Radius.circular(45)),
+              color: Colors.white,
+            ),
+            child: StreamBuilder<QuerySnapshot>(
+              stream: widget.userInfo.get('position') == 'General-Manager'
+                  ? query
+                  : querySM,
+              builder: (BuildContext context,
+                  AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (!snapshot.hasData) {
+                  return Container(
+                    height: 0,
+                  );
+                }
+                if (snapshot.hasData) {
+                  return ListView(
+                    shrinkWrap: true,
+                    padding: const EdgeInsets.only(top: 35),
+                    physics: const BouncingScrollPhysics(),
+                    children:
+                        snapshot.data!.docs.map((DocumentSnapshot document) {
+                      Map<String, dynamic> data =
+                          document.data()! as Map<String, dynamic>;
+                      if (data.isNotEmpty) {
+                        print('------------------------------------');
+                        print(data['title']);
+                        print('-------------------------------------');
+                        return _tasksItem(
+                          title: data['title'],
+                          description: data['description'],
+                          time: TimeFormate.myDateFormat(data['timeStamp']),
+                          documentId: document.id,
+                          status: data['status'],
+                        );
+                      } else {
+                        return const SizedBox();
+                      }
+                    }).toList(),
+                  );
+                } else {
+                  return const SizedBox(
+                    height: 0,
+                    child: Center(child: Text('No task')),
+                  );
+                }
+              },
+            )));
   }
 
   Widget _tasksItem(
@@ -286,12 +358,20 @@ class _TodoListProgressState extends State<TodoListProgress> {
                                     fontSize: 17,
                                     fontWeight: FontWeight.bold),
                               ),
-                              const Text(
-                                '07:10',
-                                //time.toString(),
-                                style: TextStyle(
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.normal),
+                              const SizedBox(
+                                width: 10,
+                              ),
+                              Expanded(
+                                child: Text(
+                                  time,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  //time.toString(),
+                                  style: const TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.grey,
+                                      fontWeight: FontWeight.normal),
+                                ),
                               ),
                             ],
                           ),
@@ -313,11 +393,15 @@ class _TodoListProgressState extends State<TodoListProgress> {
           ),
         ),
         CornerBanner(
-          bannerColor: status == -1
-              ? Colors.redAccent
-              : status == 0
-                  ? Colors.yellowAccent
-                  : Colors.greenAccent,
+          bannerColor: _statusNum == 0
+              ? EmsColor.unDoneColor
+              : _statusNum == 1
+                  ? EmsColor.onProgressColor
+                  : _statusNum == 2
+                      ? EmsColor.acceptedColor
+                      : _statusNum == 3
+                          ? EmsColor.reviseColor
+                          : EmsColor.requestForReviewColor,
           bannerPosition: CornerBannerPosition.topRight,
           elevation: 3,
           child: Padding(
