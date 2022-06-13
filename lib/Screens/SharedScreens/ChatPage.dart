@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Models/Notification.dart';
 import 'package:ems/Services/FileServices.dart';
 import 'package:ems/Services/Timeformat.dart';
+import 'package:ems/Widget/EmsColor.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -59,7 +60,7 @@ class _ChatPageState extends State<ChatPage> {
   File? file;
   int _file = 0;
   String fileUrl = '';
-  late final fileName;
+  late String fileName;
 
   @override
   void initState() {
@@ -180,25 +181,45 @@ class _ChatPageState extends State<ChatPage> {
                   child: CircularProgressIndicator(),
                 );
               }
-              return ListView(
-                padding: const EdgeInsets.only(top: 35),
-                physics: const BouncingScrollPhysics(),
-                children: snapshot.data!.docs.map((DocumentSnapshot document) {
-                  Map<String, dynamic> data =
-                      document.data()! as Map<String, dynamic>;
-                  int sender = 0; //by default we assume sender is current user.
-                  if (data['user'].toString() == receiverEmail) {
-                    sender = 1;
-                  }
-                  return _itemChat(
-                    chat: sender,
-                    message: data['msg']!,
-                    time: TimeFormate.myDateFormat(data['timeStamp']),
-                    fileName: data['fileName'],
-                    fileStatus: data['file'],
-                  );
-                }).toList(),
-              );
+              print('-----------------------------------');
+              print(snapshot.hasData);
+              return snapshot.hasData
+                  ? ListView(
+                      padding: const EdgeInsets.only(top: 35),
+                      physics: const BouncingScrollPhysics(),
+                      children:
+                          snapshot.data!.docs.map((DocumentSnapshot document) {
+                        Map<String, dynamic> data =
+                            document.data()! as Map<String, dynamic>;
+                        print(data.isEmpty);
+                        int sender =
+                            0; //by default we assume sender is current user.
+                        if (data['user'].toString() == receiverEmail) {
+                          sender = 1;
+                        }
+                        List messageContent;
+
+                        if (data['file'] == 1) {
+                          messageContent = [
+                            sender,
+                            data['fileName'],
+                            TimeFormate.myDateFormat(data['timeStamp']),
+                            data['file'],
+                            data['fileUrl']
+                          ];
+                        } else {
+                          messageContent = [
+                            sender,
+                            data['msg'],
+                            TimeFormate.myDateFormat(data['timeStamp']),
+                            data['file'],
+                          ];
+                        }
+
+                        return _itemChat(messageContent: messageContent);
+                      }).toList(),
+                    )
+                  : const Center(child: Text('No Message!'));
             },
           )),
     );
@@ -206,7 +227,11 @@ class _ChatPageState extends State<ChatPage> {
 
   // 0 = Send
   // 1 = Recieved
-  Widget _itemChat({int? chat, message, time, fileName, fileStatus}) {
+  Widget _itemChat({required List messageContent}) {
+    int chat = messageContent[0];
+    String time = messageContent[2];
+    int _fileStatus = messageContent[3];
+    String message = messageContent[1];
     return Row(
       mainAxisAlignment:
           chat == 0 ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -214,8 +239,8 @@ class _ChatPageState extends State<ChatPage> {
       children: [
         chat == 0
             ? Text(
-                '$time',
-                style: TextStyle(color: Colors.grey.shade400),
+                time,
+                style: TextStyle(fontSize: 11, color: Colors.grey.shade400),
               )
             : Container(),
         Flexible(
@@ -236,41 +261,45 @@ class _ChatPageState extends State<ChatPage> {
                       bottomRight: Radius.circular(30),
                     ),
             ),
-            child:
-                (fileStatus == 1) ? _showtheFile(fileName) : Text('$message'),
+            child: (_fileStatus == 1)
+                ? _showtheFile(message, messageContent[4])
+                : Text(message),
           ),
         ),
         chat == 1
             ? Text(
-                '$time',
-                style: TextStyle(color: Colors.grey.shade400),
+                time,
+                style: TextStyle(fontSize: 11, color: Colors.grey.shade400),
               )
             : const SizedBox(),
       ],
     );
   }
 
-  Widget _showtheFile(String fileName) {
-    return Row(
-      children: [
-        Avatar(
-          margin: const EdgeInsets.only(right: 20),
-          size: 40,
-          image: 'assets/images/fileIcon.png',
-        ),
-        Expanded(
-          child: Text(
-            fileName,
-            maxLines: 2,
-            style: const TextStyle(
-              color: Colors.black45,
-              fontWeight: FontWeight.w500,
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
+  Widget _showtheFile(String _fileName, String _fileURL) {
+    var _fileType = _fileName.split('.').last;
+    return (_fileType == 'jpg' || _fileType == 'png' || _fileType == 'jpeg')
+        ? Image.network(_fileURL)
+        : Row(
+            children: [
+              Avatar(
+                margin: const EdgeInsets.only(right: 20),
+                size: 40,
+                image: 'assets/images/fileIcon.png',
+              ),
+              Expanded(
+                child: Text(
+                  _fileName,
+                  maxLines: 2,
+                  style: const TextStyle(
+                    color: Colors.black45,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          );
   }
 
   Future selectFile() async {
@@ -289,79 +318,97 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-  _showSelectedFileDialogue(BuildContext context) {
-    fileName = file?.path.split('/').last;
+  void _showSelectedFileDialogue(BuildContext context) {
+    fileName = file!.path.split('/').last;
+    String filetype = fileName.split('.').last.toLowerCase();
+
     showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-              title: const Text('A file is selected',
-                  style: TextStyle(color: Color.fromARGB(255, 24, 30, 68))),
-              content: SizedBox(
-                child: Column(
-                  children: [
-                    Image.file(File(pickedFile!.path!)),
-                    Text(
-                      fileName!,
-                      style: const TextStyle(
-                        color: Color.fromARGB(255, 24, 30, 68),
-                        fontSize: 15,
-                        fontWeight: FontWeight.normal,
-                      ),
-                    )
-                  ],
+        builder: (context) => SizedBox(
+              // height: MediaQuery.of(context).size.height,
+              // width: MediaQuery.of(context).size.width,
+              child: AlertDialog(
+                backgroundColor: Colors.white,
+                insetPadding: const EdgeInsets.all(5),
+                title: Text('A file is selected',
+                    style: TextStyle(color: EmsColor.backgroundColor)),
+                content: Expanded(
+                  child: Column(
+                    children: [
+                      (filetype == 'jpg' ||
+                              filetype == 'png' ||
+                              filetype == 'jpeg')
+                          ? Image.file(File(pickedFile!.path!))
+                          : Row(
+                              children: [
+                                Icon(
+                                  Icons.folder_copy_rounded,
+                                  color: EmsColor.backgroundColor,
+                                ),
+                                Text(fileName)
+                              ],
+                            ),
+                      Text(
+                        fileName,
+                        style: const TextStyle(
+                          color: Color.fromARGB(255, 24, 30, 68),
+                          fontSize: 15,
+                          fontWeight: FontWeight.normal,
+                        ),
+                      )
+                    ],
+                  ),
+                  // fit: BoxFit.cover,
                 ),
-
-                // fit: BoxFit.cover,
-              ),
-              actions: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    FlatButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
+                actions: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text(
+                            'cancel',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                              color: Color.fromARGB(255, 24, 30, 68),
+                            ),
+                          )),
+                      TextButton(
                         child: const Text(
-                          'cancle',
+                          'send',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 20,
                             color: Color.fromARGB(255, 24, 30, 68),
                           ),
-                        )),
-                    FlatButton(
-                      child: const Text(
-                        'send',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                          color: Color.fromARGB(255, 24, 30, 68),
                         ),
-                      ),
-                      onPressed: () async {
-                        Navigator.of(context).pop();
-                        setState(() {
-                          _file = 1;
-                        });
-                        if (file != null) {
-                          UploadTask? uploadTask =
-                              FileServices.uploadFile(file, fileName);
+                        onPressed: () async {
+                          setState(() {
+                            _file = 1;
+                          });
+                          Navigator.of(context).pop();
+                          if (file != null) {
+                            UploadTask? uploadTask =
+                                FileServices.uploadFile(file, fileName);
 
-                          if (uploadTask != null) {
-                            print('===============================');
-                            print('get file url');
-                            final snapshot =
-                                await uploadTask.whenComplete(() {});
-                            fileUrl = (await snapshot.ref.getDownloadURL());
+                            if (uploadTask != null) {
+                              final snapshot =
+                                  await uploadTask.whenComplete(() {});
 
-                            _sendMessage();
+                              fileUrl = (await snapshot.ref.getDownloadURL());
+
+                              _sendMessage(fileUrl);
+                            }
                           }
-                        }
-                      },
-                    ),
-                  ],
-                )
-              ],
+                        },
+                      ),
+                    ],
+                  )
+                ],
+              ),
             ));
   }
 
@@ -414,7 +461,7 @@ class _ChatPageState extends State<ChatPage> {
                 _sendButton == 1
                     ? IconButton(
                         onPressed: () {
-                          _sendMessage();
+                          _sendMessage('msg');
                         },
                         color: const Color.fromARGB(255, 24, 30, 68),
                         icon: const Icon(
@@ -449,15 +496,14 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-  void _sendMessage() {
-    if (messageController.text.isNotEmpty || fileUrl.isNotEmpty) {
+  void _sendMessage(String _fileUrl) {
+    if (messageController.text.isNotEmpty) {
       chats.doc(chatDocId).collection('Messages').add({
         "msg": (_file == 1) ? fileUrl.trim() : messageController.text.trim(),
         "user": loginUser?.email?.trim(),
         "receiver": receiverEmail.trim(),
         "timeStamp": DateTime.now(),
-        "fileName": (_file == 1) ? fileName : '',
-        "file": _file,
+        'file': _file
       });
 
       NotificationModel notificationModel = NotificationModel(
@@ -469,6 +515,16 @@ class _ChatPageState extends State<ChatPage> {
           seen: false);
       notificationModel.sendNotification();
       messageController.clear();
+    }
+    if (fileUrl != '') {
+      chats.doc(chatDocId).collection('Messages').add({
+        'fileName': fileName,
+        'user': loginUser?.email?.trim(),
+        'receiver': receiverEmail.trim(),
+        'timeStamp': DateTime.now(),
+        'fileUrl': fileUrl,
+        'file': _file
+      });
     }
   }
 }

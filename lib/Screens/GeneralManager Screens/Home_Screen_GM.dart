@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ems/Attendance/Attendance.dart';
 import 'package:ems/GeoFence/locationInfoScreen.dart';
 import 'package:ems/Screens/GeneralManager%20Screens/employeeprogress.dart';
 import 'package:ems/Screens/GeneralManager%20Screens/todoListProgress.dart';
@@ -15,7 +14,7 @@ import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 class HomeScreenGM extends StatefulWidget {
   final QueryDocumentSnapshot<Object?> userInfo;
 
-  HomeScreenGM({required this.userInfo, Key? key}) : super(key: key);
+  const HomeScreenGM({required this.userInfo, Key? key}) : super(key: key);
 
   @override
   _HomeScreenGMState createState() => _HomeScreenGMState();
@@ -301,36 +300,6 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                         // Card 4
                       ),
 
-                      //my attendance
-                      InkWell(
-                        onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => const CalendarPage()));
-                        },
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                          elevation: 4,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              SvgPicture.asset(
-                                'assets/images/calendar.svg',
-                                height: 64,
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  'My Attendance',
-                                  style: cardTextStyle,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        // Card 6
-                      ),
-
                       // Card 8  Employee info
                       InkWell(
                         onTap: () {
@@ -360,6 +329,36 @@ class _HomeScreenGMState extends State<HomeScreenGM> {
                             ],
                           ),
                         ),
+                      ),
+
+                      //my attendance
+                      InkWell(
+                        onTap: () {
+                          // Navigator.of(context).push(MaterialPageRoute(
+                          //     builder: (context) => const CalendarPage()));
+                        },
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                          elevation: 4,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              SvgPicture.asset(
+                                'assets/images/calendar.svg',
+                                height: 64,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'My Attendance',
+                                  style: cardTextStyle,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Card 6
                       ),
 
                       //fiance

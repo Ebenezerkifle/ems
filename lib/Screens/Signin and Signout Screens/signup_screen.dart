@@ -467,8 +467,7 @@ class FormScreenState extends State<FormScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 25),
       width: double.infinity,
-      child: RaisedButton(
-        elevation: 5,
+      child: ElevatedButton(
         onPressed: () async {
           if (_formKey.currentState!.validate()) {
             dynamic result = await _auth.authenticat(employee);
@@ -486,9 +485,9 @@ class FormScreenState extends State<FormScreen> {
             }
           }
         },
-        padding: const EdgeInsets.all(15),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        color: Colors.white,
+        // padding: const EdgeInsets.all(15),
+        // shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        // color: Colors.white,
         child: const Text(
           'Submit',
           style: TextStyle(

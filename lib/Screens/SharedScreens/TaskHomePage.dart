@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Screens/SharedScreens/TaskPage.dart';
+import 'package:ems/Widget/Avatar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -8,7 +9,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 class TaskHomePage extends StatefulWidget {
   final QueryDocumentSnapshot<Object?> userInfo;
 
-  TaskHomePage(this.userInfo, {Key? key}) : super(key: key);
+  const TaskHomePage(this.userInfo, {Key? key}) : super(key: key);
 
   @override
   _TaksHomePageState createState() => _TaksHomePageState();
@@ -43,7 +44,7 @@ class _TaksHomePageState extends State<TaskHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: Color.fromARGB(255, 24, 30, 68),
+      backgroundColor: const Color.fromARGB(255, 24, 30, 68),
       body: SafeArea(
         child: Column(
           children: [
@@ -94,7 +95,7 @@ class _TaksHomePageState extends State<TaskHomePage> {
                 width: 15,
               ),
               Expanded(
-                child: Container(
+                child: SizedBox(
                   height: 100,
                   child: ListView.builder(
                     physics: const BouncingScrollPhysics(),
@@ -210,7 +211,7 @@ class _TaksHomePageState extends State<TaskHomePage> {
                   }
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const SpinKitDoubleBounce(
-                      color: Colors.blue,
+                      color: Color.fromARGB(255, 24, 30, 68),
                     );
                   }
                   if (snapshot.hasData) {
@@ -221,6 +222,7 @@ class _TaksHomePageState extends State<TaskHomePage> {
                           snapshot.data!.docs.map((DocumentSnapshot document) {
                         Map<String, dynamic> data =
                             document.data()! as Map<String, dynamic>;
+
                         String avatar = 'assets/images/1.jpg';
                         String name =
                             data['firstname'] + " " + data['middlename'];
@@ -228,7 +230,7 @@ class _TaksHomePageState extends State<TaskHomePage> {
                         String receiverEmail = data['email'];
                         String department = data['department'];
                         String position = data['position'];
-                        return _itemChats(avatar, name, time, receiverEmail,
+                        return _itemTasks(avatar, name, time, receiverEmail,
                             department, position, context);
                       }).toList(),
                     );
@@ -240,7 +242,7 @@ class _TaksHomePageState extends State<TaskHomePage> {
                 })));
   }
 
-  Widget _itemChats(
+  Widget _itemTasks(
       String avatar,
       String name,
       String time,
@@ -315,29 +317,6 @@ class _TaksHomePageState extends State<TaskHomePage> {
               ),
             )
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class Avatar extends StatelessWidget {
-  final double size;
-  final image;
-  final EdgeInsets margin;
-  Avatar({this.image, this.size = 50, this.margin = const EdgeInsets.all(0)});
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: margin,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          image: DecorationImage(
-            image: AssetImage(image),
-          ),
         ),
       ),
     );

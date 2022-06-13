@@ -40,7 +40,7 @@ class Authentication {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: login.email, password: login.password);
       //DatabaseServices(uid: userCredential.user!.uid).updateUsersData(user);
-      error = "The user is successfully registered!";
+      error = "The user is successfully loged!";
       return error;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {

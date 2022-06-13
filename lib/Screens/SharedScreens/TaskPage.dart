@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ems/Screens/SharedScreens/TaskDetail.dart';
 import 'package:ems/Screens/SharedScreens/createNewTask.dart';
-import 'package:ems/Services/Loading.dart';
+import 'package:ems/Widget/EmsColor.dart';
+import 'package:ems/Widget/Loading.dart';
 import 'package:ems/Services/Timeformat.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -26,7 +28,6 @@ class TaskPage extends StatefulWidget {
   );
 
   @override
-  // ignore: no_logic_in_create_state
   _TaskPageState createState() => _TaskPageState(
       receiverEmail, name, receiverDepartement, receiverPosistion, progress);
 }
@@ -121,7 +122,7 @@ class _TaskPageState extends State<TaskPage> {
         : Scaffold(
             floatingActionButton: _progress == 0
                 ? FloatingActionButton(
-                    backgroundColor: const Color.fromARGB(255, 24, 30, 68),
+                    backgroundColor: EmsColor.backgroundColor,
                     focusColor: Colors.white,
                     onPressed: () => {
                       Navigator.of(context).push(
@@ -140,7 +141,7 @@ class _TaskPageState extends State<TaskPage> {
                     ),
                   )
                 : Container(),
-            backgroundColor: const Color.fromARGB(255, 24, 30, 68),
+            backgroundColor: EmsColor.backgroundColor,
             body: SafeArea(
               child: Column(
                 children: [
@@ -375,14 +376,14 @@ class _TaskPageState extends State<TaskPage> {
           PositionedCornerBanner(
             bannerPosition: CornerBannerPosition.topRight,
             bannerColor: status == -1
-                ? const Color.fromARGB(255, 177, 18, 18)
+                ? EmsColor.unDoneColor
                 : status == 0
-                    ? const Color.fromARGB(255, 228, 228, 9)
+                    ? EmsColor.onProgressColor
                     : status == 1
-                        ? const Color.fromARGB(255, 35, 122, 38)
+                        ? EmsColor.acceptedColor
                         : status == 2
-                            ? const Color.fromARGB(255, 58, 91, 199)
-                            : const Color.fromARGB(255, 218, 145, 50),
+                            ? EmsColor.reviseColor
+                            : EmsColor.requestForReviewColor,
             child: Padding(
               padding: const EdgeInsets.all(2.0),
               child: Text(statusList[status + 1],

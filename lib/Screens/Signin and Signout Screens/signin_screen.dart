@@ -5,7 +5,8 @@ import 'package:ems/Screens/SharedScreens/Home_Screen_AD.dart';
 import 'package:ems/Screens/GeneralManager%20Screens/Home_Screen_GM.dart';
 import 'package:ems/Screens/SubManager%20Screens/Home_Screen_SM.dart';
 import 'package:ems/Services/Authentication_Services.dart';
-import 'package:ems/Services/Loading.dart';
+import 'package:ems/Widget/EmsColor.dart';
+import 'package:ems/Widget/Loading.dart';
 import 'package:ems/Services/ScheduledUpdate.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +27,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final Authentication _auth = Authentication();
   final Login login = Login();
-
   String error = '';
   bool loading = false;
 
@@ -117,9 +117,9 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget buildForgotPasswordButton() {
     return Container(
       alignment: Alignment.centerRight,
-      child: FlatButton(
+      child: TextButton(
         onPressed: () => print("Forgot Password pressed"),
-        padding: const EdgeInsets.only(right: 0),
+        // padding: const EdgeInsets.only(right: 0),
         child: const Text(
           'Forgot Password?',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -159,36 +159,41 @@ class _LoginScreenState extends State<LoginScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 25),
       width: double.infinity,
-      child: RaisedButton(
-        elevation: 5,
-        onPressed: () async {
-          if (_formKey.currentState!.validate()) {
-            login.email = _emailController.text;
-            login.password = _passwordController.text;
+      child: SizedBox(
+        height: 50,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            primary: Colors.white,
+          ),
+          onPressed: () async {
+            if (_formKey.currentState!.validate()) {
+              login.email = _emailController.text;
+              login.password = _passwordController.text;
 
-            dynamic result = await _auth.singin(login);
+              dynamic result = await _auth.singin(login);
 
-            if (result == null) {
-              setState(() => error = "couldn't signin with this credential!");
-              Fluttertoast.showToast(msg: error);
-              loading = false;
-            } else {
-              setState(() => error = "successfully signed in!");
-              Fluttertoast.showToast(msg: error);
-              loading = true;
-              _navigate();
+              if (result == null) {
+                setState(() => error = "couldn't signin with this credential!");
+                Fluttertoast.showToast(msg: error);
+                loading = false;
+              } else {
+                setState(() => error = "successfully signed in!");
+                Fluttertoast.showToast(msg: error);
+                loading = true;
+                _navigate();
+              }
             }
-          }
-        },
-        padding: const EdgeInsets.all(15),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        color: Colors.white,
-        child: const Text(
-          'LOGIN',
-          style: TextStyle(
-              color: Color.fromARGB(255, 24, 30, 68),
-              fontSize: 18,
-              fontWeight: FontWeight.bold),
+          },
+          // padding: const EdgeInsets.all(15),
+          // shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          // color: Colors.white,
+          child: const Text(
+            'LOGIN',
+            style: TextStyle(
+                color: Color.fromARGB(255, 24, 30, 68),
+                fontSize: 18,
+                fontWeight: FontWeight.bold),
+          ),
         ),
       ),
     );
@@ -273,8 +278,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Container(
                     height: double.infinity,
                     width: double.infinity,
-                    decoration: const BoxDecoration(
-                        color: Color.fromARGB(255, 24, 30, 68)),
+                    decoration: BoxDecoration(color: EmsColor.backgroundColor),
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.symmetric(

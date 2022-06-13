@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/Screens/SharedScreens/ChatPage.dart';
 import 'package:ems/Services/Timeformat.dart';
+import 'package:ems/Widget/Avatar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -241,29 +242,6 @@ class _ChatHomePageState extends State<ChatHomePage> {
   }
 }
 
-class Avatar extends StatelessWidget {
-  final double size;
-  final image;
-  final EdgeInsets margin;
-  Avatar({this.image, this.size = 50, this.margin = const EdgeInsets.all(0)});
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: margin,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          image: DecorationImage(
-            image: AssetImage(image),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class ChatRoomBuilder extends StatefulWidget {
   String avatar;
   String name;
@@ -389,13 +367,26 @@ class _ChatRoomBuilderState extends State<ChatRoomBuilder> {
             );
           }
           if (snapshot.hasData) {
-            DocumentSnapshot? last = snapshot.data!.docs.isNotEmpty
+            DocumentSnapshot? lastMsg = snapshot.data!.docs.isNotEmpty
                 ? snapshot.data!.docs.last
                 : null;
+            print('-------------------------');
+            print(lastMsg == null);
             var timeStamp;
-            if (last?.get('timeStamp') != null) {
-              timeStamp = TimeFormate.myDateFormat(last?.get("timeStamp"));
+            var lastMsgContent;
+            if (lastMsg != null) {
+              timeStamp = TimeFormate.myDateFormat(lastMsg.get("timeStamp"));
+              print(lastMsg.get('file'));
+              if (lastMsg.get('file') == 1) {
+                lastMsgContent = lastMsg.get('fileName');
+              } else {
+                lastMsgContent = lastMsg.get('msg');
+              }
             }
+
+            print('--------------------------------------');
+            print(timeStamp);
+            print(lastMsgContent);
             return Expanded(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -403,7 +394,7 @@ class _ChatRoomBuilderState extends State<ChatRoomBuilder> {
                 children: [
                   Expanded(
                     child: Text(
-                      '${last?.get("msg") ?? ""}',
+                      '${lastMsgContent ?? ""}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(

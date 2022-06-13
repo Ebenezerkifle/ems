@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ems/GeoFence/EmployeesLocationScreen.dart';
+import 'package:ems/GeoFence/MapScreen.dart';
 import 'package:ems/GeoFence/boundary_check.dart';
-import 'package:ems/GeoFence/googleMap.dart';
 import 'package:ems/Models/Location%20.dart';
+import 'package:ems/Services/Timeformat.dart';
+import 'package:ems/Widget/EmsColor.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -25,55 +27,61 @@ class _EmployeeLocationInfoState extends State<EmployeeLocationInfo> {
   Location location = Location();
   late LatLng latLng;
   bool region = false;
-  List locationDocList = [];
   List locationDocIdList = [];
   int numOfEmployeesOnWorkingArea = 0;
   int numOfEmployeesOutOfWorkingArea = 0;
   List emailListOfWorkingEmployees = [];
   List emailListOfNotWorkingEmployees = [];
+  var recentTimeStamp;
+  List timeStampOfNotWorkingList = [];
+  List timeStampOfworkingList = [];
 
   @override
   void initState() {
-    _fetchLocationDocumentList().then((value) {
-      setState(() {
-        locationDocIdList = value;
-      });
-    });
+    _fetchLocationDocumentList();
     super.initState();
   }
 
   Future _fetchLocationDocumentList() async {
     List list = [];
-    print('*********************');
-
+    print('fetching locatioin info');
     try {
-      print('fetching');
       await locationFireStore.get().then((q) {
+        print('loop.................');
         for (var element in q.docs) {
           print(element.id);
           list.add(element);
           bool onRegion = element['onRegion'];
-          if (onRegion) {
-            emailListOfWorkingEmployees.add(element['userEmail']);
-            numOfEmployeesOnWorkingArea++;
-          } else {
-            emailListOfNotWorkingEmployees.add(element['userEmail']);
-
-            numOfEmployeesOutOfWorkingArea++;
+          var timeStamp = element['timeStamp'];
+          recentTimeStamp = TimeFormate.myDateFormat(timeStamp);
+          if (element['userEmail'] != loginUserEmail) {
+            if (onRegion) {
+              setState(() {
+                emailListOfWorkingEmployees.add(element['userEmail']);
+                timeStampOfworkingList.add(element['timeStamp']);
+                numOfEmployeesOnWorkingArea++;
+              });
+            } else {
+              setState(() {
+                emailListOfNotWorkingEmployees.add(element['userEmail']);
+                numOfEmployeesOutOfWorkingArea++;
+                timeStampOfNotWorkingList.add(element['timeStamp']);
+              });
+            }
           }
         }
-        print(list.length);
-        print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
       });
     } on Exception catch (e) {
       print('Exception: ' + e.toString());
     }
-    return list;
   }
 
   @override
   Widget build(BuildContext context) {
-    print(emailListOfWorkingEmployees);
+    print('================================');
+    print(timeStampOfNotWorkingList);
+    print(timeStampOfworkingList);
+    print(numOfEmployeesOnWorkingArea);
     return Scaffold(
         key: scaffoldKey,
         //endDrawer: NavigationDrawerWidget(),
@@ -87,11 +95,11 @@ class _EmployeeLocationInfoState extends State<EmployeeLocationInfo> {
           ),
         ),
         floatingActionButton: FloatingActionButton(
-          backgroundColor: const Color.fromARGB(255, 24, 30, 68),
+          backgroundColor: EmsColor.backgroundColor,
           focusColor: Colors.white,
           onPressed: () => {
-            Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => const GoogleMapInforamtion()))
+            Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const MyLocation()))
           },
           child: const Icon(
             Icons.my_location,
@@ -141,27 +149,27 @@ class _EmployeeLocationInfoState extends State<EmployeeLocationInfo> {
 
   Widget _body() {
     //_trackLocationInformation();
-    var cardTextStyle = const TextStyle(
+    var cardTextStyle = TextStyle(
       fontFamily: 'Montserat Regular',
       fontWeight: FontWeight.bold,
       fontSize: 60,
-      color: Colors.green,
+      color: EmsColor.acceptedColor,
       // color: Color.fromRGBO(63, 63, 63, 1),
       //height: 64
     );
-    var outOfFenceTextStyle = const TextStyle(
+    var outOfFenceTextStyle = TextStyle(
       fontFamily: 'Montserat Regular',
       fontWeight: FontWeight.bold,
       fontSize: 60,
-      color: Colors.red,
+      color: EmsColor.unDoneColor,
       // color: Color.fromRGBO(63, 63, 63, 1),
       //height: 64
     );
-    var timeTextStyle = const TextStyle(
+    var timeTextStyle = TextStyle(
       fontFamily: 'Montserat Regular',
-      fontWeight: FontWeight.normal,
-      fontSize: 12,
-      color: Colors.blueAccent,
+      fontWeight: FontWeight.w500,
+      fontSize: 10,
+      color: Colors.lightBlue.shade500,
       // color: Color.fromRGBO(63, 63, 63, 1),
       //height: 64
     );
@@ -186,7 +194,9 @@ class _EmployeeLocationInfoState extends State<EmployeeLocationInfo> {
                     if (numOfEmployeesOutOfWorkingArea > 0) {
                       Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => EmployeesLocationScreen(
-                              false, emailListOfWorkingEmployees)));
+                              false,
+                              emailListOfNotWorkingEmployees,
+                              timeStampOfNotWorkingList)));
                     }
                   },
                   child: Card(
@@ -214,12 +224,16 @@ class _EmployeeLocationInfoState extends State<EmployeeLocationInfo> {
                                 height: 5,
                               ),
                               Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: <Widget>[
-                                    Text(
-                                      "last updated, 12:00",
-                                      style: timeTextStyle,
+                                    Expanded(
+                                      child: Text(
+                                        '$recentTimeStamp',
+                                        style: timeTextStyle,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
                                     const Padding(padding: EdgeInsets.all(2.0)),
                                   ])
@@ -234,7 +248,9 @@ class _EmployeeLocationInfoState extends State<EmployeeLocationInfo> {
                     if (numOfEmployeesOnWorkingArea > 0) {
                       Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => EmployeesLocationScreen(
-                              true, emailListOfWorkingEmployees)));
+                              true,
+                              emailListOfWorkingEmployees,
+                              timeStampOfworkingList)));
                     }
                   },
                   child: Card(
@@ -259,12 +275,16 @@ class _EmployeeLocationInfoState extends State<EmployeeLocationInfo> {
                           height: 5,
                         ),
                         Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: <Widget>[
-                              Text(
-                                "last updated, 12:00",
-                                style: timeTextStyle,
+                              Expanded(
+                                child: Text(
+                                  '$recentTimeStamp',
+                                  style: timeTextStyle,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
                               const Padding(padding: EdgeInsets.all(2.0)),
                             ])

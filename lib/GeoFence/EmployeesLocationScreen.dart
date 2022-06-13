@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ems/Services/Timeformat.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -7,7 +8,9 @@ import '../Screens/GeneralManager Screens/EmployeeInfo_Screen.dart';
 class EmployeesLocationScreen extends StatefulWidget {
   bool onRegion;
   List emailList;
-  EmployeesLocationScreen(this.onRegion, this.emailList, {Key? key})
+  List timeStamp;
+  EmployeesLocationScreen(this.onRegion, this.emailList, this.timeStamp,
+      {Key? key})
       : super(key: key);
 
   @override
@@ -134,6 +137,8 @@ class _EmployeesLocationScreenState extends State<EmployeesLocationScreen> {
               itemCount: widget.emailList.length,
               itemBuilder: (BuildContext context, int index) {
                 print('----------------------------');
+                print(index);
+                print(widget.timeStamp);
                 print(widget.emailList[index]);
                 Stream<QuerySnapshot<Map<String, dynamic>>> query =
                     FirebaseFirestore.instance
@@ -164,7 +169,9 @@ class _EmployeesLocationScreenState extends State<EmployeesLocationScreen> {
                             String avatar = 'assets/images/1.jpg';
                             String name =
                                 data['firstname'] + " " + data['middlename'];
-                            String time = '08.10';
+                            String time = TimeFormate.myDateFormat(
+                                    widget.timeStamp[index])
+                                .toString();
                             String receiverEmail = data['email'];
                             String department = data['department'];
                             String position = data['position'];
@@ -215,16 +222,28 @@ class _EmployeesLocationScreenState extends State<EmployeesLocationScreen> {
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        '$name',
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                      Expanded(
+                        child: Text(
+                          '$name ',
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
                       ),
-                      Text(
-                        '$time',
-                        style: const TextStyle(
-                            color: Colors.grey, fontWeight: FontWeight.bold),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      Expanded(
+                        child: Text(
+                          ' $time',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 11,
+                              color: Color.fromARGB(255, 145, 138, 138),
+                              fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ],
                   ),
@@ -236,7 +255,7 @@ class _EmployeesLocationScreenState extends State<EmployeesLocationScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        department,
+                        '$position ',
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: Colors.black54,
@@ -244,7 +263,7 @@ class _EmployeesLocationScreenState extends State<EmployeesLocationScreen> {
                         ),
                       ),
                       Text(
-                        ' $position',
+                        ' $department',
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: Color.fromARGB(255, 79, 83, 90),
